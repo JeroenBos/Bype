@@ -37,13 +37,12 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
     }
 
 
-
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
         InputConnection inputConnection = getCurrentInputConnection();
         if (inputConnection != null) {
-            switch(primaryCode) {
-                case Keyboard.KEYCODE_DELETE :
+            switch (primaryCode) {
+                case Keyboard.KEYCODE_DELETE:
                     CharSequence selectedText = inputConnection.getSelectedText(0);
 
                     if (TextUtils.isEmpty(selectedText)) {
@@ -60,9 +59,9 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
                     inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
 
                     break;
-                default :
+                default:
                     char code = (char) primaryCode;
-                    if(Character.isLetter(code) && caps){
+                    if (Character.isLetter(code) && caps) {
                         code = Character.toUpperCase(code);
                     }
                     inputConnection.commitText(String.valueOf(code), 1);
@@ -71,6 +70,7 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
         }
 
     }
+
 
 
     @Override
