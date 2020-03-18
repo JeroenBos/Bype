@@ -1,5 +1,5 @@
-import android.annotation.UnsupportedAppUsage;
-import android.annotation.XmlRes;
+package com.example.bype;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -11,6 +11,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.util.Xml;
+
+import androidx.annotation.XmlRes;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -41,12 +43,8 @@ import java.util.StringTokenizer;
  * @attr ref android.R.styleable#Keyboard_keyHeight
  * @attr ref android.R.styleable#Keyboard_horizontalGap
  * @attr ref android.R.styleable#Keyboard_verticalGap
- * @deprecated This class is deprecated because this is just a convenient UI widget class that
- *             application developers can re-implement on top of existing public APIs.  If you have
- *             already depended on this class, consider copying the implementation from AOSP into
- *             your project or re-implementing a similar widget by yourselves
  */
-@Deprecated
+
 public class Keyboard {
 
     static final String TAG = "Keyboard";
@@ -615,7 +613,7 @@ public class Keyboard {
         rows.add(row);
     }
 
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
+    // @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     final void resize(int newWidth, int newHeight) {
         int numRows = rows.size();
         for (int rowIndex = 0; rowIndex < numRows; ++rowIndex) {
