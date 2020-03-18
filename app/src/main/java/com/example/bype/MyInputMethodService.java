@@ -18,7 +18,6 @@ public class MyInputMethodService extends InputMethodService
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
-    private SeparateListener listener;
 
     private boolean caps = false;
 
@@ -29,7 +28,6 @@ public class MyInputMethodService extends InputMethodService
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
-        listener = new SeparateListener(this);
 
         return keyboardView;
     }
@@ -114,37 +112,5 @@ public class MyInputMethodService extends InputMethodService
         Log.d(tag, "swipeUp");
     }
 
-    public class SeparateListener implements View.OnGenericMotionListener {
-
-        public SeparateListener(MyInputMethodService owner) {
-            owner.keyboardView.setOnGenericMotionListener(this);
-            owner.keyboardView.setOnLongClickListener(new LongClickListener());
-            owner.keyboardView.setOnTouchListener(new OnTouchListener());
-        }
-
-        @Override
-        public boolean onGenericMotion(View v, MotionEvent event) {
-            Log.d(tag, "SeparateListener.onGenericMotion");
-            return false;
-        }
-    }
-
-    public class LongClickListener implements View.OnLongClickListener {
-
-        @Override
-        public boolean onLongClick(View v) {
-            Log.d(tag, "onLongClick");
-            return false;
-        }
-    }
-
-    public class OnTouchListener implements View.OnTouchListener{
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            Log.d(tag, "onTouch");
-            return false;
-        }
-    }
 }
 
