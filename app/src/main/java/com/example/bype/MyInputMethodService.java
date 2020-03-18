@@ -4,6 +4,7 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +22,7 @@ public class MyInputMethodService extends InputMethodService
 
     @Override
     public View onCreateInputView() {
+        Log.d("special", "onCreateInputView");
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
@@ -77,7 +79,7 @@ public class MyInputMethodService extends InputMethodService
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-
+        Log.d("special", "onGenericMotionEvent");
         return super.onGenericMotionEvent(event);
     }
 
@@ -109,6 +111,7 @@ public class MyInputMethodService extends InputMethodService
 
     @Override
     public boolean onGenericMotion(View v, MotionEvent event) {
+        Log.d("special", "onGenericMotion");
         return false;
     }
 }
