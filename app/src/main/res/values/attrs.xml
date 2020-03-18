@@ -97,8 +97,7 @@
     </declare-styleable>
 
     <declare-styleable name="KeyboardViewPreviewState">
-        <!-- State for {@link android.inputmethodservice.KeyboardView KeyboardView}
-                key preview background. -->
+        <!-- State for {@link com.example.bype.KeyboardView KeyboardView} key preview background. -->
         <attr name="state_long_pressable" format="boolean" />
     </declare-styleable>
 

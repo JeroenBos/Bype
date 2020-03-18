@@ -1,8 +1,9 @@
 package com.example.bype;
+import com.example.bype.Keyboard;
+import com.example.bype.KeyboardView;
+
 
 import android.inputmethodservice.InputMethodService;
-import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
