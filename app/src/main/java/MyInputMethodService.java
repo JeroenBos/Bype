@@ -10,15 +10,32 @@ import android.view.inputmethod.InputConnection;
 import com.example.bype.R;
 
 public class MyInputMethodService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
+
+    private KeyboardView keyboardView;
+    private Keyboard keyboard;
+
+    private boolean caps = false;
+
     @Override
-    public void onPress(int primaryCode) {
+    public View onCreateInputView() {
+        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        keyboard = new Keyboard(this, R.xml.keys_layout);
+        keyboardView.setKeyboard(keyboard);
+        keyboardView.setOnKeyboardActionListener(this);
+        return keyboardView;
+    }
+
+    @Override
+    public void onPress(int i) {
 
     }
 
     @Override
-    public void onRelease(int primaryCode) {
+    public void onRelease(int i) {
 
     }
+
+
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
@@ -54,8 +71,9 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
 
     }
 
+
     @Override
-    public void onText(CharSequence text) {
+    public void onText(CharSequence charSequence) {
 
     }
 
@@ -77,19 +95,5 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
     @Override
     public void swipeUp() {
 
-    }
-
-    private KeyboardView keyboardView;
-    private Keyboard keyboard;
-
-    private boolean caps = false;
-
-    @Override
-    public View onCreateInputView() {
-        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
-        keyboard = new Keyboard(this, R.xml.keys_layout);
-        keyboardView.setKeyboard(keyboard);
-        keyboardView.setOnKeyboardActionListener(this);
-        return keyboardView;
     }
 }
