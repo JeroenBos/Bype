@@ -5,12 +5,14 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
 import com.example.bype.R;
 
-public class MyInputMethodService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
+public class MyInputMethodService extends InputMethodService
+        implements KeyboardView.OnKeyboardActionListener, View.OnGenericMotionListener {
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
@@ -72,6 +74,12 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
     }
 
 
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+
+        return super.onGenericMotionEvent(event);
+    }
+
 
     @Override
     public void onText(CharSequence charSequence) {
@@ -96,5 +104,10 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
     @Override
     public void swipeUp() {
 
+    }
+
+    @Override
+    public boolean onGenericMotion(View v, MotionEvent event) {
+        return false;
     }
 }
