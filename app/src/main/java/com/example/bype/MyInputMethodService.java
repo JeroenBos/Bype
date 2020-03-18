@@ -17,6 +17,7 @@ public class MyInputMethodService extends InputMethodService
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
+    private SeparateListener listener;
 
     private boolean caps = false;
 
