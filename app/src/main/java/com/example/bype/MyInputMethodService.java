@@ -25,6 +25,7 @@ public class MyInputMethodService extends InputMethodService
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
+        keyboardView.setOnGenericMotionListener(this);
         return keyboardView;
     }
 
