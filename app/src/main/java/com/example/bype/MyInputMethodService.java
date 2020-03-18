@@ -13,7 +13,7 @@ import android.view.inputmethod.InputConnection;
 import com.example.bype.R;
 
 public class MyInputMethodService extends InputMethodService
-        implements KeyboardView.OnKeyboardActionListener, View.OnGenericMotionListener {
+        implements KeyboardView.OnKeyboardActionListener {
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
@@ -27,7 +27,8 @@ public class MyInputMethodService extends InputMethodService
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
-        keyboardView.setOnGenericMotionListener(this);
+        listener = new SeparateListener(this);
+
         return keyboardView;
     }
 
@@ -109,9 +110,17 @@ public class MyInputMethodService extends InputMethodService
 
     }
 
-    @Override
-    public boolean onGenericMotion(View v, MotionEvent event) {
-        Log.d("special", "onGenericMotion");
-        return false;
+    public class SeparateListener implements View.OnGenericMotionListener {
+
+        public SeparateListener(MyInputMethodService owner) {
+            owner.keyboardView.setOnGenericMotionListener(this);
+        }
+
+        @Override
+        public boolean onGenericMotion(View v, MotionEvent event) {
+            Log.d("special", "SeparateListener.onGenericMotion");
+            return false;
+        }
     }
 }
+
