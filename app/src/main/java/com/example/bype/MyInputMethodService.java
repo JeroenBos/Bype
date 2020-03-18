@@ -105,22 +105,44 @@ public class MyInputMethodService extends InputMethodService
     @Override
     public void swipeDown() {
 
+        Log.d(tag, "swipeDown");
     }
 
     @Override
     public void swipeUp() {
 
+        Log.d(tag, "swipeUp");
     }
 
     public class SeparateListener implements View.OnGenericMotionListener {
 
         public SeparateListener(MyInputMethodService owner) {
             owner.keyboardView.setOnGenericMotionListener(this);
+            owner.keyboardView.setOnLongClickListener(new LongClickListener());
+            owner.keyboardView.setOnTouchListener(new OnTouchListener());
         }
 
         @Override
         public boolean onGenericMotion(View v, MotionEvent event) {
             Log.d(tag, "SeparateListener.onGenericMotion");
+            return false;
+        }
+    }
+
+    public class LongClickListener implements View.OnLongClickListener {
+
+        @Override
+        public boolean onLongClick(View v) {
+            Log.d(tag, "onLongClick");
+            return false;
+        }
+    }
+
+    public class OnTouchListener implements View.OnTouchListener{
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            Log.d(tag, "onTouch");
             return false;
         }
     }
