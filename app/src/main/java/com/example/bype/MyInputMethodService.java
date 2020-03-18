@@ -10,10 +10,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.example.bype.R;
 
 public class MyInputMethodService extends InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
+
+    private static final String tag = "------------";
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
@@ -23,7 +24,7 @@ public class MyInputMethodService extends InputMethodService
 
     @Override
     public View onCreateInputView() {
-        Log.d("special", "onCreateInputView");
+        Log.d(tag, "onCreateInputView");
         keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
@@ -81,7 +82,7 @@ public class MyInputMethodService extends InputMethodService
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        Log.d("special", "onGenericMotionEvent");
+        Log.d(tag, "onGenericMotionEvent");
         return super.onGenericMotionEvent(event);
     }
 
@@ -119,7 +120,7 @@ public class MyInputMethodService extends InputMethodService
 
         @Override
         public boolean onGenericMotion(View v, MotionEvent event) {
-            Log.d("special", "SeparateListener.onGenericMotion");
+            Log.d(tag, "SeparateListener.onGenericMotion");
             return false;
         }
     }
