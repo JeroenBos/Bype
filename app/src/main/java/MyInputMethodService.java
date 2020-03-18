@@ -2,7 +2,10 @@
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputConnection;
 
 import com.example.bype.R;
 
@@ -19,6 +22,35 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
+        InputConnection inputConnection = getCurrentInputConnection();
+        if (inputConnection != null) {
+            switch(primaryCode) {
+                case Keyboard.KEYCODE_DELETE :
+                    CharSequence selectedText = inputConnection.getSelectedText(0);
+
+                    if (TextUtils.isEmpty(selectedText)) {
+                        inputConnection.deleteSurroundingText(1, 0);
+                    } else {
+                        inputConnection.commitText("", 1);
+                    }
+                case Keyboard.KEYCODE_SHIFT:
+                    caps = !caps;
+                    keyboard.setShifted(caps);
+                    keyboardView.invalidateAllKeys();
+                    break;
+                case Keyboard.KEYCODE_DONE:
+                    inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+
+                    break;
+                default :
+                    char code = (char) primaryCode;
+                    if(Character.isLetter(code) && caps){
+                        code = Character.toUpperCase(code);
+                    }
+                    inputConnection.commitText(String.valueOf(code), 1);
+
+            }
+        }
 
     }
 
