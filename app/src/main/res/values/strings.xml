@@ -1,3 +1,49 @@
 <resources>
     <string name="app_name">Bype</string>
+
+    <!-- KeyboardView - accessibility support -->
+    <!-- Description of the Alt button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_alt">Alt</string>
+    <!-- Description of the Cancel button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_cancel">Cancel</string>
+    <!-- Description of the Delete button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_delete">Delete</string>
+    <!-- Description of the Done button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_done">Done</string>
+    <!-- Description of the Mode change button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_mode_change">Mode change</string>
+    <!-- Description of the Shift button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_shift">Shift</string>
+    <!-- Description of the Enter button in a KeyboardView. [CHAR LIMIT=NONE] -->
+    <string name="keyboardview_keycode_enter">Enter</string>
+
+    <!-- Below is just everything from Android-29/../strings.xmls that contains 'Keyboard'-->
+
+    <!-- Password keyboard strings. Used by LockScreen and Settings --><skip />
+    <!-- Label for "switch to symbols" key.  Must be short to fit on key! -->
+    <string name="password_keyboard_label_symbol_key">\?123</string>
+    <!-- Label for "switch to alphabetic" key.  Must be short to fit on key! -->
+    <string name="password_keyboard_label_alpha_key">ABC</string>
+    <!-- Label for ALT modifier key.  Must be short to fit on key! -->
+    <string name="password_keyboard_label_alt_key">ALT</string>
+
+    <!-- Title of the pop-up dialog in which the user switches keyboard, also known as input method. -->
+    <string name="select_input_method">Choose input method</string>
+    <!-- Summary text of a toggle switch to enable/disable use of the IME while a physical
+         keyboard is connected -->
+    <string name="show_ime">Keep it on screen while physical keyboard is active</string>
+    <!-- Title of the physical keyboard category in the input method selector [CHAR LIMIT=30] -->
+    <string name="hardware">Show virtual keyboard</string>
+    <!-- Title of the notification to prompt the user to configure physical keyboard settings. -->
+    <string name="select_keyboard_layout_notification_title">Configure physical keyboard</string>
+    <!-- Message of the notification to prompt the user to configure physical keyboard settings
+         where the user can associate language with physical keyboard layout. -->
+    <string name="select_keyboard_layout_notification_message">Tap to select language and layout</string>
+
+    <!-- Text shown when viewing channel settings for notifications related to the virtual keyboard -->
+    <string name="notification_channel_virtual_keyboard">Virtual keyboard</string>
+    <!-- Text shown when viewing channel settings for notifications related to the hardware keyboard -->
+    <string name="notification_channel_physical_keyboard">Physical keyboard</string>
+
+
 </resources>

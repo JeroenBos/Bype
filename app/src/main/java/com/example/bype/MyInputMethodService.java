@@ -1,28 +1,39 @@
 package com.example.bype;
+import com.example.bype.Keyboard;
+import com.example.bype.KeyboardView;
 
+
+import android.annotation.SuppressLint;
 import android.inputmethodservice.InputMethodService;
-import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.example.bype.R;
 
-public class MyInputMethodService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
+public class MyInputMethodService extends InputMethodService
+        implements KeyboardView.OnKeyboardActionListener {
+
+    private static final String tag = "------------";
 
     private KeyboardView keyboardView;
     private Keyboard keyboard;
 
     private boolean caps = false;
 
+    @SuppressLint("InflateParams")
     @Override
     public View onCreateInputView() {
-        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        Log.d(tag, "onCreateInputView");
+        LayoutInflater inflater = getLayoutInflater();
+        keyboardView = (KeyboardView) inflater.inflate(R.layout.keyboard_view, null);
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
+
         return keyboardView;
     }
 
@@ -72,6 +83,12 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
     }
 
 
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        Log.d(tag, "onGenericMotionEvent");
+        return super.onGenericMotionEvent(event);
+    }
+
 
     @Override
     public void onText(CharSequence charSequence) {
@@ -91,10 +108,14 @@ public class MyInputMethodService extends InputMethodService implements Keyboard
     @Override
     public void swipeDown() {
 
+        Log.d(tag, "swipeDown");
     }
 
     @Override
     public void swipeUp() {
 
+        Log.d(tag, "swipeUp");
     }
+
 }
+
