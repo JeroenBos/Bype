@@ -1314,7 +1314,7 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         for (int i = 0; i < me.getPointerCount(); i++) {
             x.add(String.valueOf(me.getAction())); // int
-            x.add(String.valueOf(me.getDownTime())); // long
+            x.add(String.valueOf(new Date().getTime() - me.getDownTime())); // long
             x.add(String.valueOf(me.getX()));
             x.add(String.valueOf(me.getY()));
             x.add(String.valueOf(me.getPressure()));
