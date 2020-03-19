@@ -1,3 +1,12 @@
+What is stackoverflow.com?
+
+Nothing, yet.
+
+But here’s the concept:
+
+Programmers seem to have stopped reading books. The market for books on programming topics is miniscule compared to the number of working programmers.
+
+
 1, 0, 1584556958457, 710.0, 741.0, 1.0, 0.023529414, 0.0, 7.0, 5.0, 5.0, 7.0, 1.0, 1.0, 0, 
 1, 2, 1584556958608, 710.0, 741.0, 1.0, 0.025490198, 0.0, 7.0, 6.0, 6.0, 7.0, 1.0, 1.0, 0, 
 1, 1, 1584556958613, 710.0, 741.0, 1.0, 0.025490198, 0.0, 7.0, 6.0, 6.0, 7.0, 1.0, 1.0, 0, 
