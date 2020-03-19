@@ -7,6 +7,7 @@ import android.inputmethodservice.InputMethodService;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
@@ -25,7 +26,8 @@ public class MyInputMethodService extends InputMethodService
     @Override
     public View onCreateInputView() {
         Log.d(tag, "onCreateInputView");
-        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        LayoutInflater inflater = getLayoutInflater();
+        keyboardView = (KeyboardView) inflater.inflate(R.layout.keyboard_view, null);
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
