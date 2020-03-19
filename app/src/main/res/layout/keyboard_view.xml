@@ -4,5 +4,7 @@
         android:id="@+id/keyboardView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:keyBackground="@drawable/ic_launcher_foreground"
+        app:keyTextColor="@color/colorPrimaryDark"
+        app:keyTextSize="12pt"
+        app:keyBackground="@color/colorPrimary"
         app:dumpFileDir="test"/>
