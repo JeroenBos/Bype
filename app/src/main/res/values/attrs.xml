@@ -90,6 +90,8 @@
 
         <!-- Layout resource for popup keyboards. -->
         <attr name="popupLayout" format="reference" />
+        <!-- Path to a dir where to dump stuff. Must end on a directory separator. -->
+        <attr name="dumpFileDir" format="string" />
 
         <attr name="shadowColor" />
 

@@ -15,14 +15,17 @@ import android.graphics.drawable.Drawable;
 import com.example.bype.Keyboard.Key;
 
 import android.media.AudioManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup.LayoutParams;
@@ -32,10 +35,20 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A view that renders a virtual {@link Keyboard}. It handles rendering of keys and
@@ -43,6 +56,8 @@ import java.util.Map;
  */
 
 public class KeyboardView extends View implements View.OnClickListener {
+
+    private static final String tag = "------------";
 
     /**
      * Listener for virtual keyboard events.
@@ -248,6 +263,8 @@ public class KeyboardView extends View implements View.OnClickListener {
      * The audio manager for accessibility support
      */
     private AudioManager mAudioManager;
+    private FileWriter fileWriter;
+    private static final SimpleDateFormat fileNameFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     /**
      * Whether the requirement of a headset to hear passwords if accessibility is enabled is announced.
      */
@@ -318,6 +335,47 @@ public class KeyboardView extends View implements View.OnClickListener {
                     break;
                 case R.styleable.KeyboardView_backgroundDimAmount:
                     mBackgroundDimAmount = a.getFloat(attr, 0.5f);
+                    break;
+                case R.styleable.KeyboardView_dumpFileDir:
+                    File[] mediaDirs = this.getContext().getExternalMediaDirs();
+
+                    String dir = mediaDirs[0].getAbsolutePath();
+                    String subdir = a.getString(attr);
+                    if (subdir == null) {
+                        Log.d(tag, "dir == null");
+                        break;
+                    }
+//                {
+//                    File d = new File(dir);
+//                    if (!d.exists()) {
+//                        Log.d(tag, "'" + dir + "' doesn't exit");
+//                        break;
+//                    }
+//                    if (!d.isDirectory()) {
+//                        Log.d(tag, "'" + dir + "' isn't a dir");
+//                        break;
+//                    }
+//                    Log.d(tag, "'" + dir + "' exists and is a dir");
+//                }
+
+                    String dt = fileNameFormat.format(new Date());
+                    File file;
+                    for (int p = 0; ; p++) {
+                        Path path = Paths.get(dir, subdir, dt + "_" + p + ".txt");
+                        file = new File(path.toUri());
+                        if (!file.exists() && !file.isDirectory()) {
+                            break;
+                        }
+                    }
+
+                    Log.d(tag, "Appending to file: " + file.getName());
+                    try {
+                        boolean createdDirs = Objects.requireNonNull(file.getParentFile()).mkdirs();
+                        boolean created = file.createNewFile();
+                        fileWriter = new FileWriter(file, true);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         }
@@ -589,7 +647,7 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     /**
      * Popup keyboard close button clicked.
-     *
+     * <p>
      * // @hide
      */
     public void onClick(View v) {
@@ -1213,6 +1271,8 @@ public class KeyboardView extends View implements View.OnClickListener {
         boolean result = false;
         final long now = me.getEventTime();
 
+        dump(me);
+
         if (pointerCount != mOldPointerCount) {
             if (pointerCount == 1) {
                 // Send a down event for the latest pointer
@@ -1244,6 +1304,47 @@ public class KeyboardView extends View implements View.OnClickListener {
         mOldPointerCount = pointerCount;
 
         return result;
+    }
+
+    private void dump(MotionEvent me) {
+
+        List<String> x = new ArrayList<>();
+
+        x.add(String.valueOf(me.getPointerCount()));
+
+        for (int i = 0; i < me.getPointerCount(); i++) {
+            x.add(String.valueOf(me.getAction())); // int
+            x.add(String.valueOf(me.getDownTime())); // long
+            x.add(String.valueOf(me.getX()));
+            x.add(String.valueOf(me.getY()));
+            x.add(String.valueOf(me.getPressure()));
+            x.add(String.valueOf(me.getSize()));
+            x.add(String.valueOf(me.getOrientation()));
+            x.add(String.valueOf(me.getToolMajor()));
+            x.add(String.valueOf(me.getToolMinor()));
+            x.add(String.valueOf(me.getTouchMinor()));
+            x.add(String.valueOf(me.getTouchMajor()));
+            x.add(String.valueOf(me.getXPrecision()));
+            x.add(String.valueOf(me.getYPrecision()));
+            x.add(String.valueOf(me.getEdgeFlags())); // int
+            // the only other possibly interesting values are the axes, but I don't think so:
+            // x.add(String.valueOf(me.getAxisValue(?)));
+        }
+        String newLine = System.getProperty("line.separator");
+        x.add(newLine);
+
+        String total = String.join(", ", x);
+        Log.d("dump_move_event", total);
+        if (fileWriter != null) {
+            try {
+                fileWriter.append(total);
+                if (me.getAction() == MotionEvent.ACTION_UP || me.getAction() == MotionEvent.ACTION_CANCEL)
+                    fileWriter.flush();
+            } catch (IOException e) {
+                Log.d("dump_move_event", "IOException");
+                e.printStackTrace();
+            }
+        }
     }
 
     private boolean onModifiedTouchEvent(MotionEvent me, boolean possiblePoly) {
@@ -1421,6 +1522,14 @@ public class KeyboardView extends View implements View.OnClickListener {
         mBuffer = null;
         mCanvas = null;
         mMiniKeyboardCache.clear();
+
+        try {
+            if (fileWriter != null)
+                fileWriter.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void removeMessages() {
