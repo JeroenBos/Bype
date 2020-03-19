@@ -1,22 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryDark"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
+            android:textSize="30sp" />
+
+    <Button
+            android:id="@+id/closeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Button" />
+</LinearLayout>
+
+<!-- contents by android-29:
+
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
-    android:textColor="@color/colorPrimary"
-    android:textAlignment="center"
-    android:textSize="30sp">
-
-</TextView>
-
-        <!-- contents by android-29:
-
-        <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="80sp"
-        android:textSize="40sp"
-        android:textColor="?android:attr/textColorPrimaryInverse"
-        android:minWidth="32dip"
-        android:gravity="center"
-        android:background="@drawable/keyboard_key_feedback"
-                />
-        -->
+    android:layout_width="wrap_content"
+    android:layout_height="80sp"
+    android:textSize="40sp"
+    android:textColor="?android:attr/textColorPrimaryInverse"
+    android:minWidth="32dip"
+    android:gravity="center"
+    android:background="@drawable/keyboard_key_feedback"
+    />
+-->
