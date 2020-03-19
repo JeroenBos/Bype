@@ -5,7 +5,6 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -39,10 +38,6 @@ import java.util.StringTokenizer;
  *     ...
  * &lt;/Keyboard&gt;
  * </pre>
- * @attr ref android.R.styleable#Keyboard_keyWidth
- * @attr ref android.R.styleable#Keyboard_keyHeight
- * @attr ref android.R.styleable#Keyboard_horizontalGap
- * @attr ref android.R.styleable#Keyboard_verticalGap
  */
 
 public class Keyboard {
@@ -132,8 +127,6 @@ public class Keyboard {
     private int mCellHeight;
     private int[][] mGridNeighbors;
     private int mProximityThreshold;
-    /** Number of key widths from current touch point to search for nearest keys. */
-    private static float SEARCH_DISTANCE = 1.8f;
 
     private ArrayList<Row> rows = new ArrayList<Row>();
 
@@ -141,12 +134,6 @@ public class Keyboard {
      * Container for keys in the keyboard. All keys in a row are at the same Y-coordinate.
      * Some of the key size defaults can be overridden per row from what the {@link Keyboard}
      * defines.
-     * @attr ref android.R.styleable#Keyboard_keyWidth
-     * @attr ref android.R.styleable#Keyboard_keyHeight
-     * @attr ref android.R.styleable#Keyboard_horizontalGap
-     * @attr ref android.R.styleable#Keyboard_verticalGap
-     * @attr ref android.R.styleable#Keyboard_Row_rowEdgeFlags
-     * @attr ref android.R.styleable#Keyboard_Row_keyboardMode
      */
     public static class Row {
         /** Default width of a key in this row. */
@@ -202,21 +189,6 @@ public class Keyboard {
 
     /**
      * Class for describing the position and characteristics of a single key in the keyboard.
-     *
-     * @attr ref android.R.styleable#Keyboard_keyWidth
-     * @attr ref android.R.styleable#Keyboard_keyHeight
-     * @attr ref android.R.styleable#Keyboard_horizontalGap
-     * @attr ref android.R.styleable#Keyboard_Key_codes
-     * @attr ref android.R.styleable#Keyboard_Key_keyIcon
-     * @attr ref android.R.styleable#Keyboard_Key_keyLabel
-     * @attr ref android.R.styleable#Keyboard_Key_iconPreview
-     * @attr ref android.R.styleable#Keyboard_Key_isSticky
-     * @attr ref android.R.styleable#Keyboard_Key_isRepeatable
-     * @attr ref android.R.styleable#Keyboard_Key_isModifier
-     * @attr ref android.R.styleable#Keyboard_Key_popupKeyboard
-     * @attr ref android.R.styleable#Keyboard_Key_popupCharacters
-     * @attr ref android.R.styleable#Keyboard_Key_keyOutputText
-     * @attr ref android.R.styleable#Keyboard_Key_keyEdgeFlags
      */
     public static class Key {
         /**
@@ -529,6 +501,7 @@ public class Keyboard {
         mDefaultHorizontalGap = 0;
         mDefaultWidth = mDisplayWidth / 10;
         mDefaultVerticalGap = 0;
+        //noinspection SuspiciousNameCombination
         mDefaultHeight = mDefaultWidth;
         mKeys = new ArrayList<Key>();
         mModifierKeys = new ArrayList<Key>();
@@ -552,6 +525,7 @@ public class Keyboard {
         mDefaultHorizontalGap = 0;
         mDefaultWidth = mDisplayWidth / 10;
         mDefaultVerticalGap = 0;
+        //noinspection SuspiciousNameCombination
         mDefaultHeight = mDefaultWidth;
         mKeys = new ArrayList<Key>();
         mModifierKeys = new ArrayList<Key>();
@@ -614,7 +588,10 @@ public class Keyboard {
     }
 
     // @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    final void resize(int newWidth, int newHeight) {
+    // TODO: This does not adjust the vertical placement according to the new size.
+    // The main problem in the previous code was horizontal placement/size, but we should
+    // also recalculate the vertical sizes/positions when we get this resize call.
+    final void resize(int newWidth, @SuppressWarnings("unused") int newHeight) {
         int numRows = rows.size();
         for (int rowIndex = 0; rowIndex < numRows; ++rowIndex) {
             Row row = rows.get(rowIndex);
@@ -640,9 +617,6 @@ public class Keyboard {
             }
         }
         mTotalWidth = newWidth;
-        // TODO: This does not adjust the vertical placement according to the new size.
-        // The main problem in the previous code was horizontal placement/size, but we should
-        // also recalculate the vertical sizes/positions when we get this resize call.
     }
 
     public List<Key> getKeys() {
@@ -714,9 +688,6 @@ public class Keyboard {
         return mShifted;
     }
 
-    /**
-     * @hide
-     */
     public int[] getShiftKeyIndices() {
         return mShiftKeyIndices;
     }
@@ -824,6 +795,7 @@ public class Keyboard {
                         } else if (key.codes[0] == KEYCODE_ALT) {
                             mModifierKeys.add(key);
                         }
+                        assert currentRow != null;
                         currentRow.mKeys.add(key);
                     } else if (TAG_KEYBOARD.equals(tag)) {
                         parseKeyboardAttributes(res, parser);
@@ -835,14 +807,14 @@ public class Keyboard {
                         if (x > mTotalWidth) {
                             mTotalWidth = x;
                         }
-                    } else if (inRow) {
+                    } else
+                        if (inRow) {
                         inRow = false;
                         y += currentRow.verticalGap;
                         y += currentRow.defaultHeight;
                         row++;
-                    } else {
-                        // TODO: error or extend?
                     }
+                    // TODO: else error or extend?
                 }
             }
         } catch (Exception e) {
@@ -879,6 +851,9 @@ public class Keyboard {
         mDefaultVerticalGap = getDimensionOrFraction(a,
                 R.styleable.Keyboard_verticalGap,
                 mDisplayHeight, 0);
+
+        // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
+        float SEARCH_DISTANCE = 1.8f;
         mProximityThreshold = (int) (mDefaultWidth * SEARCH_DISTANCE);
         mProximityThreshold = mProximityThreshold * mProximityThreshold; // Square it for comparison
         a.recycle();

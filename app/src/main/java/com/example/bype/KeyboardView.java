@@ -1,5 +1,6 @@
 package com.example.bype;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -30,6 +31,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,16 +40,6 @@ import java.util.Map;
 /**
  * A view that renders a virtual {@link Keyboard}. It handles rendering of keys and
  * detecting key presses and touch movements.
- *
- * @attr ref android.R.styleable#KeyboardView_keyBackground
- * @attr ref android.R.styleable#KeyboardView_keyPreviewLayout
- * @attr ref android.R.styleable#KeyboardView_keyPreviewOffset
- * @attr ref android.R.styleable#KeyboardView_keyPreviewHeight
- * @attr ref android.R.styleable#KeyboardView_labelTextSize
- * @attr ref android.R.styleable#KeyboardView_keyTextSize
- * @attr ref android.R.styleable#KeyboardView_keyTextColor
- * @attr ref android.R.styleable#KeyboardView_verticalCorrection
- * @attr ref android.R.styleable#KeyboardView_popupLayout
  */
 
 public class KeyboardView extends View implements View.OnClickListener {
@@ -280,6 +272,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         LayoutInflater inflate =
                 (LayoutInflater) context
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        assert inflate != null;
 
         int previewLayout = 0;
         int keyTextSize = 0;
@@ -323,11 +316,11 @@ public class KeyboardView extends View implements View.OnClickListener {
                 case R.styleable.KeyboardView_shadowRadius:
                     mShadowRadius = a.getFloat(attr, 0f);
                     break;
+                case R.styleable.KeyboardView_backgroundDimAmount:
+                    mBackgroundDimAmount = a.getFloat(attr, 0.5f);
+                    break;
             }
         }
-
-        a = getContext().obtainStyledAttributes(R.styleable.Theme);
-        mBackgroundDimAmount = a.getFloat(R.styleable.Theme_backgroundDimAmount, 0.5f);
 
         mPreviewPopup = new PopupWindow(context);
         if (previewLayout != 0) {
@@ -367,6 +360,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         resetMultiTap();
     }
 
+    @SuppressLint("HandlerLeak")
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -596,7 +590,7 @@ public class KeyboardView extends View implements View.OnClickListener {
     /**
      * Popup keyboard close button clicked.
      *
-     * @hide
+     * // @hide
      */
     public void onClick(View v) {
         dismissPopupKeyboard();
@@ -628,8 +622,6 @@ public class KeyboardView extends View implements View.OnClickListener {
      * Compute the average distance between adjacent keys (horizontally and vertically)
      * and square it to get the proximity threshold. We use a square here and in computing
      * the touch distance from a key's center to avoid taking a square root.
-     *
-     * @param keyboard
      */
     private void computeProximityThreshold(Keyboard keyboard) {
         if (keyboard == null) return;
@@ -667,8 +659,9 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     private void onBufferDraw() {
         if (mBuffer == null || mKeyboardChanged) {
-            if (mBuffer == null || mKeyboardChanged &&
-                    (mBuffer.getWidth() != getWidth() || mBuffer.getHeight() != getHeight())) {
+            if (mBuffer == null
+                    || mBuffer.getWidth() != getWidth()
+                    || mBuffer.getHeight() != getHeight()) {
                 // Make sure our bitmap is at least 1x1
                 final int width = Math.max(1, getWidth());
                 final int height = Math.max(1, getHeight());
@@ -738,6 +731,7 @@ public class KeyboardView extends View implements View.OnClickListener {
                 // Draw a drop shadow for the text
                 paint.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
                 // Draw the text
+                //noinspection IntegerDivisionInFloatingPointContext
                 canvas.drawText(label,
                         (key.width - padding.left - padding.right) / 2
                                 + padding.left,
@@ -1109,9 +1103,9 @@ public class KeyboardView extends View implements View.OnClickListener {
             if (mMiniKeyboardContainer == null) {
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(
                         Context.LAYOUT_INFLATER_SERVICE);
+                assert inflater != null;
                 mMiniKeyboardContainer = inflater.inflate(mPopupLayout, null);
-                mMiniKeyboard = (KeyboardView) mMiniKeyboardContainer.findViewById(
-                        R.id.keyboardView);
+                mMiniKeyboard = (KeyboardView) mMiniKeyboardContainer.findViewById(R.id.keyboardView);
                 View closeButton = mMiniKeyboardContainer.findViewById(
                         R.id.closeButton);
                 if (closeButton != null) closeButton.setOnClickListener(this);
@@ -1209,6 +1203,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         return true;
     }
 
+    @SuppressLint("ClickableViewAccessibility") // TODO: look into?
     @Override
     public boolean onTouchEvent(MotionEvent me) {
         // Convert multi-pointer up/down events to single up/down events to
@@ -1489,9 +1484,9 @@ public class KeyboardView extends View implements View.OnClickListener {
         static final int NUM_PAST = 4;
         static final int LONGEST_PAST_TIME = 200;
 
-        final float mPastX[] = new float[NUM_PAST];
-        final float mPastY[] = new float[NUM_PAST];
-        final long mPastTime[] = new long[NUM_PAST];
+        final float[] mPastX = new float[NUM_PAST];
+        final float[] mPastY = new float[NUM_PAST];
+        final long[] mPastTime = new long[NUM_PAST];
 
         float mYVelocity;
         float mXVelocity;

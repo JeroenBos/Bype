@@ -94,15 +94,13 @@
         <attr name="shadowColor" />
 
         <attr name="shadowRadius" />
+
+        <!-- Default background dim amount when a menu, dialog, or something similar pops up. -->
+        <attr name="backgroundDimAmount" format="float" />
     </declare-styleable>
 
     <declare-styleable name="KeyboardViewPreviewState">
         <!-- State for {@link com.example.bype.KeyboardView KeyboardView} key preview background. -->
         <attr name="state_long_pressable" format="boolean" />
-    </declare-styleable>
-
-    <declare-styleable name="Theme">
-        <!-- Default background dim amount when a menu, dialog, or something similar pops up. -->
-        <attr name="backgroundDimAmount" format="float" />
     </declare-styleable>
 </resources>

@@ -3,6 +3,7 @@ import com.example.bype.Keyboard;
 import com.example.bype.KeyboardView;
 
 
+import android.annotation.SuppressLint;
 import android.inputmethodservice.InputMethodService;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +24,7 @@ public class MyInputMethodService extends InputMethodService
 
     private boolean caps = false;
 
+    @SuppressLint("InflateParams")
     @Override
     public View onCreateInputView() {
         Log.d(tag, "onCreateInputView");
