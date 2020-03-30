@@ -233,7 +233,7 @@ public class Keyboard {
     /**
      * Class for describing the position and characteristics of a single key in the keyboard.
      */
-    public static class Key {
+    public static class Key extends KeyBase {
         /**
          * All the key codes (unicode or custom code) that this key could generate, zero'th
          * being the most important.
@@ -246,21 +246,9 @@ public class Keyboard {
         public CharSequence label;
 
         /**
-         * Icon to display instead of a label. Icon takes precedence over a label
-         */
-        public Drawable icon;
-        /**
          * Preview version of the icon, for the preview popup
          */
         public Drawable iconPreview;
-        /**
-         * Width of the key, not including the gap
-         */
-        public int width;
-        /**
-         * Height of the key, not including the gap
-         */
-        public int height;
         /**
          * The horizontal gap after this key
          */
@@ -269,14 +257,6 @@ public class Keyboard {
          * Whether this key is sticky, i.e., a toggle key
          */
         public boolean sticky;
-        /**
-         * X coordinate of the key in the keyboard layout
-         */
-        public int x;
-        /**
-         * Y coordinate of the key in the keyboard layout
-         */
-        public int y;
         /**
          * The current pressed state of this key
          */
@@ -305,10 +285,6 @@ public class Keyboard {
          * Whether this is a modifier key, such as Shift or Alt
          */
         public boolean modifier;
-        /**
-         * The keyboard that this key belongs to
-         */
-        private Keyboard keyboard;
         /**
          * If this key pops up a mini keyboard, this is the resource id for the XML layout for that
          * keyboard.
@@ -351,9 +327,7 @@ public class Keyboard {
          * Create an empty key with no attributes.
          */
         public Key(Row parent) {
-            keyboard = parent.parent;
-            height = parent.defaultHeight;
-            width = parent.defaultWidth;
+            super(parent);
             gap = parent.defaultHorizontalGap;
             edgeFlags = parent.rowEdgeFlags;
         }
@@ -370,10 +344,7 @@ public class Keyboard {
          * @param parser the XML parser containing the attributes for this key
          */
         public Key(Resources res, Row parent, int x, int y, XmlResourceParser parser) {
-            this(parent);
-
-            this.x = x;
-            this.y = y;
+            super(res, parent, x, y, parser);
 
             TypedArray a = res.obtainAttributes(Xml.asAttributeSet(parser),
                     R.styleable.Keyboard);
@@ -562,36 +533,36 @@ public class Keyboard {
     /**
      * Class for describing the position and characteristics of a piece of empty space in the keyboard.
      */
-    public static class Margin {
+    public static class KeyBase {
         /**
          * Icon to display instead.
          */
-        private Drawable icon;
+        protected Drawable icon;
         /**
          * Width of the margin
          */
-        private int width;
+        protected int width;
         /**
          * Height of the margin
          */
-        private int height;
+        protected int height;
         /**
          * X coordinate of the margin in the keyboard layout
          */
-        private int x;
+        protected int x;
         /**
          * Y coordinate of the margin in the keyboard layout
          */
-        private int y;
+        protected int y;
         /**
          * The keyboard that this margin belongs to
          */
-        private Keyboard keyboard;
- 
+        protected Keyboard keyboard;
+
         /**
          * Create an empty key with no attributes.
          */
-        public Margin(Row parent) {
+        public KeyBase(Row parent) {
             keyboard = parent.parent;
             height = parent.defaultHeight;
             width = parent.defaultWidth;
@@ -608,7 +579,7 @@ public class Keyboard {
          * @param y      the y coordinate of the top-left
          * @param parser the XML parser containing the attributes for this margin
          */
-        public Margin(Resources res, Row parent, int x, int y, XmlResourceParser parser) {
+        public KeyBase(Resources res, Row parent, int x, int y, XmlResourceParser parser) {
             this(parent);
 
             this.x = x;
@@ -922,8 +893,8 @@ public class Keyboard {
         return new Key(res, parent, x, y, parser);
     }
 
-    protected Margin createMarginFromXml(Resources res, Row parent, int x, int y, XmlResourceParser parser) {
-        return new Margin(res, parent, x, y, parser);
+    protected KeyBase createMarginFromXml(Resources res, Row parent, int x, int y, XmlResourceParser parser) {
+        return new KeyBase(res, parent, x, y, parser);
     }
 
     private void loadKeyboard(Context context, XmlResourceParser parser) {
