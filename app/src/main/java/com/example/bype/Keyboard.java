@@ -566,23 +566,23 @@ public class Keyboard {
         /**
          * Icon to display instead.
          */
-        public Drawable icon;
+        private Drawable icon;
         /**
          * Width of the margin
          */
-        public int width;
+        private int width;
         /**
          * Height of the margin
          */
-        public int height;
+        private int height;
         /**
          * X coordinate of the margin in the keyboard layout
          */
-        public int x;
+        private int x;
         /**
          * Y coordinate of the margin in the keyboard layout
          */
-        public int y;
+        private int y;
         /**
          * The keyboard that this margin belongs to
          */
