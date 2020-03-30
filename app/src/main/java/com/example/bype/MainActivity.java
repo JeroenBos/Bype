@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,6 +16,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
 
         View view = findViewById(R.id.main);
         view.setOnGenericMotionListener(new SeparateListener());
@@ -33,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class LongClickListener implements View.OnLongClickListener {
-
         @Override
         public boolean onLongClick(View v) {
             Log.d(tag, "onLongClick");

@@ -33,8 +33,19 @@ public class MyInputMethodService extends InputMethodService
         keyboard = new Keyboard(this, R.xml.keys_layout);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(this);
+        super.onCreateInputMethodSessionInterface()
 
         return keyboardView;
+    }
+    @Override
+    public AbstractInputMethodImpl onCreateInputMethodInterface() {
+        Log.d(tag, "onCreateInputMethodInterface");
+        return super.onCreateInputMethodInterface();
+    }
+    @Override
+    public AbstractInputMethodSessionImpl onCreateInputMethodSessionInterface() {
+        Log.d(tag, "onCreateInputMethodSessionInterface");
+        return new InputMethodSessionImpl();
     }
 
     @Override
