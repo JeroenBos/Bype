@@ -186,7 +186,7 @@ public class Keyboard {
          */
         public int verticalGap;
 
-        ArrayList<Key> mKeys = new ArrayList<Key>();
+        ArrayList<KeyBase> mKeys = new ArrayList<KeyBase>();
 
         /**
          * Edge flags for this row of keys. Possible values that can be assigned are
@@ -249,10 +249,6 @@ public class Keyboard {
          * Preview version of the icon, for the preview popup
          */
         public Drawable iconPreview;
-        /**
-         * The horizontal gap after this key
-         */
-        public int gap;
         /**
          * Whether this key is sticky, i.e., a toggle key
          */
@@ -558,6 +554,10 @@ public class Keyboard {
          * The keyboard that this margin belongs to
          */
         protected Keyboard keyboard;
+        /**
+         * The horizontal gap after this key
+         */
+        protected int gap;
 
         /**
          * Create an empty key with no attributes.
@@ -739,7 +739,7 @@ public class Keyboard {
             int totalGap = 0;
             int totalWidth = 0;
             for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex) {
-                Key key = row.mKeys.get(keyIndex);
+                KeyBase key = row.mKeys.get(keyIndex);
                 if (keyIndex > 0) {
                     totalGap += key.gap;
                 }
@@ -749,7 +749,7 @@ public class Keyboard {
                 int x = 0;
                 float scaleFactor = (float) (newWidth - totalGap) / totalWidth;
                 for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex) {
-                    Key key = row.mKeys.get(keyIndex);
+                    KeyBase key = row.mKeys.get(keyIndex);
                     key.width *= scaleFactor;
                     key.x = x;
                     x += key.width + key.gap;
@@ -904,7 +904,7 @@ public class Keyboard {
         int row = 0;
         int x = 0;
         int y = 0;
-        Key key = null;
+        KeyBase key = null;
         Row currentRow = null;
         Resources res = context.getResources();
         boolean skipRow = false;
@@ -926,26 +926,31 @@ public class Keyboard {
                         }
                     } else if (TAG_KEY.equals(tag)) {
                         inKey = true;
-                        key = createKeyFromXml(res, currentRow, x, y, parser);
-                        mKeys.add(key);
-                        if (key.codes[0] == KEYCODE_SHIFT) {
+                        Key _key = createKeyFromXml(res, currentRow, x, y, parser);
+                        key = _key;
+                        mKeys.add(_key);
+                        if (_key.codes[0] == KEYCODE_SHIFT) {
                             // Find available shift key slot and put this shift key in it
                             for (int i = 0; i < mShiftKeys.length; i++) {
                                 if (mShiftKeys[i] == null) {
-                                    mShiftKeys[i] = key;
+                                    mShiftKeys[i] = _key;
                                     mShiftKeyIndices[i] = mKeys.size() - 1;
                                     break;
                                 }
                             }
-                            mModifierKeys.add(key);
-                        } else if (key.codes[0] == KEYCODE_ALT) {
-                            mModifierKeys.add(key);
+                            mModifierKeys.add(_key);
+                        } else if (_key.codes[0] == KEYCODE_ALT) {
+                            mModifierKeys.add(_key);
                         }
                         assert currentRow != null;
                         currentRow.mKeys.add(key);
                     } else if (TAG_KEYBOARD.equals(tag)) {
                         parseKeyboardAttributes(res, parser);
                     } else if (TAG_MARGIN.equals(tag)) {
+                        inKey = true;
+                        key = createMarginFromXml(res, currentRow, x, y, parser);
+                        assert currentRow != null;
+                        currentRow.mKeys.add(key);
                     }
                 } else if (event == XmlResourceParser.END_TAG) {
                     if (inKey) {
