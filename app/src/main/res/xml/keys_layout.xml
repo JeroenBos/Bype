@@ -35,7 +35,7 @@
         <Key app:codes="112" app:keyLabel="p" app:keyEdgeFlags="right"/>
     </Row>
     <Row>
-        <Key app:codes="97" app:keyLabel="a" app:keyEdgeFlags="left" app:horizontalGap="5%"/>
+        <Key app:codes="97" app:keyLabel="a" app:keyEdgeFlags="left"/>
         <Key app:codes="115" app:keyLabel="s"/>
         <Key app:codes="100" app:keyLabel="d"/>
         <Key app:codes="102" app:keyLabel="f"/>
