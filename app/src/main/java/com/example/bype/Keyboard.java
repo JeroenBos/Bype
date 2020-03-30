@@ -900,7 +900,6 @@ public class Keyboard {
     private void loadKeyboard(Context context, XmlResourceParser parser) {
         boolean inKey = false;
         boolean inRow = false;
-        boolean leftMostKey = false;
         int row = 0;
         int x = 0;
         int y = 0;
