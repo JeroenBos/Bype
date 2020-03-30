@@ -93,9 +93,9 @@
         <!-- Path to a dir where to dump stuff. Must end on a directory separator. -->
         <attr name="dumpFileDir" format="string" />
 
-        <attr name="shadowColor" />
+        <attr name="shadowColor" format="color" />
 
-        <attr name="shadowRadius" />
+        <attr name="shadowRadius" format="float" />
 
         <!-- Default background dim amount when a menu, dialog, or something similar pops up. -->
         <attr name="backgroundDimAmount" format="float" />
