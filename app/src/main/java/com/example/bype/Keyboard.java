@@ -359,10 +359,8 @@ public class Keyboard {
                     R.styleable.Keyboard_Key);
             this.x += gap;
             TypedValue codesValue = new TypedValue();
-            a.getValue(R.styleable.Keyboard_Key_codes,
-                    codesValue);
-            if (codesValue.type == TypedValue.TYPE_INT_DEC
-                    || codesValue.type == TypedValue.TYPE_INT_HEX) {
+            a.getValue(R.styleable.Keyboard_Key_codes, codesValue);
+            if (codesValue.type == TypedValue.TYPE_INT_DEC || codesValue.type == TypedValue.TYPE_INT_HEX) {
                 codes = new int[]{codesValue.data};
             } else if (codesValue.type == TypedValue.TYPE_STRING) {
                 codes = parseCSV(codesValue.string.toString());
