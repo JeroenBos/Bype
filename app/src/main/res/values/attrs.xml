@@ -58,6 +58,15 @@
         <attr name="keyboardMode" />
     </declare-styleable>
 
+
+<!--    <declare-styleable name="Keyboard_KeyBase">-->
+<!--        &lt;!&ndash; The icon to display on the key instead of the label. &ndash;&gt;-->
+<!--        <attr name="keyIcon" format="reference" />-->
+<!--        &lt;!&ndash; Mode of the keyboard. If the mode doesn't match the-->
+<!--             requested keyboard mode, the key will be skipped. &ndash;&gt;-->
+<!--        <attr name="keyboardMode" />-->
+<!--    </declare-styleable>-->
+
     <declare-styleable name="KeyboardView">
         <!-- Default KeyboardView style. -->
         <attr name="keyboardViewStyle" format="reference" />
@@ -105,4 +114,5 @@
         <!-- State for {@link com.example.bype.KeyboardView KeyboardView} key preview background. -->
         <attr name="state_long_pressable" format="boolean" />
     </declare-styleable>
+
 </resources>
