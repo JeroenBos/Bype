@@ -1,27 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
+<Keyboard
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
-    app:keyWidth="10%p"
+    app:keyWidth="10%"
     app:horizontalGap="3px"
     app:verticalGap="3px"
-    app:keyHeight="60dp"
+    app:keyHeight="52dp"
     app:keyTextColor="@color/colorAccent"
     app:keyBackground="@color/colorPrimaryDark"
     >
-    <Row>
-        <Key app:codes="49" app:keyLabel="1" app:keyEdgeFlags="left"/>
-        <Key app:codes="50" app:keyLabel="2"/>
-        <Key app:codes="51" app:keyLabel="3"/>
-        <Key app:codes="52" app:keyLabel="4"/>
-        <Key app:codes="53" app:keyLabel="5"/>
-        <Key app:codes="54" app:keyLabel="6"/>
-        <Key app:codes="55" app:keyLabel="7"/>
-        <Key app:codes="56" app:keyLabel="8"/>
-        <Key app:codes="57" app:keyLabel="9"/>
-        <Key app:codes="48" app:keyLabel="0"/>
-        <Key app:codes="-5" app:keyLabel="DEL" app:keyWidth="20%p" app:isRepeatable="true" app:keyEdgeFlags="right"/>
-    </Row>
     <Row>
         <Key app:codes="113" app:keyLabel="q" app:keyEdgeFlags="left"/>
         <Key app:codes="119" app:keyLabel="w"/>
@@ -35,7 +23,7 @@
         <Key app:codes="112" app:keyLabel="p" app:keyEdgeFlags="right"/>
     </Row>
     <Row>
-        <Margin app:keyWidth="5%"/>
+        <Margin app:keyWidth="5%" app:horizontalGap="0px"/>
         <Key app:codes="97" app:keyLabel="a" app:keyEdgeFlags="left"/>
         <Key app:codes="115" app:keyLabel="s"/>
         <Key app:codes="100" app:keyLabel="d"/>
@@ -45,10 +33,10 @@
         <Key app:codes="106" app:keyLabel="j"/>
         <Key app:codes="107" app:keyLabel="k"/>
         <Key app:codes="108" app:keyLabel="l" app:keyEdgeFlags="right"/>
-        <Margin app:keyWidth="5%"/>
+        <Margin app:keyWidth="5%" app:horizontalGap="0px" />
     </Row>
     <Row>
-        <Key app:codes="-1" app:keyLabel="CAPS" app:keyEdgeFlags="left"/>
+        <Key app:codes="-1" app:keyLabel="CAPS" app:keyWidth="15%" app:keyEdgeFlags="left"/>
         <Key app:codes="122" app:keyLabel="z"/>
         <Key app:codes="120" app:keyLabel="x"/>
         <Key app:codes="99" app:keyLabel="c"/>
@@ -56,13 +44,15 @@
         <Key app:codes="98" app:keyLabel="b"/>
         <Key app:codes="110" app:keyLabel="n"/>
         <Key app:codes="109" app:keyLabel="m"/>
-        <Key app:codes="46" app:keyLabel="."/>
-        <Key app:codes="63,33,58" app:keyLabel="\? ! :" app:keyEdgeFlags="right"/>
+        <Key app:codes="-5" app:keyLabel="DEL" app:keyWidth="20%" app:isRepeatable="true" app:keyEdgeFlags="right" />
     </Row>
     <Row app:rowEdgeFlags="bottom">
-        <Key app:codes="44" app:keyLabel="," app:keyWidth="10%p"  app:keyEdgeFlags="left"/>
-        <Key app:codes="47" app:keyLabel="/" app:keyWidth="10%p" />
-        <Key app:codes="32" app:keyLabel="SPACE" app:keyWidth="60%p" app:isRepeatable="true"/>
-        <Key app:codes="-4" app:keyBackground="@color/colorPrimary" app:keyLabel="DONE" app:keyWidth="20%p" app:keyEdgeFlags="right"/>
+        <!--           "-6"=KEYCODE_ALT-->
+        <Key app:codes="-6" app:keyLabel="ALT" app:keyWidth="11%"  app:keyEdgeFlags="left"/>
+        <Key app:codes="-6" app:keyLabel="\?123" app:keyWidth="13%" />
+        <Key app:codes="44" app:keyLabel="," app:keyWidth="10%" />
+        <Key app:codes="32" app:keyLabel="SPACE" app:keyWidth="40%" app:isRepeatable="true"/>
+        <Key app:codes="46" app:keyLabel="." app:keyWidth="10%" />
+        <Key app:codes="-4" app:keyBackground="@color/colorPrimary" app:keyLabel="DONE" app:keyWidth="16%" app:keyEdgeFlags="right"/>
     </Row>
 </Keyboard>
