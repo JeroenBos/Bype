@@ -35,7 +35,7 @@
         <Key app:codes="112" app:keyLabel="p" app:keyEdgeFlags="right"/>
     </Row>
     <Row>
-        <Margin app:keyWidth="4%"/>
+        <Margin app:keyWidth="5%"/>
         <Key app:codes="97" app:keyLabel="a" app:keyEdgeFlags="left"/>
         <Key app:codes="115" app:keyLabel="s"/>
         <Key app:codes="100" app:keyLabel="d"/>
@@ -44,8 +44,8 @@
         <Key app:codes="104" app:keyLabel="h"/>
         <Key app:codes="106" app:keyLabel="j"/>
         <Key app:codes="107" app:keyLabel="k"/>
-        <Key app:codes="108" app:keyLabel="l"/>
-        <Key app:codes="35,64" app:keyLabel="\# \@" app:keyEdgeFlags="right"/>
+        <Key app:codes="108" app:keyLabel="l" app:keyEdgeFlags="right"/>
+        <Margin app:keyWidth="5%"/>
     </Row>
     <Row>
         <Key app:codes="-1" app:keyLabel="CAPS" app:keyEdgeFlags="left"/>
