@@ -4,9 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
     app:keyWidth="10%"
-    app:horizontalGap="3px"
-    app:verticalGap="3px"
-    app:keyHeight="52dp"
+    app:horizontalGap="0px"
+    app:verticalGap="0px"
+    app:keyHeight="54dp"
     app:keyTextColor="@color/colorAccent"
     app:keyBackground="@color/colorPrimaryDark"
     >
@@ -44,7 +44,7 @@
         <Key app:codes="98" app:keyLabel="b"/>
         <Key app:codes="110" app:keyLabel="n"/>
         <Key app:codes="109" app:keyLabel="m"/>
-        <Key app:codes="-5" app:keyLabel="DEL" app:keyWidth="20%" app:isRepeatable="true" app:keyEdgeFlags="right" />
+        <Key app:codes="-5" app:keyLabel="DEL" app:keyWidth="15%" app:isRepeatable="true" app:keyEdgeFlags="right" />
     </Row>
     <Row app:rowEdgeFlags="bottom">
         <!--           "-6"=KEYCODE_ALT-->
