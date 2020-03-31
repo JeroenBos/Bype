@@ -128,7 +128,7 @@ public class Keyboard {
     /**
      * List of keys in this keyboard
      */
-    private List<Key> mKeys;
+    private List<KeyBase> mKeys;
 
     /**
      * List of modifier keys such as Shift & Alt, if any
@@ -478,18 +478,6 @@ public class Keyboard {
             }
         }
 
-        /**
-         * Returns the square of the distance between the center of the key and the given point.
-         *
-         * @param x the x-coordinate of the point
-         * @param y the y-coordinate of the point
-         * @return the square of the distance of the point from the center of the key
-         */
-        public int squaredDistanceFrom(int x, int y) {
-            int xDist = this.x + width / 2 - x;
-            int yDist = this.y + height / 2 - y;
-            return xDist * xDist + yDist * yDist;
-        }
 
         /**
          * Returns the drawable state for the key, based on the current state and type of the key.
@@ -497,6 +485,7 @@ public class Keyboard {
          * @return the drawable state of the key.
          * @see android.graphics.drawable.StateListDrawable#setState(int[])
          */
+        @Override
         public int[] getCurrentDrawableState() {
             int[] states = KEY_STATE_NORMAL;
 
@@ -607,8 +596,31 @@ public class Keyboard {
 
             a.recycle();
         }
-    }
 
+
+        /**
+         * Returns the square of the distance between the center of the key and the given point.
+         *
+         * @param x the x-coordinate of the point
+         * @param y the y-coordinate of the point
+         * @return the square of the distance of the point from the center of the key
+         */
+        public int squaredDistanceFrom(int x, int y) {
+            int xDist = this.x + width / 2 - x;
+            int yDist = this.y + height / 2 - y;
+            return xDist * xDist + yDist * yDist;
+        }
+
+        /**
+         * Returns the drawable state for the key, based on the current state and type of the key.
+         *
+         * @return the drawable state of the key.
+         * @see android.graphics.drawable.StateListDrawable#setState(int[])
+         */
+        public int[] getCurrentDrawableState() {
+            return Key.KEY_STATE_NORMAL;
+        }
+    }
     /**
      * Creates a keyboard from the given xml key layout file.
      *
@@ -639,7 +651,7 @@ public class Keyboard {
         mDefaultVerticalGap = 0;
         //noinspection SuspiciousNameCombination
         mDefaultHeight = mDefaultWidth;
-        mKeys = new ArrayList<Key>();
+        mKeys = new ArrayList<KeyBase>();
         mModifierKeys = new ArrayList<Key>();
         mKeyboardMode = modeId;
         loadKeyboard(context, context.getResources().getXml(xmlLayoutResId));
@@ -664,7 +676,7 @@ public class Keyboard {
         mDefaultVerticalGap = 0;
         //noinspection SuspiciousNameCombination
         mDefaultHeight = mDefaultWidth;
-        mKeys = new ArrayList<Key>();
+        mKeys = new ArrayList<KeyBase>();
         mModifierKeys = new ArrayList<Key>();
         mKeyboardMode = modeId;
         loadKeyboard(context, context.getResources().getXml(xmlLayoutResId));
@@ -757,7 +769,7 @@ public class Keyboard {
         mTotalWidth = newWidth;
     }
 
-    public List<Key> getKeys() {
+    public List<KeyBase> getKeys() {
         return mKeys;
     }
 
@@ -847,7 +859,7 @@ public class Keyboard {
             for (int y = 0; y < gridHeight; y += mCellHeight) {
                 int count = 0;
                 for (int i = 0; i < mKeys.size(); i++) {
-                    final Key key = mKeys.get(i);
+                    final KeyBase key = mKeys.get(i);
                     if (key.squaredDistanceFrom(x, y) < mProximityThreshold ||
                             key.squaredDistanceFrom(x + mCellWidth - 1, y) < mProximityThreshold ||
                             key.squaredDistanceFrom(x + mCellWidth - 1, y + mCellHeight - 1)
@@ -948,6 +960,7 @@ public class Keyboard {
                         key = createMarginFromXml(res, currentRow, x, y, parser);
                         assert currentRow != null;
                         currentRow.mKeys.add(key);
+                        mKeys.add(key);
                     }
                 } else if (event == XmlResourceParser.END_TAG) {
                     if (inKey) {
