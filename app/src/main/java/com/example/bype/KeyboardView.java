@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.PorterDuff;
@@ -16,7 +17,6 @@ import com.example.bype.Keyboard.Key;
 import com.example.bype.Keyboard.KeyBase;
 
 import android.media.AudioManager;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -26,7 +26,6 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup.LayoutParams;
@@ -209,7 +208,7 @@ public class KeyboardView extends View implements View.OnClickListener {
     private Key mInvalidatedKey;
     private Rect mClipRegion = new Rect(0, 0, 0, 0);
     private boolean mPossiblePoly;
-    private SwipeTracker mSwipeTracker = new SwipeTracker();
+    private final SwipeTracker mSwipeTracker = new SwipeTracker();
     private int mSwipeThreshold;
     private boolean mDisambiguateSwipe;
 
@@ -248,6 +247,12 @@ public class KeyboardView extends View implements View.OnClickListener {
      * The keyboard bitmap for faster updates
      */
     private Bitmap mBuffer;
+    /**
+     * The swipe trail bitmap.
+     */
+    private final SwipeTrail mSwipeTrail;
+    private Paint mTrailPaint;
+
     /**
      * Notes if the keyboard just changed, so that we could possibly reallocate the mBuffer.
      */
@@ -417,6 +422,17 @@ public class KeyboardView extends View implements View.OnClickListener {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         resetMultiTap();
+
+        mSwipeTrail = createSwypeTrail(this.mSwipeTracker);
+        mTrailPaint = new Paint();
+        mTrailPaint.setStyle(Paint.Style.STROKE); // TODO: make stylable
+        mTrailPaint.setColor(Color.RED);
+        mTrailPaint.setStrokeWidth(3);
+
+    }
+
+    protected SwipeTrail createSwypeTrail(SwipeTracker tracker) {
+        return new SwipeTrail(tracker);
     }
 
     @SuppressLint("HandlerLeak")
@@ -714,6 +730,11 @@ public class KeyboardView extends View implements View.OnClickListener {
             onBufferDraw();
         }
         canvas.drawBitmap(mBuffer, 0, 0, null);
+        this.drawSwipeTrail(canvas);
+    }
+
+    protected void drawSwipeTrail(Canvas canvas) {
+        this.mSwipeTrail.draw(canvas, mTrailPaint);
     }
 
     private void onBufferDraw() {
@@ -777,8 +798,8 @@ public class KeyboardView extends View implements View.OnClickListener {
             canvas.translate(keyBase.x + kbdPaddingLeft, keyBase.y + kbdPaddingTop);
             keyBackground.draw(canvas);
 
-            if (keyBase instanceof Key && ((Key)keyBase).label != null) {
-                Key key = (Key)keyBase;
+            if (keyBase instanceof Key && ((Key) keyBase).label != null) {
+                Key key = (Key) keyBase;
                 // Switch the character to uppercase if shift is pressed
                 String label = adjustCase(key.label).toString();
 
@@ -1529,6 +1550,8 @@ public class KeyboardView extends View implements View.OnClickListener {
         mBuffer = null;
         mCanvas = null;
         mMiniKeyboardCache.clear();
+        mSwipeTrail.close();
+
 
         try {
             if (fileWriter != null)
@@ -1595,7 +1618,8 @@ public class KeyboardView extends View implements View.OnClickListener {
         }
     }
 
-    private static class SwipeTracker {
+    // should probably be package rather than public
+    public static class SwipeTracker {
 
         static final int NUM_PAST = 4;
         static final int LONGEST_PAST_TIME = 200;
@@ -1607,11 +1631,22 @@ public class KeyboardView extends View implements View.OnClickListener {
         float mYVelocity;
         float mXVelocity;
 
+        private int snapshotId;
+
+        /**
+         * An id that increments on every change of the swipe trail.
+         */
+        public int getSnapshotId() {
+            return this.snapshotId;
+        }
+
         public void clear() {
+            this.snapshotId++;
             mPastTime[0] = 0;
         }
 
         public void addMovement(MotionEvent ev) {
+            this.snapshotId++;
             long time = ev.getEventTime();
             final int N = ev.getHistorySize();
             for (int i = 0; i < N; i++) {
