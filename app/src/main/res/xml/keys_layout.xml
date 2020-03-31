@@ -53,7 +53,7 @@
         <Key app:codes="120" app:keyLabel="x"/>
         <Key app:codes="99" app:keyLabel="c"/>
         <Key app:codes="118" app:keyLabel="v"/>
-        <Key app:codes="98" app:keyLabel="b"/>r
+        <Key app:codes="98" app:keyLabel="b"/>
         <Key app:codes="110" app:keyLabel="n"/>
         <Key app:codes="109" app:keyLabel="m"/>
         <Key app:codes="46" app:keyLabel="."/>
