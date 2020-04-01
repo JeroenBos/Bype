@@ -56,7 +56,7 @@ public class SwipeTrail extends Shape {
             mPath.reset();
         }
 
-        add(mPath, startCopyingTimeIndex, this.mTracker.mPastTime.length);
+        add(mPath, tStart, this.mTracker.getLength());
     }
 
     /**
@@ -65,20 +65,19 @@ public class SwipeTrail extends Shape {
      * @param tEnd exclusive.
      */
     protected void add(Path path, int tStart, int tEnd) {
-
-        float[] xValues = mTracker.mPastX;
-        float[] yValues = mTracker.mPastY;
+        List<Float> xValues = mTracker.mPastX;
+        List<Float> yValues = mTracker.mPastY;
         if (path.isEmpty() && tStart != tEnd) {
-            path.moveTo(xValues[tStart], yValues[tStart]);
+            path.moveTo(xValues.get(tStart), yValues.get(tStart));
         }
 
         for (int t = tStart; t < tEnd; t++) {
-            path.lineTo(xValues[t], yValues[t]);
+            path.lineTo(xValues.get(t), yValues.get(t));
         }
     }
 
     protected int computeStartTimeIndex() {
-        if (this.mTracker.mPastTime.length == 0)
+        if (this.mTracker.getLength() == 0)
             return -1;
         return 0;
     }
