@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.PorterDuff;
@@ -16,7 +17,6 @@ import com.example.bype.Keyboard.Key;
 import com.example.bype.Keyboard.KeyBase;
 
 import android.media.AudioManager;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -26,7 +26,6 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup.LayoutParams;
@@ -209,7 +208,7 @@ public class KeyboardView extends View implements View.OnClickListener {
     private Key mInvalidatedKey;
     private Rect mClipRegion = new Rect(0, 0, 0, 0);
     private boolean mPossiblePoly;
-    private SwipeTracker mSwipeTracker = new SwipeTracker();
+    private final SwipeTracker mSwipeTracker = new SwipeTracker();
     private int mSwipeThreshold;
     private boolean mDisambiguateSwipe;
 
@@ -248,6 +247,12 @@ public class KeyboardView extends View implements View.OnClickListener {
      * The keyboard bitmap for faster updates
      */
     private Bitmap mBuffer;
+    /**
+     * The swipe trail bitmap.
+     */
+    private final SwipeTrail mSwipeTrail;
+    private Paint mTrailPaint;
+
     /**
      * Notes if the keyboard just changed, so that we could possibly reallocate the mBuffer.
      */
@@ -417,6 +422,17 @@ public class KeyboardView extends View implements View.OnClickListener {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         resetMultiTap();
+
+        mSwipeTrail = createSwypeTrail(this.mSwipeTracker);
+        mTrailPaint = new Paint();
+        mTrailPaint.setStyle(Paint.Style.STROKE); // TODO: make stylable
+        mTrailPaint.setColor(Color.RED);
+        mTrailPaint.setStrokeWidth(5);
+
+    }
+
+    protected SwipeTrail createSwypeTrail(SwipeTracker tracker) {
+        return new SwipeTrail(tracker);
     }
 
     @SuppressLint("HandlerLeak")
@@ -714,6 +730,11 @@ public class KeyboardView extends View implements View.OnClickListener {
             onBufferDraw();
         }
         canvas.drawBitmap(mBuffer, 0, 0, null);
+        this.drawSwipeTrail(canvas);
+    }
+
+    protected void drawSwipeTrail(Canvas canvas) {
+        this.mSwipeTrail.draw(canvas, mTrailPaint);
     }
 
     private void onBufferDraw() {
@@ -777,8 +798,8 @@ public class KeyboardView extends View implements View.OnClickListener {
             canvas.translate(keyBase.x + kbdPaddingLeft, keyBase.y + kbdPaddingTop);
             keyBackground.draw(canvas);
 
-            if (keyBase instanceof Key && ((Key)keyBase).label != null) {
-                Key key = (Key)keyBase;
+            if (keyBase instanceof Key && ((Key) keyBase).label != null) {
+                Key key = (Key) keyBase;
                 // Switch the character to uppercase if shift is pressed
                 String label = adjustCase(key.label).toString();
 
@@ -1322,6 +1343,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         for (int i = 0; i < me.getPointerCount(); i++) {
             x.add(String.valueOf(me.getAction())); // int
             x.add(String.valueOf(new Date().getTime() - me.getDownTime())); // long
+            x.add(String.valueOf(me.getHistorySize()));
             x.add(String.valueOf(me.getX()));
             x.add(String.valueOf(me.getY()));
             x.add(String.valueOf(me.getPressure()));
@@ -1529,6 +1551,8 @@ public class KeyboardView extends View implements View.OnClickListener {
         mBuffer = null;
         mCanvas = null;
         mMiniKeyboardCache.clear();
+        mSwipeTrail.close();
+
 
         try {
             if (fileWriter != null)
@@ -1595,113 +1619,92 @@ public class KeyboardView extends View implements View.OnClickListener {
         }
     }
 
-    private static class SwipeTracker {
+    // should probably be package rather than public
+    public static class SwipeTracker {
 
-        static final int NUM_PAST = 4;
+        static final int INITIAL_CAPACITY = 1000;
         static final int LONGEST_PAST_TIME = 200;
 
-        final float[] mPastX = new float[NUM_PAST];
-        final float[] mPastY = new float[NUM_PAST];
-        final long[] mPastTime = new long[NUM_PAST];
+        final List<Float> mPastX = new ArrayList<Float>(INITIAL_CAPACITY);
+        final List<Float> mPastY = new ArrayList<Float>(INITIAL_CAPACITY);
+        final List<Long> mPastTime = new ArrayList<Long>(INITIAL_CAPACITY);
 
-        float mYVelocity;
-        float mXVelocity;
+        public SwipeTracker() {
+            Log.d("___________________", "Creating SwipeTracker");
+        }
+
+        private int snapshotId;
+        private int trailId;
+
+        public int getLength() {
+            return this.mPastTime.size();
+        }
+
+        /**
+         * An id that increments on every change of the swipe trail.
+         */
+        public int getSnapshotId() {
+            return this.snapshotId;
+        }
+
+        /**
+         * Gets a unique identifier per trail.
+         * @return
+         */
+
+        public int getTrailId() {
+            return this.trailId;
+        }
 
         public void clear() {
-            mPastTime[0] = 0;
+            this.snapshotId++;
+            this.trailId++;
+            mPastTime.clear();
+            mPastX.clear();
+            mPastY.clear();
         }
 
         public void addMovement(MotionEvent ev) {
-            long time = ev.getEventTime();
-            final int N = ev.getHistorySize();
-            for (int i = 0; i < N; i++) {
-                addPoint(ev.getHistoricalX(i), ev.getHistoricalY(i),
-                        ev.getHistoricalEventTime(i));
+            this.snapshotId++;
+            if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                // for now this 'breaks' when multiple pointers are shown
+                this.clear();
             }
-            addPoint(ev.getX(), ev.getY(), time);
+
+            final int N = ev.getHistorySize();
+            Log.d("history size: ", ev.getAction() + ", " + String.valueOf(N) + " at time " + ev.getEventTime());
+
+            // historical events are those for which there hasn't been a MotionEvent, since the last MotionEvent
+            for (int i = 0; i < N; i++) {
+                addPoint(
+                        ev.getHistoricalX(i),
+                        ev.getHistoricalY(i),
+                        ev.getHistoricalEventTime(i)
+                );
+            }
+            // add current event
+            addPoint(ev.getX(), ev.getY(), ev.getEventTime());
         }
 
         private void addPoint(float x, float y, long time) {
-            int drop = -1;
-            int i;
-            final long[] pastTime = mPastTime;
-            for (i = 0; i < NUM_PAST; i++) {
-                if (pastTime[i] == 0) {
-                    break;
-                } else if (pastTime[i] < time - LONGEST_PAST_TIME) {
-                    drop = i;
-                }
-            }
-            if (i == NUM_PAST && drop < 0) {
-                drop = 0;
-            }
-            if (drop == i) drop--;
-            final float[] pastX = mPastX;
-            final float[] pastY = mPastY;
-            if (drop >= 0) {
-                final int start = drop + 1;
-                final int count = NUM_PAST - drop - 1;
-                System.arraycopy(pastX, start, pastX, 0, count);
-                System.arraycopy(pastY, start, pastY, 0, count);
-                System.arraycopy(pastTime, start, pastTime, 0, count);
-                i -= (drop + 1);
-            }
-            pastX[i] = x;
-            pastY[i] = y;
-            pastTime[i] = time;
-            i++;
-            if (i < NUM_PAST) {
-                pastTime[i] = 0;
-            }
+            this.mPastTime.add(time);
+            this.mPastX.add(x);
+            this.mPastY.add(y);
         }
 
+        // TODO: remove
         public void computeCurrentVelocity(int units) {
-            computeCurrentVelocity(units, Float.MAX_VALUE);
         }
 
         public void computeCurrentVelocity(int units, float maxVelocity) {
-            final float[] pastX = mPastX;
-            final float[] pastY = mPastY;
-            final long[] pastTime = mPastTime;
-
-            final float oldestX = pastX[0];
-            final float oldestY = pastY[0];
-            final long oldestTime = pastTime[0];
-            float accumX = 0;
-            float accumY = 0;
-            int N = 0;
-            while (N < NUM_PAST) {
-                if (pastTime[N] == 0) {
-                    break;
-                }
-                N++;
-            }
-
-            for (int i = 1; i < N; i++) {
-                final int dur = (int) (pastTime[i] - oldestTime);
-                if (dur == 0) continue;
-                float dist = pastX[i] - oldestX;
-                float vel = (dist / dur) * units;   // pixels/frame.
-                if (accumX == 0) accumX = vel;
-                else accumX = (accumX + vel) * .5f;
-
-                dist = pastY[i] - oldestY;
-                vel = (dist / dur) * units;   // pixels/frame.
-                if (accumY == 0) accumY = vel;
-                else accumY = (accumY + vel) * .5f;
-            }
-            mXVelocity = accumX < 0.0f ? Math.max(accumX, -maxVelocity)
-                    : Math.min(accumX, maxVelocity);
-            mYVelocity = accumY < 0.0f ? Math.max(accumY, -maxVelocity)
-                    : Math.min(accumY, maxVelocity);
         }
 
         public float getXVelocity() {
-            return mXVelocity;
+            return 0;
         }
 
         public float getYVelocity() {
-            return mYVelocity;
+            return 0;
         }
     }
 }
