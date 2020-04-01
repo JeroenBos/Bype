@@ -427,7 +427,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         mTrailPaint = new Paint();
         mTrailPaint.setStyle(Paint.Style.STROKE); // TODO: make stylable
         mTrailPaint.setColor(Color.RED);
-        mTrailPaint.setStrokeWidth(3);
+        mTrailPaint.setStrokeWidth(5);
 
     }
 
