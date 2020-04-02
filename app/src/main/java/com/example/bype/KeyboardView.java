@@ -1633,11 +1633,19 @@ public class KeyboardView extends View implements View.OnClickListener {
             Log.d("___________________", "Creating SwipeTracker");
         }
 
+        private boolean mHasEnded;
         private int snapshotId;
         private int trailId;
 
         public int getLength() {
             return this.mPastTime.size();
+        }
+
+        /**
+         * Returns whether the trail has ended (either by an UP or CANCEL event).
+         */
+        public boolean hasEnded() {
+            return mHasEnded;
         }
 
         /**
@@ -1649,7 +1657,6 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         /**
          * Gets a unique identifier per trail.
-         * @return
          */
 
         public int getTrailId() {
@@ -1666,8 +1673,19 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         public void addMovement(MotionEvent ev) {
             this.snapshotId++;
+            switch (ev.getAction())
+            {
+                case MotionEvent.ACTION_DOWN:
+                    // for now this 'breaks' when multiple pointers are shown (unless a SwipeTracker is by definition per pointer?)
+                    this.clear();
+                    this.mHasEnded = false;
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    this.mHasEnded = true;
+                    break;
+            }
             if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                // for now this 'breaks' when multiple pointers are shown
                 this.clear();
             }
 
