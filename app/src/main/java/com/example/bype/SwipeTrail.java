@@ -39,6 +39,11 @@ public class SwipeTrail extends Shape {
         this.updatePath();
 
         Log.d("____________________", "drawing trail. id = " + this.mSnapshotId + ". Length = " + this.mTracker.getLength());
+
+        if (this.mTracker.hasEnded()) {
+            this.modifyPaintSinceTrailEnded(paint);
+        }
+
         canvas.drawPath(mPath, paint);
     }
 
@@ -67,8 +72,7 @@ public class SwipeTrail extends Shape {
         if (mWindowStart != oldWindowStart) {
             this.mPath.reset();
             tStart = this.mWindowStart;
-        }
-        else {
+        } else {
             tStart = this.mWindowEnd;
             this.mWindowEnd = this.mTracker.getLength();
         }
@@ -98,5 +102,15 @@ public class SwipeTrail extends Shape {
         if (this.mTracker.getLength() == 0)
             return -1;
         return 0;
+    }
+
+    protected void modifyPaintSinceTrailEnded(Paint paint) {
+        if (this.mTracker.getLength() == 0)
+            return;
+
+        long nsSinceTrailEnded =
+                this.mTracker.mPastTime.get(this.mTracker.mPastTime.size() - 1) - System.nanoTime();
+
+        paint.setAlpha(Math.min(paint.getAlpha(), 255));
     }
 }
