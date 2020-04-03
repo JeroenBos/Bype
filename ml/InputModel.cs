@@ -1,50 +1,110 @@
 using Microsoft.ML.Data;
 using System.Collections.Generic;
+using static Microsoft.ML.Data.TextLoader;
+using System.Linq;
+using System;
+using static Bype.ML.InputColumnExtensions;
 
 namespace Bype.ML
 {
     public class InputModel
     {
-        public static IReadOnlyList<TextLoader.Column> Colunms
+        public static IReadOnlyList<Column> Columns
         {
             get
             {
-                return new[]
-                {
-                    new TextLoader.Column("PointerIndex", DataKind.Int32, 0),
-                    new TextLoader.Column("Action", DataKind.Int32, 1),
-                    new TextLoader.Column("Timestamp", DataKind.Int64, 2),
-                    new TextLoader.Column("X", DataKind.Single, 3),
-                    new TextLoader.Column("Y", DataKind.Single, 4),
-                    new TextLoader.Column("Pressure", DataKind.Single, 5),
-                    new TextLoader.Column("Size", DataKind.Single, 6),
-                    new TextLoader.Column("Orientation", DataKind.Single, 7),
-                    new TextLoader.Column("ToolMajor", DataKind.Single, 8),
-                    new TextLoader.Column("ToolMinor", DataKind.Single, 9),
-                    new TextLoader.Column("TouchMinor", DataKind.Single, 10),
-                    new TextLoader.Column("TouchMajor", DataKind.Single, 11),
-                    new TextLoader.Column("XPrecision", DataKind.Single, 12),
-                    new TextLoader.Column("YPrecision", DataKind.Single, 13),
-                    new TextLoader.Column("EdgeFlags", DataKind.Int32, 14),
-                    new TextLoader.Column("KeyboardLayout", DataKind.Int32, 15),
-                    new TextLoader.Column("KeyboardWidth", DataKind.Int32, 16),
-                    new TextLoader.Column("KeyboardHeight", DataKind.Int32, 17),
-                };
+                return EnumValuesOf<InputColumn>()
+                    .Select(
+                        column => new Column(Enum.GetName(typeof(InputColumn), column),
+                                             column.getDataKind(),
+                                             (int)column))
+                    .ToList();
             }
         }
+
 
 
         public IReadOnlyList<InputEventModel> Events;
         public class InputEventModel
         {
-            [LoadColumn(0)] public string VendorId;
-            [LoadColumn(5)] public string RateCode;
-            [LoadColumn(3)] public float PassengerCount;
-            [LoadColumn(4)] public float TripDistance;
-            [LoadColumn(9)] public string PaymentType;
-            [LoadColumn(10)] public float FareAmount;
-
-
+            [LoadColumn((int)InputColumn.PointerIndex)]
+            public int PointerIndex;
+            [LoadColumn((int)InputColumn.Action)]
+            public int Action;
+            [LoadColumn((int)InputColumn.Timestamp)]
+            public long Timestamp;
+            [LoadColumn((int)InputColumn.X)]
+            public float X;
+            [LoadColumn((int)InputColumn.Y)]
+            public float Y;
+            [LoadColumn((int)InputColumn.Pressure)]
+            public float Pressure;
+            [LoadColumn((int)InputColumn.Size)]
+            public float Size;
+            [LoadColumn((int)InputColumn.Orientation)]
+            public float Orientation;
+            [LoadColumn((int)InputColumn.ToolMajor)]
+            public float ToolMajor;
+            [LoadColumn((int)InputColumn.ToolMinor)]
+            public float ToolMinor;
+            [LoadColumn((int)InputColumn.TouchMinor)]
+            public float TouchMinor;
+            [LoadColumn((int)InputColumn.TouchMajor)]
+            public float TouchMajor;
+            [LoadColumn((int)InputColumn.XPrecision)]
+            public float XPrecision;
+            [LoadColumn((int)InputColumn.YPrecision)]
+            public float YPrecision;
+            [LoadColumn((int)InputColumn.EdgeFlags)]
+            public int EdgeFlags;
+            [LoadColumn((int)InputColumn.KeyboardLayout)]
+            public int KeyboardLayout;
+            [LoadColumn((int)InputColumn.KeyboardWidth)]
+            public int KeyboardWidth;
+            [LoadColumn((int)InputColumn.KeyboardHeight)]
+            public int KeyboardHeight;
+        }
+    }
+    /// <summary> This enum defined the order in which the columns appear in the csv (by their enum value). </summary>
+    public enum InputColumn
+    {
+        PointerIndex,
+        Action,
+        Timestamp,
+        X,
+        Y,
+        Pressure,
+        Size,
+        Orientation,
+        ToolMajor,
+        ToolMinor,
+        TouchMinor,
+        TouchMajor,
+        XPrecision,
+        YPrecision,
+        EdgeFlags,
+        KeyboardLayout,
+        KeyboardWidth,
+        KeyboardHeight,
+    }
+    public static class InputColumnExtensions
+    {
+        public static DataKind getDataKind(this InputColumn column)
+        {
+            Type fieldType = typeof(InputModel.InputEventModel)
+                                    .GetField(Enum.GetName(typeof(InputColumn), column))
+                                    .FieldType;
+            if (fieldType == typeof(float))
+                return DataKind.Single;
+            if (fieldType == typeof(int))
+                return DataKind.Int32;
+            if (fieldType == typeof(long))
+                return DataKind.Int64;
+            throw new NotImplementedException();
+        }
+        public static IEnumerable<TEnum> EnumValuesOf<TEnum>() where TEnum : Enum
+        {
+            return (TEnum[])Enum.GetValues(typeof(TEnum));
         }
     }
 }

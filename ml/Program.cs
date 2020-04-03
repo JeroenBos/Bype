@@ -18,7 +18,10 @@ namespace Bype.ML
             string path = args[0] + ".csv";
             if (!File.Exists(path))
                 throw new ArgumentException($"The specified file '{path}' does not exits");
-            loadData(path);
+
+
+            var data = loadData(path);
+
         }
 
 
@@ -29,7 +32,7 @@ namespace Bype.ML
                 {
                     Separators = new[] { ',' },
                     HasHeader = false,
-                    Columns = InputModel.Colunms.ToArray()
+                    Columns = InputModel.Columns.ToArray()
                 });
             return loader.Load(path);
         }
