@@ -1011,6 +1011,7 @@ public class Keyboard {
             e.printStackTrace();
         }
         mTotalHeight = y - mDefaultVerticalGap;
+        mKeyboardLayout = dumpKeyboardLayout();
     }
 
     private void skipToEndOfRow(XmlResourceParser parser)
