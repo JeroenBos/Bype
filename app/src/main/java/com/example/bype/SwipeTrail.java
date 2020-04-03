@@ -39,7 +39,13 @@ public class SwipeTrail extends Shape {
         this.updatePath();
 
         Log.d("____________________", "drawing trail. id = " + this.mSnapshotId + ". Length = " + this.mTracker.getLength());
-        canvas.drawPath(mPath, paint);
+
+
+        boolean completelyFadedOut = this.applyFadeout(paint);
+
+        if (!completelyFadedOut) {
+            canvas.drawPath(mPath, paint);
+        }
     }
 
     public void close() {
@@ -67,8 +73,7 @@ public class SwipeTrail extends Shape {
         if (mWindowStart != oldWindowStart) {
             this.mPath.reset();
             tStart = this.mWindowStart;
-        }
-        else {
+        } else {
             tStart = this.mWindowEnd;
             this.mWindowEnd = this.mTracker.getLength();
         }
@@ -98,5 +103,26 @@ public class SwipeTrail extends Shape {
         if (this.mTracker.getLength() == 0)
             return -1;
         return 0;
+    }
+
+    /**
+     * Modifies the specified paint to apply a fadeout after a trail has ended.
+     * @return whether the trail is completely faded out.
+     */
+    protected boolean applyFadeout(Paint paint) {
+        if (!this.mTracker.hasEnded()) {
+            paint.setAlpha(255);
+            return false;
+        }
+        if (this.mTracker.getLength() == 0)
+            return true;
+
+        long now = android.os.SystemClock.uptimeMillis();
+        long trailEndTime = this.mTracker.mPastTime.get(this.mTracker.mPastTime.size() - 1);
+        int msSinceTrailEnded = (int) (now - trailEndTime);
+
+        int alpha = Math.max(0, 255 - msSinceTrailEnded);
+        paint.setAlpha(alpha);
+        return alpha == 0;
     }
 }

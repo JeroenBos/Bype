@@ -1,5 +1,6 @@
 package com.example.bype;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -31,6 +32,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.animation.LinearInterpolator;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -49,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A view that renders a virtual {@link Keyboard}. It handles rendering of keys and
@@ -234,6 +237,8 @@ public class KeyboardView extends View implements View.OnClickListener {
     private boolean mInMultiTap;
     private static final int MULTITAP_INTERVAL = 800; // milliseconds
     private StringBuilder mPreviewLabel = new StringBuilder(1);
+
+    private ValueAnimator mTimerAnimator;
 
     /**
      * Whether the keyboard bitmap needs to be redrawn before it's blitted.
@@ -1334,6 +1339,24 @@ public class KeyboardView extends View implements View.OnClickListener {
         return result;
     }
 
+    private void updateAnimatorTimer(MotionEvent latestEvent) {
+        if (mTimerAnimator == null) {
+            mTimerAnimator = ValueAnimator.ofInt(0, 15); // this does nothing with times between ticks, i.e. the same value can be animated twice. 15 is arbitrary
+            mTimerAnimator = mTimerAnimator.setDuration(500); // should be longer than the time it takes for the swipe trail to fade out SwipeTrail.applyFadeout (=255ms). On my devied there's a 40ms lag. on slower devices maybe more
+            mTimerAnimator.setInterpolator(new LinearInterpolator());
+            mTimerAnimator.addUpdateListener(animation -> invalidate()); // PERF: invalidate only when a minimum time has elapsed
+        }
+        switch (latestEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mTimerAnimator.end();
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                mTimerAnimator.start();
+                break;
+        }
+    }
+
     private void dump(MotionEvent me) {
 
         List<String> x = new ArrayList<>();
@@ -1377,6 +1400,8 @@ public class KeyboardView extends View implements View.OnClickListener {
     }
 
     private boolean onModifiedTouchEvent(MotionEvent me, boolean possiblePoly) {
+        this.updateAnimatorTimer(me);
+
         int touchX = (int) me.getX() - getPaddingLeft();
         int touchY = (int) me.getY() - getPaddingTop();
         if (touchY >= -mVerticalCorrection)
@@ -1633,11 +1658,19 @@ public class KeyboardView extends View implements View.OnClickListener {
             Log.d("___________________", "Creating SwipeTracker");
         }
 
+        private boolean mHasEnded;
         private int snapshotId;
         private int trailId;
 
         public int getLength() {
             return this.mPastTime.size();
+        }
+
+        /**
+         * Returns whether the trail has ended (either by an UP or CANCEL event).
+         */
+        public boolean hasEnded() {
+            return mHasEnded;
         }
 
         /**
@@ -1649,7 +1682,6 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         /**
          * Gets a unique identifier per trail.
-         * @return
          */
 
         public int getTrailId() {
@@ -1666,8 +1698,18 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         public void addMovement(MotionEvent ev) {
             this.snapshotId++;
+            switch (ev.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // for now this 'breaks' when multiple pointers are shown (unless a SwipeTracker is by definition per pointer?)
+                    this.clear();
+                    this.mHasEnded = false;
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    this.mHasEnded = true;
+                    break;
+            }
             if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                // for now this 'breaks' when multiple pointers are shown
                 this.clear();
             }
 
