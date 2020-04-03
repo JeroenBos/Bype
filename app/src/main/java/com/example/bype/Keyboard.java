@@ -13,11 +13,21 @@ import android.util.Xml;
 
 import androidx.annotation.XmlRes;
 
+import com.google.gson.Gson;
+
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
 
@@ -150,6 +160,16 @@ public class Keyboard {
      * Keyboard mode, or zero, if none.
      */
     private int mKeyboardMode;
+
+    /**
+     * Directory path where keyboard layouts are dumped for ML.
+     */
+    private String mLayoutDumpDirectory;
+
+    /**
+     * File index in {@link this.mLayoutDumpDirectory} of the current keyboard layout; or -1 if not computed yet.
+     */
+    private int mKeyboardLayout = -1;
 
     // Variables for pre-computing nearest keys.
 
@@ -621,6 +641,7 @@ public class Keyboard {
             return Key.KEY_STATE_NORMAL;
         }
     }
+
     /**
      * Creates a keyboard from the given xml key layout file.
      *
@@ -847,6 +868,13 @@ public class Keyboard {
         return mShiftKeyIndices[0];
     }
 
+    public int getKeyboardLayout() {
+        if (mKeyboardLayout == -1) {
+            mKeyboardLayout = dumpKeyboardLayout();
+        }
+        return mKeyboardLayout;
+    }
+
     private void computeNearestNeighbors() {
         // Round-up so we don't have any pixels outside the grid
         mCellWidth = (getMinWidth() + GRID_WIDTH - 1) / GRID_WIDTH;
@@ -954,7 +982,7 @@ public class Keyboard {
                         assert currentRow != null;
                         currentRow.mKeys.add(key);
                     } else if (TAG_KEYBOARD.equals(tag)) {
-                        parseKeyboardAttributes(res, parser);
+                        parseKeyboardAttributes(context, res, parser);
                     } else if (TAG_MARGIN.equals(tag)) {
                         inKey = true;
                         key = createMarginFromXml(res, currentRow, x, y, parser);
@@ -983,6 +1011,7 @@ public class Keyboard {
             e.printStackTrace();
         }
         mTotalHeight = y - mDefaultVerticalGap;
+        mKeyboardLayout = dumpKeyboardLayout();
     }
 
     private void skipToEndOfRow(XmlResourceParser parser)
@@ -996,7 +1025,7 @@ public class Keyboard {
         }
     }
 
-    private void parseKeyboardAttributes(Resources res, XmlResourceParser parser) {
+    private void parseKeyboardAttributes(Context context, Resources res, XmlResourceParser parser) {
         TypedArray a = res.obtainAttributes(Xml.asAttributeSet(parser),
                 R.styleable.Keyboard);
 
@@ -1012,6 +1041,12 @@ public class Keyboard {
         mDefaultVerticalGap = getDimensionOrFraction(a,
                 R.styleable.Keyboard_verticalGap,
                 mDisplayHeight, 0);
+
+        File[] mediaDirs = context.getExternalMediaDirs();
+        mLayoutDumpDirectory = mediaDirs[0].getAbsolutePath();
+        String subdirectory = a.getString(R.styleable.Keyboard_layoutDumpRelativeDir);
+        if (subdirectory != null)
+            mLayoutDumpDirectory = Paths.get(mLayoutDumpDirectory, subdirectory).toString();
 
         // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
         float SEARCH_DISTANCE = 1.8f;
@@ -1031,4 +1066,78 @@ public class Keyboard {
         }
         return defValue;
     }
+
+
+    /**
+     * Dumps the current keyboard layout at {@link this.mLayoutDumpDirectory} if it doesn't exist already.
+     *
+     * @return the index in {@link this.mLayoutDumpDirectory} of the current keyboard layout; or -1 in case of an error.
+     */
+    private int dumpKeyboardLayout() {
+        String currentLayout = summarizeKeyboardLayout();
+
+        try {
+            File dir = new File(Paths.get(mLayoutDumpDirectory).toUri());
+            if (!dir.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                dir.mkdirs();
+            }
+
+            // get the index with the first file that contains the same contents, or create it
+            for (int i = 0; ; i++) {
+                Path path = Paths.get(dir.toString(), "layout_" + i + ".json");
+                File file = new File(path.toUri());
+                if (file.exists()) {
+                    if (!file.isDirectory() && currentLayout.equals(Extensions.readAllText(file)))
+                        return i;
+                } else {
+                    Extensions.writeAllText(file, currentLayout);
+                    return i;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    private static final int[] emptyArray = new int[0];
+
+    private String summarizeKeyboardLayout() {
+
+
+        KeyExtract[] keyExtracts = new KeyExtract[mKeys.size()];
+        for (int i = 0; i < keyExtracts.length; i++)
+            keyExtracts[i] = new KeyExtract(mKeys.get(i));
+
+        return new Gson().toJson(keyExtracts);
+    }
+
+    // this isn't a nested class because gson can't deserialize them
+    static class KeyExtract {
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int edgeFlags;
+        public boolean repeatable;
+        public boolean toggleable;
+        public int[] codes;
+
+        public KeyExtract(KeyBase key) {
+            this.x = key.x;
+            this.y = key.y;
+            this.width = key.width;
+            this.height = key.height;
+            if (key instanceof Key) {
+                this.edgeFlags = ((Key) key).edgeFlags;
+                this.repeatable = ((Key) key).repeatable;
+                this.toggleable = ((Key) key).sticky;
+                this.codes = ((Key) key).codes;
+            } else {
+                this.codes = emptyArray;
+            }
+        }
+    }
+
 }
