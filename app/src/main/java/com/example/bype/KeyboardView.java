@@ -1361,12 +1361,11 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         List<String> x = new ArrayList<>();
 
-        x.add(String.valueOf(me.getPointerCount()));
-
+        // TODO: log history: x.add(String.valueOf(me.getHistorySize()));
         for (int i = 0; i < me.getPointerCount(); i++) {
+            x.add(String.valueOf(i)); // int. PointerIndex
             x.add(String.valueOf(me.getAction())); // int
             x.add(String.valueOf(new Date().getTime() - me.getDownTime())); // long
-            x.add(String.valueOf(me.getHistorySize()));
             x.add(String.valueOf(me.getX()));
             x.add(String.valueOf(me.getY()));
             x.add(String.valueOf(me.getPressure()));
@@ -1379,6 +1378,9 @@ public class KeyboardView extends View implements View.OnClickListener {
             x.add(String.valueOf(me.getXPrecision()));
             x.add(String.valueOf(me.getYPrecision()));
             x.add(String.valueOf(me.getEdgeFlags())); // int
+            x.add(String.valueOf(0)); //keyboard layout xml enum. For now there's only one. // int
+            x.add(String.valueOf(this.getWidth())); // int
+            x.add(String.valueOf(this.getHeight())); // int
             // the only other possibly interesting values are the axes, but I don't think so:
             // x.add(String.valueOf(me.getAxisValue(?)));
         }
