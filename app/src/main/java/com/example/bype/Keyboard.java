@@ -162,12 +162,12 @@ public class Keyboard {
     private int mKeyboardMode;
 
     /**
-     * Path to csv file where keyboard layouts are dumped for consumption by ML.
+     * Directory path where keyboard layouts are dumped for ML.
      */
     private String mLayoutDumpDirectory;
 
     /**
-     * Line index in {@link this.mLayoutDumpFile} of the current keyboard layout; or -1 if not computed yet.
+     * File index in {@link this.mLayoutDumpDirectory} of the current keyboard layout; or -1 if not computed yet.
      */
     private int mKeyboardLayout = -1;
 
@@ -1044,7 +1044,7 @@ public class Keyboard {
         File[] mediaDirs = context.getExternalMediaDirs();
         mLayoutDumpDirectory = Paths.get(
                 mediaDirs[0].getAbsolutePath(),
-                a.getString(R.styleable.Keyboard_layoutDumpFile)
+                a.getString(R.styleable.Keyboard_layoutDumpRelativeDir)
         ).toString();
 
         // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
@@ -1068,9 +1068,9 @@ public class Keyboard {
 
 
     /**
-     * Dumps the current keyboard layout at {@link this.mLayoutDumpFile} if it doesn't exist already.
+     * Dumps the current keyboard layout at {@link this.mLayoutDumpDirectory} if it doesn't exist already.
      *
-     * @return the index in {@link this.mLayoutDumpFile} of the current keyboard layout; or -1 in case of an error.
+     * @return the index in {@link this.mLayoutDumpDirectory} of the current keyboard layout; or -1 in case of an error.
      */
     private int dumpKeyboardLayout() {
         String currentLayout = summarizeKeyboardLayout();
