@@ -1,0 +1,430 @@
+[
+    {
+        "codes": [
+            113
+        ],
+        "edgeFlags": 1,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 0,
+        "y": 0
+    },
+    {
+        "codes": [
+            119
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 108,
+        "y": 0
+    },
+    {
+        "codes": [
+            101
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 216,
+        "y": 0
+    },
+    {
+        "codes": [
+            114
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 324,
+        "y": 0
+    },
+    {
+        "codes": [
+            116
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 432,
+        "y": 0
+    },
+    {
+        "codes": [
+            121
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 540,
+        "y": 0
+    },
+    {
+        "codes": [
+            117
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 648,
+        "y": 0
+    },
+    {
+        "codes": [
+            105
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 756,
+        "y": 0
+    },
+    {
+        "codes": [
+            111
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 864,
+        "y": 0
+    },
+    {
+        "codes": [
+            112
+        ],
+        "edgeFlags": 2,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 972,
+        "y": 0
+    },
+    {
+        "codes": [],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 54,
+        "x": 0,
+        "y": 141
+    },
+    {
+        "codes": [
+            97
+        ],
+        "edgeFlags": 1,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 54,
+        "y": 141
+    },
+    {
+        "codes": [
+            115
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 162,
+        "y": 141
+    },
+    {
+        "codes": [
+            100
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 270,
+        "y": 141
+    },
+    {
+        "codes": [
+            102
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 378,
+        "y": 141
+    },
+    {
+        "codes": [
+            103
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 486,
+        "y": 141
+    },
+    {
+        "codes": [
+            104
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 594,
+        "y": 141
+    },
+    {
+        "codes": [
+            106
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 702,
+        "y": 141
+    },
+    {
+        "codes": [
+            107
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 810,
+        "y": 141
+    },
+    {
+        "codes": [
+            108
+        ],
+        "edgeFlags": 2,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 918,
+        "y": 141
+    },
+    {
+        "codes": [],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 54,
+        "x": 1026,
+        "y": 141
+    },
+    {
+        "codes": [
+            -1
+        ],
+        "edgeFlags": 1,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 162,
+        "x": 0,
+        "y": 282
+    },
+    {
+        "codes": [
+            122
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 162,
+        "y": 282
+    },
+    {
+        "codes": [
+            120
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 270,
+        "y": 282
+    },
+    {
+        "codes": [
+            99
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 378,
+        "y": 282
+    },
+    {
+        "codes": [
+            118
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 486,
+        "y": 282
+    },
+    {
+        "codes": [
+            98
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 594,
+        "y": 282
+    },
+    {
+        "codes": [
+            110
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 702,
+        "y": 282
+    },
+    {
+        "codes": [
+            109
+        ],
+        "edgeFlags": 0,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 810,
+        "y": 282
+    },
+    {
+        "codes": [
+            -5
+        ],
+        "edgeFlags": 2,
+        "height": 141,
+        "repeatable": true,
+        "toggleable": false,
+        "width": 162,
+        "x": 918,
+        "y": 282
+    },
+    {
+        "codes": [
+            -6
+        ],
+        "edgeFlags": 9,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 119,
+        "x": 0,
+        "y": 423
+    },
+    {
+        "codes": [
+            -6
+        ],
+        "edgeFlags": 8,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 140,
+        "x": 119,
+        "y": 423
+    },
+    {
+        "codes": [
+            44
+        ],
+        "edgeFlags": 8,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 259,
+        "y": 423
+    },
+    {
+        "codes": [
+            32
+        ],
+        "edgeFlags": 8,
+        "height": 141,
+        "repeatable": true,
+        "toggleable": false,
+        "width": 432,
+        "x": 367,
+        "y": 423
+    },
+    {
+        "codes": [
+            46
+        ],
+        "edgeFlags": 8,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 108,
+        "x": 799,
+        "y": 423
+    },
+    {
+        "codes": [
+            -4
+        ],
+        "edgeFlags": 10,
+        "height": 141,
+        "repeatable": false,
+        "toggleable": false,
+        "width": 173,
+        "x": 907,
+        "y": 423
+    }
+]
