@@ -1104,31 +1104,7 @@ public class Keyboard {
     private static final int[] emptyArray = new int[0];
 
     private String summarizeKeyboardLayout() {
-        class KeyExtract {
-            public int x;
-            public int y;
-            public int width;
-            public int height;
-            public int edgeFlags;
-            public boolean repeatable;
-            public boolean toggleable;
-            public int[] codes;
 
-            public KeyExtract(KeyBase key) {
-                this.x = key.x;
-                this.y = key.y;
-                this.width = key.width;
-                this.height = key.height;
-                if (key instanceof Key) {
-                    this.edgeFlags = ((Key) key).edgeFlags;
-                    this.repeatable = ((Key) key).repeatable;
-                    this.toggleable = ((Key) key).sticky;
-                    this.codes = ((Key) key).codes;
-                } else {
-                    this.codes = emptyArray;
-                }
-            }
-        }
 
         KeyExtract[] keyExtracts = new KeyExtract[mKeys.size()];
         for (int i = 0; i < keyExtracts.length; i++)
@@ -1137,5 +1113,31 @@ public class Keyboard {
         return new Gson().toJson(keyExtracts);
     }
 
+    // this isn't a nested class because gson can't deserialize them
+    static class KeyExtract {
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+        public int edgeFlags;
+        public boolean repeatable;
+        public boolean toggleable;
+        public int[] codes;
+
+        public KeyExtract(KeyBase key) {
+            this.x = key.x;
+            this.y = key.y;
+            this.width = key.width;
+            this.height = key.height;
+            if (key instanceof Key) {
+                this.edgeFlags = ((Key) key).edgeFlags;
+                this.repeatable = ((Key) key).repeatable;
+                this.toggleable = ((Key) key).sticky;
+                this.codes = ((Key) key).codes;
+            } else {
+                this.codes = emptyArray;
+            }
+        }
+    }
 
 }
