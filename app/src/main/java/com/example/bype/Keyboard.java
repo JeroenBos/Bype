@@ -15,10 +15,21 @@ import androidx.annotation.XmlRes;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
+
+import java.nio.file.Paths;
 
 
 /**
@@ -155,6 +166,11 @@ public class Keyboard {
      * Path to csv file where keyboard layouts are dumped for consumption by ML.
      */
     private String mLayoutDumpFile;
+
+    /**
+     * Line index in {@link this.mLayoutDumpFile} of the current keyboard layout; or -1 if not computed yet.
+     */
+    private int mKeyboardLayout = -1;
 
     // Variables for pre-computing nearest keys.
 
@@ -853,6 +869,13 @@ public class Keyboard {
         return mShiftKeyIndices[0];
     }
 
+    public int getKeyboardLayout() {
+        if (mKeyboardLayout == -1) {
+            mKeyboardLayout = dumpKeyboardLayout();
+        }
+        return mKeyboardLayout;
+    }
+
     private void computeNearestNeighbors() {
         // Round-up so we don't have any pixels outside the grid
         mCellWidth = (getMinWidth() + GRID_WIDTH - 1) / GRID_WIDTH;
@@ -1039,4 +1062,36 @@ public class Keyboard {
         }
         return defValue;
     }
+
+    /**
+     * Dumps the current keyboard layout at {@link this.mLayoutDumpFile} if it doesn't exist already.
+     * @return the index in {@link this.mLayoutDumpFile} of the current keyboard layout; or -1 in case of an error.
+     */
+    private int dumpKeyboardLayout() {
+        try {
+            Path path = Paths.get(mLayoutDumpFile);
+            List<String> allLines = Files.readAllLines(path, StandardCharsets.UTF_8))
+
+            String currentLayout = summarizeKeyboardLayout();
+            int i = allLines.indexOf(currentLayout);
+            if (i != -1)
+                return i;
+
+            List<String> lines = new ArrayList<String>();
+            lines.add(currentLayout);
+            Files.write(path, lines);
+            return allLines.size();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    private static final int[] emptyArray = new int[0];
+
+    private String summarizeKeyboardLayout() {
+
+    }
+
+
 }
