@@ -151,6 +151,11 @@ public class Keyboard {
      */
     private int mKeyboardMode;
 
+    /**
+     * Path to csv file where keyboard layouts are dumped for consumption by ML.
+     */
+    private String mLayoutDumpFile;
+
     // Variables for pre-computing nearest keys.
 
     private static final int GRID_WIDTH = 10;
@@ -621,6 +626,7 @@ public class Keyboard {
             return Key.KEY_STATE_NORMAL;
         }
     }
+
     /**
      * Creates a keyboard from the given xml key layout file.
      *
@@ -1012,6 +1018,8 @@ public class Keyboard {
         mDefaultVerticalGap = getDimensionOrFraction(a,
                 R.styleable.Keyboard_verticalGap,
                 mDisplayHeight, 0);
+
+        mLayoutDumpFile = a.getString(R.styleable.Keyboard_layoutDumpFile);
 
         // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
         float SEARCH_DISTANCE = 1.8f;
