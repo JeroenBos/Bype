@@ -982,7 +982,7 @@ public class Keyboard {
                         assert currentRow != null;
                         currentRow.mKeys.add(key);
                     } else if (TAG_KEYBOARD.equals(tag)) {
-                        parseKeyboardAttributes(res, parser);
+                        parseKeyboardAttributes(context, res, parser);
                     } else if (TAG_MARGIN.equals(tag)) {
                         inKey = true;
                         key = createMarginFromXml(res, currentRow, x, y, parser);
@@ -1024,7 +1024,7 @@ public class Keyboard {
         }
     }
 
-    private void parseKeyboardAttributes(Resources res, XmlResourceParser parser) {
+    private void parseKeyboardAttributes(Context context, Resources res, XmlResourceParser parser) {
         TypedArray a = res.obtainAttributes(Xml.asAttributeSet(parser),
                 R.styleable.Keyboard);
 
@@ -1041,7 +1041,11 @@ public class Keyboard {
                 R.styleable.Keyboard_verticalGap,
                 mDisplayHeight, 0);
 
-        mLayoutDumpDirectory = a.getString(R.styleable.Keyboard_layoutDumpFile);
+        File[] mediaDirs = context.getExternalMediaDirs();
+        mLayoutDumpDirectory = Paths.get(
+                mediaDirs[0].getAbsolutePath(),
+                a.getString(R.styleable.Keyboard_layoutDumpFile)
+        ).toString();
 
         // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
         float SEARCH_DISTANCE = 1.8f;
