@@ -1342,7 +1342,7 @@ public class KeyboardView extends View implements View.OnClickListener {
     private void updateAnimatorTimer(MotionEvent latestEvent) {
         if (mTimerAnimator == null) {
             mTimerAnimator = ValueAnimator.ofInt(0, 15);
-            mTimerAnimator = mTimerAnimator.setDuration(200);
+            mTimerAnimator = mTimerAnimator.setDuration(500); // should be about twice as long as the time it takes for the swipe trail to fade out SwipeTrail.applyFadeout
             mTimerAnimator.setInterpolator(new LinearInterpolator());
             mTimerAnimator.addUpdateListener(animation -> invalidate());
         }
