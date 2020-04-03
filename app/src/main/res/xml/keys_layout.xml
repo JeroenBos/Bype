@@ -9,6 +9,7 @@
     app:keyHeight="54dp"
     app:keyTextColor="@color/colorAccent"
     app:keyBackground="@color/colorPrimaryDark"
+    app:layoutDumpRelativeDir="keyboardlayouts"
     >
     <Row>
         <Key app:codes="113" app:keyLabel="q" app:keyEdgeFlags="left"/>
