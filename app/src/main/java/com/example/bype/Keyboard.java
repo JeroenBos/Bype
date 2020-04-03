@@ -1043,10 +1043,10 @@ public class Keyboard {
                 mDisplayHeight, 0);
 
         File[] mediaDirs = context.getExternalMediaDirs();
-        mLayoutDumpDirectory = Paths.get(
-                mediaDirs[0].getAbsolutePath(),
-                a.getString(R.styleable.Keyboard_layoutDumpRelativeDir)
-        ).toString();
+        mLayoutDumpDirectory = mediaDirs[0].getAbsolutePath();
+        String subdirectory = a.getString(R.styleable.Keyboard_layoutDumpRelativeDir);
+        if (subdirectory != null)
+            mLayoutDumpDirectory = Paths.get(mLayoutDumpDirectory, subdirectory).toString();
 
         // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
         float SEARCH_DISTANCE = 1.8f;
