@@ -5,6 +5,7 @@ using Microsoft.ML.Data;
 using static Microsoft.ML.Data.TextLoader;
 using System.Linq;
 using System.IO;
+using Microsoft.ML.Trainers;
 
 namespace Bype.ML
 {
@@ -21,7 +22,6 @@ namespace Bype.ML
 
 
             var data = loadData(path);
-
         }
 
 
