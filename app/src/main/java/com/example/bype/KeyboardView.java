@@ -1341,10 +1341,10 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     private void updateAnimatorTimer(MotionEvent latestEvent) {
         if (mTimerAnimator == null) {
-            mTimerAnimator = ValueAnimator.ofInt(0, 15);
-            mTimerAnimator = mTimerAnimator.setDuration(500); // should be about twice as long as the time it takes for the swipe trail to fade out SwipeTrail.applyFadeout
+            mTimerAnimator = ValueAnimator.ofInt(0, 15); // this does nothing with times between ticks, i.e. the same value can be animated twice. 15 is arbitrary
+            mTimerAnimator = mTimerAnimator.setDuration(500); // should be longer than the time it takes for the swipe trail to fade out SwipeTrail.applyFadeout (=255ms). On my devied there's a 40ms lag. on slower devices maybe more
             mTimerAnimator.setInterpolator(new LinearInterpolator());
-            mTimerAnimator.addUpdateListener(animation -> invalidate());
+            mTimerAnimator.addUpdateListener(animation -> invalidate()); // PERF: invalidate only when a minimum time has elapsed
         }
         switch (latestEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
