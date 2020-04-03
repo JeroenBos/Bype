@@ -18,20 +18,17 @@ import com.google.gson.Gson;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.StringTokenizer;
-import java.util.stream.Stream;
-
-import java.nio.file.Paths;
 
 
 /**
@@ -167,7 +164,7 @@ public class Keyboard {
     /**
      * Path to csv file where keyboard layouts are dumped for consumption by ML.
      */
-    private String mLayoutDumpFile;
+    private String mLayoutDumpDirectory;
 
     /**
      * Line index in {@link this.mLayoutDumpFile} of the current keyboard layout; or -1 if not computed yet.
@@ -1044,7 +1041,7 @@ public class Keyboard {
                 R.styleable.Keyboard_verticalGap,
                 mDisplayHeight, 0);
 
-        mLayoutDumpFile = a.getString(R.styleable.Keyboard_layoutDumpFile);
+        mLayoutDumpDirectory = a.getString(R.styleable.Keyboard_layoutDumpFile);
 
         // SEARCH_DISTANCE = Number of key widths from current touch point to search for nearest keys.
         float SEARCH_DISTANCE = 1.8f;
@@ -1065,24 +1062,34 @@ public class Keyboard {
         return defValue;
     }
 
+
     /**
      * Dumps the current keyboard layout at {@link this.mLayoutDumpFile} if it doesn't exist already.
+     *
      * @return the index in {@link this.mLayoutDumpFile} of the current keyboard layout; or -1 in case of an error.
      */
     private int dumpKeyboardLayout() {
+        String currentLayout = summarizeKeyboardLayout();
+
         try {
-            Path path = Paths.get(mLayoutDumpFile);
-            List<String> allLines = Files.readAllLines(path, StandardCharsets.UTF_8))
+            File dir = new File(Paths.get(mLayoutDumpDirectory).toUri());
+            if (!dir.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                dir.mkdirs();
+            }
 
-            String currentLayout = summarizeKeyboardLayout();
-            int i = allLines.indexOf(currentLayout);
-            if (i != -1)
-                return i;
-
-            List<String> lines = new ArrayList<String>();
-            lines.add(currentLayout);
-            Files.write(path, lines);
-            return allLines.size();
+            // get the index with the first file that contains the same contents, or create it
+            for (int i = 0; ; i++) {
+                Path path = Paths.get(dir.toString(), "layout_" + i + ".json");
+                File file = new File(path.toUri());
+                if (file.exists()) {
+                    if (!file.isDirectory() && currentLayout.equals(Extensions.readAllText(file)))
+                        return i;
+                } else {
+                    Extensions.writeAllText(file, currentLayout);
+                    return i;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return -1;
