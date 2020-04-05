@@ -105,7 +105,7 @@ class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
 
     def __init__(self,
                  modelFactory: Callable[[Params], MLModel]):
-        assert 'TParams' not in self, "Forgot to specify TParams as type parameter, e.g. HpEstimator[P](...)"
+        assert 'TParams' not in self.__dict__, "Forgot to specify TParams as type parameter, e.g. HpEstimator[P](...)"
         self._createModel = modelFactory
 
     # this method is called by sklearn
