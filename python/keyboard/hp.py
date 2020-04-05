@@ -8,7 +8,7 @@ import copy
 import python.model_training as mt
 from python.model_training import ResultWriter, DataSource
 import pandas as pd
-
+from python.keyboard.generic import generic
 
 Model = TypeVar('tensorflow.keras.Models')  # can't find it
 
@@ -88,37 +88,25 @@ class MLModel(ABC):
         return self._params
 
 
-class Monogeneric(type):
-    # class T:
+class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
+    """
+    NOTE: HAS UNUSUAL METACLASS:
+    example usage:
+    AbstractHpEstimator[P](...__init__ args ...)
+    where P is a type with Params as supertype
 
-    """By specifying this as metaclass, it indicates the type takes one type parameter. """
-
-    def __getitem__(self, key):
-        pass
-
-
-# you MUST create a subtype that overrides @classmethod _get_param_names(cls)
-# (the alternative, __init__ taking all hyperparameters as arguments, is impossible)
-
-
-class AbstractHpEstimator(BaseEstimator, metaclass=Monogeneric):
-    """ A class that plays the role of sklearn.Estimator for many models (each characterized by its own parameters)"""
+    A class that plays the role of sklearn.Estimator for many models (each characterized by its own parameters)"""
 
     # a dict from params.getId to the model representing those params
     models = {}
     currentParams: Optional[Params] = None
-    TParams: type
 
     _createModel: Callable[[Params], MLModel]
 
-    def __new__(cls, *args, **kwargs):
-        pass
-
     def __init__(self,
-                 modelFactory: Callable[[Params], MLModel],
-                 TParams: type):
+                 modelFactory: Callable[[Params], MLModel]):
+        assert 'TParams' not in self, "Forgot to specify TParams as type parameter, e.g. HpEstimator[P](...)"
         self._createModel = modelFactory
-        self.TParams = TParams
 
     # this method is called by sklearn
     def get_params(self, **args):
@@ -143,7 +131,7 @@ class AbstractHpEstimator(BaseEstimator, metaclass=Monogeneric):
     # # this method is called by sklearn
     # @classmethod
     # def _get_param_names(cls):
-    #     super()._get_param_names(self.TParam)
+    #     super()._get_param_names(cls.TParam)
 
 
 def do_hp_search(estimator: AbstractHpEstimator,
