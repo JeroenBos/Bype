@@ -7,6 +7,7 @@ from typing import TypeVar
 import copy
 import python.model_training as mt
 from python.model_training import ResultWriter, DataSource
+import pandas as pd
 
 
 Model = TypeVar('tensorflow.keras.Models')  # can't find it
@@ -70,7 +71,6 @@ class MLModel(ABC):
         X = self._preprocess(X)
         return self._model.predict(X)
 
-    @abstractmethod
     def _preprocess(self, X):
         return X
 
@@ -88,14 +88,16 @@ class MLModel(ABC):
         return self._params
 
 
-class HpEstimator(BaseEstimator):
+# you MUST create a subtype that overrides @classmethod _get_param_names(cls)
+# (the alternative, __init__ taking all hyperparameters as arguments, is impossible)
+class AbstractHpEstimator(BaseEstimator):
     """ A class that plays the role of sklearn.Estimator for many models (each characterized by its own parameters)"""
 
     # a dict from params.getId to the model representing those params
     models = {}
     currentParams: Optional[Params] = None
+    TParams: type
 
-    TParam: type
     _createModel: Callable[[Params], MLModel]
 
     def __init__(self,
@@ -104,14 +106,16 @@ class HpEstimator(BaseEstimator):
         self._createModel = modelFactory
         self.TParams = TParams
 
+    # this method is called by sklearn
     def get_params(self, **args):
         return self.params
 
-    def set_params(self, params: Params) -> None:
-        self.currentParams = params.clone() if params is not None else None
-        paramsId = params.getId()
+    # this method is called by sklearn
+    def set_params(self, params: Dict) -> None:
+        self.currentParams = self.TParams(**params)
+        paramsId = self.currentParams.getId()
         if paramsId not in self.models:
-            self.models[paramsId] = self._createModel(params)
+            self.models[paramsId] = self._createModel(self.currentParams)
 
     def get_current_model(self):
         return self.models[self.currentParams.getId()]
@@ -123,11 +127,11 @@ class HpEstimator(BaseEstimator):
         return self.get_current_model().fit(X, y)
 
 
-def do_hp_search(estimator: HpEstimator,
+def do_hp_search(estimator: AbstractHpEstimator,
                  data_source: DataSource,
                  result_writer: ResultWriter,
                  parameterRanges: Params,
-                 combination_number: Optional[int] = None):
+                 combination_number: Optional[int] = None) -> pd.DataFrame:
     hp_searcher = mt.HyperParameterSearcher(scoring='f1',
                                             data_source=data_source,
                                             result_writer=result_writer)
@@ -137,7 +141,7 @@ def do_hp_search(estimator: HpEstimator,
         if not isinstance(value, List):
             parameters[key] = [value]
 
-    hp_searcher.fit(estimator_name='Keras',
-                    estimator=estimator,
-                    parameters=parameters,
-                    combination_number=combination_number)
+    return hp_searcher.fit(estimator_name='Keras',
+                           estimator=estimator,
+                           parameters=parameters,
+                           combination_number=combination_number)
