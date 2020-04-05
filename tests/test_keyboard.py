@@ -34,7 +34,7 @@ class HpParamsTests(unittest.TestCase):
         assert 'test_param' in paramsAsDict
 
     def test_hpEstimator(self):
-        estimator = AbstractHpEstimator(lambda params: TestMLModel(params), Params)
+        estimator = AbstractHpEstimator(lambda params: TestMLModel(params))
         estimator.set_params({'activation': 'sigmoid'})
         estimator.set_params({'activation': 'relu'})
 
@@ -46,12 +46,12 @@ class HpParamsTests(unittest.TestCase):
             def _get_param_names(cls):
                 return sorted([])
 
-        estimator = HpEstimator(lambda params: TestMLModel(params), Params)
+        estimator = HpEstimator(lambda params: TestMLModel(params))
         result = estimator._get_param_names()
         assert len(result) == 0
 
     def test_hpEstimator_default_override__get_param_names(self):
-        estimator = AbstractHpEstimator(lambda params: TestMLModel(params), Params)
+        estimator = AbstractHpEstimator(lambda params: TestMLModel(params))
         result = estimator._get_param_names()
         assert len(result) == 2
         assert result[0] == 'activation'
@@ -152,6 +152,22 @@ class HpParamsTests(unittest.TestCase):
 
         assert T[int]().TParams == int
 
+    def test_generic_classmethod_overriding(self):
+        class GenericBaseType(metaclass=generic()):
+            @classmethod
+            def _get_param_names(cls):
+                return cls.__name__
+
+        class GenericType(GenericBaseType):
+            @classmethod
+            def _get_param_names(cls):
+                return cls.__name__
+
+        a = GenericBaseType[int]()._get_param_names()
+        b = GenericType[int]()._get_param_names()
+        assert a == 'GenericBaseType<T>'
+        assert b == 'GenericType<T>'
+
 
 if __name__ == '__main__':
-    HpParamsTests().test_metaclass_typeparameter_by_name()
+    HpParamsTests().test_generic_classmethod_overriding()
