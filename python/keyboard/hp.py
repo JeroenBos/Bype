@@ -110,7 +110,7 @@ class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
 
     # this method is called by sklearn
     def get_params(self, **args):
-        return self.params
+        return self.currentParams
 
     # this method is called by sklearn
     def set_params(self, params: Dict) -> None:
@@ -128,10 +128,12 @@ class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
     def fit(self, X, y):
         return self.get_current_model().fit(X, y)
 
-    # # this method is called by sklearn
-    # @classmethod
-    # def _get_param_names(cls):
-    #     super()._get_param_names(cls.TParam)
+    # this method is called by sklearn but redirected to TParams, which then must
+    # obey the requirements posed by BaseEstimator._get_param_names
+    # (namely to list all hyperparameters as parameters in __init__)
+    @classmethod
+    def _get_param_names(cls):
+        return super(cls, cls)._get_param_names.__func__(cls.TParams)
 
 
 def do_hp_search(estimator: AbstractHpEstimator,
