@@ -33,7 +33,10 @@ class CsvDataSource(DataSource):
 
 
 class InMemoryDataSource(DataSource):
+    df: pd.DataFrame
+
     def __init__(self, df: pd.DataFrame, target_column_name_or_index: Union[int, str]):
+        assert is_valid_dataframe(df), 'Invalid dataframe'
         self.df = df
         x = target_column_name_or_index  # shorten name
         if isinstance(x, str):
@@ -43,7 +46,7 @@ class InMemoryDataSource(DataSource):
             assert self.target_column_name is not None
 
     def get_target(self):
-        return self.df[:, self.target_column_index]
+        return self.df[self.target_column_name]
 
     def get_train(self):
-        return self.df.drop([self.target_column])
+        return self.df.drop(columns=[self.target_column_name])
