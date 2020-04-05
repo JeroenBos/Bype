@@ -177,7 +177,7 @@ class HpParamsTests(unittest.TestCase):
         class GenericType(GenericBaseType):
             @classmethod
             def _get_param_names(cls):
-                return super(cls.selfcls, cls)._get_param_names.__func__(cls.T)
+                return super(cls, cls)._get_param_names.__func__(cls.T)
 
         a = GenericBaseType[int]()._get_param_names()
         b = GenericType[int]()._get_param_names()
