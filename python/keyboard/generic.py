@@ -25,5 +25,6 @@ def generic(*params: str) -> type:
             newcls = type(f"{self.__name__}<{', '.join(params)}>", self.__bases__, dict(self.__dict__))
             for typeArg, name in zip(args, params):
                 setattr(newcls, name, typeArg)
+            newcls.selfcls = newcls
             return newcls
     return Metatype

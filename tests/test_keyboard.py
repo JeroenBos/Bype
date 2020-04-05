@@ -168,6 +168,22 @@ class HpParamsTests(unittest.TestCase):
         assert a == 'GenericBaseType<T>'
         assert b == 'GenericType<T>'
 
+    def test_generic_classmethod_overriding_with_different_cls(self):
+        class GenericBaseType(metaclass=generic()):
+            @classmethod
+            def _get_param_names(cls):
+                return cls.__name__
+
+        class GenericType(GenericBaseType):
+            @classmethod
+            def _get_param_names(cls):
+                return super(cls.selfcls, cls)._get_param_names.__func__(cls.T)
+
+        a = GenericBaseType[int]()._get_param_names()
+        b = GenericType[int]()._get_param_names()
+        assert a == 'GenericBaseType<T>'
+        assert b == 'int'
+
 
 if __name__ == '__main__':
-    HpParamsTests().test_generic_classmethod_overriding()
+    HpParamsTests().test_generic_classmethod_overriding_with_different_cls()
