@@ -48,6 +48,40 @@ class HpParamsTests(unittest.TestCase):
         result = estimator._get_param_names()
         assert len(result) == 0
 
+    def test_hpEstimator_default_override__get_param_names(self):
+        estimator = AbstractHpEstimator(lambda params: TestMLModel(params), Params)
+        result = estimator._get_param_names()
+        assert len(result) == 2
+        assert result[0] == 'activation'
+        assert result[1] == 'num_epochs'
+
+    # def test_hp_search(self):
+    #     class HpEstimator(AbstractHpEstimator):
+    #         @classmethod
+    #         def _get_param_names(cls):
+    #             return sorted(['only_param'])
+    #     do_hp_search(HpEstimator(lambda params: TestMLModel(params), Params),
+    #                  InMemoryDataSource(df, 0),
+    #                  ResultOutputWriter(),
+    #                  Params(
+
+    def test_metaclass_indexer(self):
+        ref_var = [0]
+
+        class Meta(type):
+            def __getitem__(self, key):
+                ref_var[0] = 1
+                return self
+
+        class T(metaclass=Meta):
+            pass
+
+        Tprime = T[0]
+        assert ref_var[0] == 1
+        t = Tprime()
+        assert isinstance(t, Tprime)
+        assert isinstance(t, T)
+
 
 if __name__ == '__main__':
     HpParamsTests().test_params_subclass_clone()
