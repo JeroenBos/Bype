@@ -88,9 +88,20 @@ class MLModel(ABC):
         return self._params
 
 
+class Monogeneric(type):
+    # class T:
+
+    """By specifying this as metaclass, it indicates the type takes one type parameter. """
+
+    def __getitem__(self, key):
+        pass
+
+
 # you MUST create a subtype that overrides @classmethod _get_param_names(cls)
 # (the alternative, __init__ taking all hyperparameters as arguments, is impossible)
-class AbstractHpEstimator(BaseEstimator):
+
+
+class AbstractHpEstimator(BaseEstimator, metaclass=Monogeneric):
     """ A class that plays the role of sklearn.Estimator for many models (each characterized by its own parameters)"""
 
     # a dict from params.getId to the model representing those params
@@ -99,6 +110,9 @@ class AbstractHpEstimator(BaseEstimator):
     TParams: type
 
     _createModel: Callable[[Params], MLModel]
+
+    def __new__(cls, *args, **kwargs):
+        pass
 
     def __init__(self,
                  modelFactory: Callable[[Params], MLModel],
@@ -125,6 +139,11 @@ class AbstractHpEstimator(BaseEstimator):
 
     def fit(self, X, y):
         return self.get_current_model().fit(X, y)
+
+    # # this method is called by sklearn
+    # @classmethod
+    # def _get_param_names(cls):
+    #     super()._get_param_names(self.TParam)
 
 
 def do_hp_search(estimator: AbstractHpEstimator,

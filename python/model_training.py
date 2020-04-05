@@ -33,9 +33,8 @@ class CsvDataSource(DataSource):
 
 
 class InMemoryDataSource(DataSource):
-    def __init__(self, path: str, target_column_name_or_index: Union[int, str], *read_csv_args):
-        self.path = path
-        self.df = pd.read_csv(path, *read_csv_args)
+    def __init__(self, df: pd.DataFrame, target_column_name_or_index: Union[int, str]):
+        self.df = df
         x = target_column_name_or_index  # shorten name
         if isinstance(x, str):
             self.target_column_name = x
