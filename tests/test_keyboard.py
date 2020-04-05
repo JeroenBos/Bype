@@ -1,6 +1,7 @@
 import unittest
 from python.keyboard.hp import Params, MLModel, AbstractHpEstimator
 from typing import List, Union
+from python.keyboard.generic import generic
 
 
 class TestMLModel(MLModel):
@@ -136,6 +137,20 @@ class HpParamsTests(unittest.TestCase):
         assert Tprime.U == Params
         Tdoubleprime = GenericType[type]
         assert Tdoubleprime.U == type
+
+    def test_access_to_type_param_on_cls(self):
+        class T(metaclass=generic('TParams')):
+            def get_param(cls):
+                return cls.TParams
+
+        assert T[int].TParams == int
+
+    def test_access_to_type_param_on_self(self):
+        class T(metaclass=generic('TParams')):
+            def get_param(cls):
+                return cls.TParams
+
+        assert T[int]().TParams == int
 
 
 if __name__ == '__main__':
