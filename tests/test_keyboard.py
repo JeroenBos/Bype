@@ -1,7 +1,9 @@
 import unittest
-from python.keyboard.hp import Params, MLModel, AbstractHpEstimator
+from python.keyboard.hp import Params, MLModel, AbstractHpEstimator, do_hp_search
 from typing import List, Union
 from python.keyboard.generic import generic
+from python.model_training import InMemoryDataSource, ResultOutputWriter
+import pandas as pd
 
 
 class TestMLModel(MLModel):
@@ -56,16 +58,6 @@ class HpParamsTests(unittest.TestCase):
         assert len(result) == 2
         assert result[0] == 'activation'
         assert result[1] == 'num_epochs'
-
-    # def test_hp_search(self):
-    #     class HpEstimator(AbstractHpEstimator):
-    #         @classmethod
-    #         def _get_param_names(cls):
-    #             return sorted(['only_param'])
-    #     do_hp_search(HpEstimator(lambda params: TestMLModel(params), Params),
-    #                  InMemoryDataSource(df, 0),
-    #                  ResultOutputWriter(),
-    #                  Params(
 
     def test_metaclass_indexer(self):
         ref_var = [0]
@@ -184,6 +176,13 @@ class HpParamsTests(unittest.TestCase):
         assert a == 'GenericBaseType<T>'
         assert b == 'int'
 
+    def test_hp_search(self):
+        df = pd.DataFrame(data=[[1, 4], [2, 5], [3, 6]], columns=['X', 'y'])
+        do_hp_search(AbstractHpEstimator[Params](lambda params: TestMLModel(params)),
+                     InMemoryDataSource(df, 'y'),
+                     ResultOutputWriter(),
+                     Params())
+
 
 if __name__ == '__main__':
-    HpParamsTests().test_generic_classmethod_overriding_with_different_cls()
+    HpParamsTests().test_hp_search()
