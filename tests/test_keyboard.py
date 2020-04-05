@@ -115,16 +115,12 @@ class HpParamsTests(unittest.TestCase):
                 params = [params]
 
             class Meta(type):
-
-                # def __init__(cls, cls_name, cls_bases, cls_dict):
-                #     super(Meta, cls).__init__(cls_name, cls_bases, cls_dict)
-
                 def __getitem__(self, *args):
                     if(len(args) != len(params)):
                         raise ValueError(f"{len(params)} type arguments must be specified.")
-                    # for arg in args:
-                    #     if not isinstance(arg, type):
-                    #         raise ValueError()
+                    for arg in args:
+                        if not isinstance(arg, type):
+                            raise ValueError()
 
                     name = ", ".join(params)
                     newcls = type(self.__name__ + '<' + name + '>', self.__bases__, dict(self.__dict__))
