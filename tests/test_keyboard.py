@@ -82,6 +82,30 @@ class HpParamsTests(unittest.TestCase):
         assert isinstance(t, Tprime)
         assert isinstance(t, T)
 
+    def test_metaclass_typeparameter(self):
+        class Meta(type):
+
+            # def __init__(cls, cls_name, cls_bases, cls_dict):
+            #     super(Meta, cls).__init__(cls_name, cls_bases, cls_dict)
+
+            def __getitem__(self, key):
+                newcls = type(self.__name__, self.__bases__, dict(self.__dict__))
+                newcls.T = key
+                return newcls
+
+        class T(metaclass=Meta):
+            pass
+
+        Tprime = T[0]
+        assert Tprime.T == 0
+        t = Tprime()
+        assert t.T == 0
+        Tdoubleprime = T[1]
+        assert Tdoubleprime.T == 1
+        u = Tdoubleprime()
+        assert u.T == 1
+        assert t.T == 0
+
 
 if __name__ == '__main__':
-    HpParamsTests().test_params_subclass_clone()
+    HpParamsTests().test_metaclass_indexer2()
