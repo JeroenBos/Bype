@@ -17,3 +17,4 @@ venv3.7/
 .mypy_cache/**
 .pytest_cache/**
 settings.sh
+logs/
