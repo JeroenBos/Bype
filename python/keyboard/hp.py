@@ -2,12 +2,11 @@ from abc import abstractmethod
 from sklearn.base import BaseEstimator
 import datetime
 from typing import List, Optional, Dict, Any  # noqa
-import tensorflow as tf
 from typing import TypeVar
 import python.model_training as mt
 from python.model_training import ResultWriter, DataSource
 import pandas as pd
-from tf.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
 from python.keyboard.generic import generic  # noqa
 
 Model = TypeVar('tensorflow.keras.Models')  # can't find it
@@ -105,8 +104,9 @@ def do_hp_search(TEstimator: type,
                  data_source: DataSource,
                  result_writer: ResultWriter,
                  parameterRanges: dict,
+                 scoring='f1',
                  combination_number: Optional[int] = None) -> pd.DataFrame:
-    hp_searcher = mt.HyperParameterSearcher(scoring='f1',
+    hp_searcher = mt.HyperParameterSearcher(scoring=scoring,
                                             data_source=data_source,
                                             result_writer=result_writer)
 

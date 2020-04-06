@@ -1,4 +1,4 @@
-from python.model_training import InMemoryDataSource, ResultOutputWriter
+from python.model_training import InMemoryDataSource, ResultOutputWriter  # noqa
 
 
 class KeyboardResultWriter(ResultOutputWriter):

@@ -1,16 +1,18 @@
 from python.keyboard._1_transform import data
 from python.keyboard._2_model import KeyboardEstimator
+from python.keyboard._3_scoring import score_function
 from python.keyboard._4_output import KeyboardResultWriter
 from python.keyboard.hp import do_hp_search
 from typing import List, Union  # noqa
 
-estimator = KeyboardEstimator()
-result = estimator.fit_data_source(data)
+# estimator = KeyboardEstimator()
+# result = estimator.fit_data_source(data)
+# score_function(estimator)
 
-print(result)
-print('DONE')
+# print(result)
+# print('DONE')
 
-exit()
+# exit()
 
 ranges = KeyboardEstimator(
             num_epochs=[5, 6]
@@ -18,4 +20,5 @@ ranges = KeyboardEstimator(
 result = do_hp_search(KeyboardEstimator,
                       data,
                       KeyboardResultWriter(),
-                      ranges.params)
+                      ranges.params,
+                      scoring=score_function)
