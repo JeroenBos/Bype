@@ -28,6 +28,7 @@ class MyBaseEstimator(BaseEstimator):
 
     # gets called by sklearn
     def fit(self, X, y):
+        assert hasattr(self, 'num_epochs'), 'num_epochs must be a parameter on this estimator. Set it in your __init__ to self'
         old_X = X  # noqa
 
         X = self._preprocess(X)
@@ -37,7 +38,7 @@ class MyBaseEstimator(BaseEstimator):
         log_dir = self._log_dir + datetime.datetime.now().strftime("%Y%m%d-%H")
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-        result = model.fit(X, y, epochs=self.params.num_epochs, callbacks=[tensorboard_callback])
+        result = model.fit(X, y, epochs=self.num_epochs, callbacks=[tensorboard_callback])
         self.history.append(result)
         return result
 
