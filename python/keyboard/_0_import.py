@@ -1,5 +1,7 @@
 import pandas
 import numpy as np
+from pathlib import Path
+
 
 SPEC = {
     "PointerIndex": np.int32,
@@ -51,9 +53,9 @@ def _loadLayoutFile(path: str) -> None:
 
 # Load all keyboard layout files
 i = 0
-try:
-    while(True):
-        _loadLayoutFile(f'/home/jeroen/git/bype/data/keyboardlayout_{i}.json')
-        i = i + 1
-except ValueError:  # continue loading files until they don't exist anymore
-    pass
+while True:
+    path = f'/home/jeroen/git/bype/data/keyboardlayout_{i}.json'
+    if(not Path(path).exists()):
+        break
+    _loadLayoutFile(path)
+    i = i + 1
