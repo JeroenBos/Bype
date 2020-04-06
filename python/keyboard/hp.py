@@ -28,6 +28,9 @@ class MyBaseEstimator(BaseEstimator):
         self.verbose = False
         self._log_dir = 'logs/'
 
+    def fit_data_source(self, source: DataSource):
+        self.fit(source.get_train(), source.get_target())
+
     # gets called by sklearn
     def fit(self, X, y):
         assert hasattr(self, 'num_epochs'), """num_epochs must be a parameter on this estimator.

@@ -1,5 +1,5 @@
 from python.keyboard.hp import MyBaseEstimator, Model
-from typing import List, Union  # noqa
+from typing import List, Union, Optional  # noqa
 import tensorflow as tf
 
 
@@ -15,3 +15,9 @@ class KeyboardEstimator(MyBaseEstimator):
                    tf.keras.layers.Dense(14, activation=self.activation),
                    tf.keras.layers.Dense(1, activation='sigmoid')
                ])
+
+    def _compile(self, model: Optional[Model] = None) -> None:
+        model = model if model else self.current_model
+        model.compile(loss='binary_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
