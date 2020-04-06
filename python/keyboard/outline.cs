@@ -46,13 +46,22 @@ class Outline
             var words = data.labeledSwipes.Select(_ => _.Word);
             foreach (var (word, correctSwipe) in data.labeledSwipes)
             {
-                int wrongCounts = swipes.Select(swipe => (Convolution: model(word, swipe), Correct: swipe == correctSwipe))
-                                        .OrderBy(_ => _.Convolution)
-                                        .TakeWhile(_ => !_.Correct)
-                                        .Count();
+                int wrongCounts = getScoreOf(model, (word, correctSwipe));
                 result += wrongCounts;
             }
             return result; // lower is better
+        }
+        private int getScoreOf(Func<Word, OneSwipe, float> model,
+                               (Word Word, OneSwipe Swipe) X,
+                               object y = null)
+        {
+            int wrongCounts = data.labeledSwipes
+                                  .Select(_ => _.Swipe)
+                                  .Select(swipe => (Convolution: model(X.word, swipe), Correct: swipe == X.Swipe))
+                                  .OrderBy(_ => _.Convolution)
+                                  .TakeWhile(_ => !_.Correct)
+                                  .Count();
+            return wrongCounts;
         }
     }
 
