@@ -160,6 +160,12 @@ class MyMLModel(MLModel):
             tf.keras.layers.Dense(1, activation='sigmoid')
         ])
 
+    @property
+    def params(self) -> dict:
+        result = {**self.__dict__}
+        for key in ['_model', 'verbose', 'history', '_log_dir']:
+            del result[key]
+        return result
 
 class UglyEstimator(MyBaseEstimator[MyMLModel()]):
     def __init__(self, num_epochs=5, activation='relu'):
