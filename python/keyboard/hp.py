@@ -165,6 +165,18 @@ class UglyEstimator(MyBaseEstimator[MyMLModel()]):
     def __init__(self, num_epochs=5, activation='relu'):
         self.num_epochs = num_epochs
         self.activation = activation
+    def _get_params_repr(self):
+        params = sorted(list(self.params.items()), key=lambda t: t[0])
+        for entry in params:
+            key, value = entry
+
+        def repr(obj) -> str:
+            if isinstance(obj, str):
+                return "'" + obj + "'"
+            return str(obj)
+
+        result = f"({', '.join(f'{entry[0]}={repr(entry[1])}' for entry in params )})"
+        return result
 
 
 def do_hp_search(TEstimator: type,

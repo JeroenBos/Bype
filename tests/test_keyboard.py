@@ -176,6 +176,16 @@ class HpParamsTests(unittest.TestCase):
         assert a == 'GenericBaseType<T>'
         assert b == 'int'
 
+    def test_get_id(self):
+        class UglyEstimator(MyBaseEstimator):
+            def __init__(self, num_epochs=5, activation='relu'):
+                super().__init__()
+                self.num_epochs = num_epochs
+                self.activation = activation
+
+        repr = UglyEstimator()._get_params_repr()
+        assert repr == "(activation='relu', num_epochs=5)"
+
     def test_hp_search(self):
         df = pd.DataFrame(data=[[1, 4], [2, 5], [3, 6]], columns=['X', 'y'])
         do_hp_search(UglyEstimator,
