@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 import datetime
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any  # noqa
 import tensorflow as tf
 from typing import TypeVar
 import python.model_training as mt
@@ -13,7 +13,8 @@ Model = TypeVar('tensorflow.keras.Models')  # can't find it
 
 
 class MyBaseEstimator(BaseEstimator):
-    history: Dict[str, Model]
+    models: Dict[str, Model]
+    history: Dict[str, List[Any]]
     verbose: bool
     _log_dir: str
 
@@ -22,6 +23,7 @@ class MyBaseEstimator(BaseEstimator):
         # because they will be considered to be hyperparameters by sklearn
         # just set the after having created this object
         super().__init__()
+        self.models = {}
         self.history = {}
         self.verbose = False
         self._log_dir = 'logs/'
@@ -38,8 +40,9 @@ class MyBaseEstimator(BaseEstimator):
         log_dir = self._log_dir + datetime.datetime.now().strftime("%Y%m%d-%H")
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-        result = model.fit(X, y, epochs=self.num_epochs, callbacks=[tensorboard_callback])
-        self.history.append(result)
+        params_repr = self._get_params_repr()
+        result = model.fit(X.to_numpy(), y.to_numpy(), epochs=self.num_epochs, callbacks=[tensorboard_callback])
+        self.history.setdefault(params_repr, []).append(result)
         return result
 
     def predict(self, X):
@@ -62,16 +65,16 @@ class MyBaseEstimator(BaseEstimator):
     @property
     def current_model(self) -> Model:
         params = self._get_params_repr()
-        if params not in self.history:
+        if params not in self.models:
             model = self._create_model()
             assert model is not None, '_create_model() returned None'
-            self.history[params] = model
-        return self.history[params]
+            self.models[params] = model
+        return self.models[params]
 
     @property
     def params(self) -> dict:
         result = {**self.__dict__}
-        for key in ['verbose', 'history', '_log_dir']:
+        for key in ['models', 'verbose', 'history', '_log_dir']:
             del result[key]
         return result
 
