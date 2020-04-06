@@ -7,6 +7,7 @@ from typing import TypeVar
 import python.model_training as mt
 from python.model_training import ResultWriter, DataSource
 import pandas as pd
+from tf.keras.callbacks import TensorBoard
 from python.keyboard.generic import generic  # noqa
 
 Model = TypeVar('tensorflow.keras.Models')  # can't find it
@@ -42,10 +43,12 @@ class MyBaseEstimator(BaseEstimator):
         self._compile(model)
 
         log_dir = self._log_dir + datetime.datetime.now().strftime("%Y%m%d-%H")
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+        callbacks = [
+            TensorBoard(log_dir=log_dir, histogram_freq=1),
+        ]
 
         params_repr = self._get_params_repr()
-        result = model.fit(X.to_numpy(), y.to_numpy(), epochs=self.num_epochs, callbacks=[tensorboard_callback])
+        result = model.fit(X.to_numpy(), y.to_numpy(), epochs=self.num_epochs, callbacks=callbacks)
         self.history.setdefault(params_repr, []).append(result)
         return result
 
