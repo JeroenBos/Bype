@@ -1,14 +1,14 @@
 from abc import abstractmethod, ABC
 from sklearn.base import BaseEstimator
 import datetime
-from typing import List, Optional, Callable, Dict
+from typing import List, Optional, Dict
 import tensorflow as tf
 from typing import TypeVar
 import copy
 import python.model_training as mt
 from python.model_training import ResultWriter, DataSource
 import pandas as pd
-from python.keyboard.generic import generic
+from python.keyboard.generic import generic  # noqa
 
 Model = TypeVar('tensorflow.keras.Models')  # can't find it
 
@@ -47,8 +47,7 @@ class MLModel(ABC):
     verbose: bool
     _log_dir: str
 
-    def __init__(self,  log_dir: str = 'logs', verbose=False):
-        self._params = params.clone()
+    def __init__(self, log_dir: str = 'logs', verbose=False):
         self._model = None
 
         self.history = None
@@ -88,89 +87,68 @@ class MLModel(ABC):
         return self._params
 
 
-class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
-    """
-    NOTE: HAS UNUSUAL METACLASS:
-    example usage:
-    AbstractHpEstimator[P](...__init__ args ...)
-    where P is a type with Params as supertype
+class MyBaseEstimator(BaseEstimator):
+    history: Dict[str, Model]
+    verbose: bool
+    _log_dir: str
 
-    A class that plays the role of sklearn.Estimator for many models (each characterized by its own parameters)"""
+    def __init__(self):
+        # you cannot add any args here like log_dir: str = 'logs', verbose=False
+        # because they will be considered to be hyperparameters by sklearn
+        # just set the after having created this object
+        super().__init__()
+        self.history = {}
+        self.verbose = False
+        self._log_dir = 'logs/'
 
-    # a dict from params.getId to the model representing those params
-    models = {}
-    currentParams: Params
+    # gets called by sklearn
+    def fit(self, X, y):
+        old_X = X  # noqa
 
-    _createModel: Callable[[Params], MLModel]
+        X = self._preprocess(X)
+        model = self.current_model
+        self._compile(model)
 
-    def __init__(self,
-                 modelFactory: Callable[[Params], MLModel],
-                 initialParams: "self.TParams" = None):  # noqa
-        assert 'TParams' not in self.__dict__, "Forgot to specify TParams as type parameter, e.g. HpEstimator[P](...)"
-        self._createModel = modelFactory
-        if initialParams is not None:
-            self.currentParams = initialParams
-        else:
-            try:
-                self.currentParams = self.TParams()
-            except BaseException:
-                raise "You must specify a value for 'initialParams' if TParams has no parameterless constructor"
+        log_dir = self._log_dir + datetime.datetime.now().strftime("%Y%m%d-%H")
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-    # this method is called by sklearn
-    def get_params(self, deep: bool):
-        return self.currentParams.__dict__
-
-    # this method is called by sklearn
-    def set_params(self, params: Dict) -> None:
-        self.currentParams = self.TParams(**params)
-        paramsId = self.currentParams.getId()
-        if paramsId not in self.models:
-            self.models[paramsId] = self._createModel(self.currentParams)
-
-    def get_current_model(self):
-        return self.models[self.currentParams.getId()]
+        result = model.fit(X, y, epochs=self.params.num_epochs, callbacks=[tensorboard_callback])
+        self.history.append(result)
+        return result
 
     def predict(self, X):
-        return self.get_current_model().predict(X)
+        X = self._preprocess(X)
+        return self._model.predict(X)
 
-    def fit(self, X, y):
-        return self.get_current_model().fit(X, y)
+    def _preprocess(self, X):
+        return X
 
-    # this method is called by sklearn but redirected to TParams, which then must
-    # obey the requirements posed by BaseEstimator._get_param_names
-    # (namely to list all hyperparameters as parameters in __init__)
-    @classmethod
-    def _get_param_names(cls):
-        return super(cls, cls)._get_param_names.__func__(cls.TParams)
-
-
-class MyBaseEstimator(BaseEstimator, metaclass=generic('MLModel')):
-    def fit(self, X, y):
-        self.MLModel.fit(X, y)
-
-
-class MyMLModel(MLModel):
-    @property
-    def params(self) -> "UglyEstimator":
-        return super().params
-
+    @abstractmethod
     def _create_model(self) -> Model:
-        self.model = tf.keras.Sequential([
-            tf.keras.layers.Dense(14, activation=self.params.activation),
-            tf.keras.layers.Dense(1, activation='sigmoid')
-        ])
+        pass
+
+    def _compile(self, model: Optional[Model] = None) -> None:
+        model = model if model else self.current_model
+        model.compile(loss='binary_crossentropy',
+                      optimizer='adam',
+                      metrics=['accuracy'])
+
+    @property
+    def current_model(self) -> Model:
+        params = self._get_params_repr()
+        if params not in self.history:
+            model = self._create_model()
+            assert self._model is not None, '_create_model() returned None'
+            self.history[params] = model
+        return self.history[params]
 
     @property
     def params(self) -> dict:
         result = {**self.__dict__}
-        for key in ['_model', 'verbose', 'history', '_log_dir']:
+        for key in ['verbose', 'history', '_log_dir']:
             del result[key]
         return result
 
-class UglyEstimator(MyBaseEstimator[MyMLModel()]):
-    def __init__(self, num_epochs=5, activation='relu'):
-        self.num_epochs = num_epochs
-        self.activation = activation
     def _get_params_repr(self):
         params = sorted(list(self.params.items()), key=lambda t: t[0])
         for entry in params:

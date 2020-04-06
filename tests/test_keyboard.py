@@ -1,9 +1,10 @@
 import unittest
-from python.keyboard.hp import Params, MLModel, AbstractHpEstimator, do_hp_search, UglyEstimator
+from python.keyboard.hp import Params, MLModel, do_hp_search, MyBaseEstimator, Model
 from typing import List, Union
 from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
+import tensorflow as tf
 
 
 class TestMLModel(MLModel):
@@ -187,11 +188,31 @@ class HpParamsTests(unittest.TestCase):
         assert repr == "(activation='relu', num_epochs=5)"
 
     def test_hp_search(self):
-        df = pd.DataFrame(data=[[1, 4], [2, 5], [3, 6]], columns=['X', 'y'])
+
+        class MyMLModel(MLModel):
+            @property
+            def params(self) -> "UglyEstimator":
+                return super().params
+
+            def _create_model(self) -> Model:
+                return tf.keras.Sequential([
+                    tf.keras.layers.Dense(14, activation=self.params.activation),
+                    tf.keras.layers.Dense(1, activation='sigmoid')
+                ])
+
+        class UglyEstimator(MyBaseEstimator):
+            def __init__(self, num_epochs=5, activation='relu'):
+                super().__init__()
+                self.num_epochs = num_epochs
+                self.activation = activation
+
+        ranges = UglyEstimator(num_epochs=[5, 6]).params
+
+        df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['X', 'y'])
         do_hp_search(UglyEstimator,
                      InMemoryDataSource(df, 'y'),
                      ResultOutputWriter(),
-                     Params(num_epochs=[5, 6]).__dict__)
+                     ranges)
 
 
 if __name__ == '__main__':
