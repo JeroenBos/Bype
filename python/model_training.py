@@ -46,7 +46,13 @@ class InMemoryDataSource(DataSource):
             assert self.target_column_name is not None
 
     def get_target(self):
-        return self.df[self.target_column_name]
+        result = self.df[self.target_column_name]
+        if result is None:
+            raise ValueError()
+        return result
 
     def get_train(self):
-        return self.df.drop(columns=[self.target_column_name])
+        result = self.df.drop(columns=[self.target_column_name])
+        if result is None:
+            raise ValueError()
+        return result

@@ -47,7 +47,7 @@ class MLModel(ABC):
     verbose: bool
     _log_dir: str
 
-    def __init__(self, params: Params, log_dir: str = 'logs', verbose=False):
+    def __init__(self,  log_dir: str = 'logs', verbose=False):
         self._params = params.clone()
         self._model = None
 
@@ -99,18 +99,26 @@ class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
 
     # a dict from params.getId to the model representing those params
     models = {}
-    currentParams: Optional[Params] = None
+    currentParams: Params
 
     _createModel: Callable[[Params], MLModel]
 
     def __init__(self,
-                 modelFactory: Callable[[Params], MLModel]):
+                 modelFactory: Callable[[Params], MLModel],
+                 initialParams: "self.TParams" = None):  # noqa
         assert 'TParams' not in self.__dict__, "Forgot to specify TParams as type parameter, e.g. HpEstimator[P](...)"
         self._createModel = modelFactory
+        if initialParams is not None:
+            self.currentParams = initialParams
+        else:
+            try:
+                self.currentParams = self.TParams()
+            except BaseException:
+                raise "You must specify a value for 'initialParams' if TParams has no parameterless constructor"
 
     # this method is called by sklearn
-    def get_params(self, **args):
-        return self.currentParams
+    def get_params(self, deep: bool):
+        return self.currentParams.__dict__
 
     # this method is called by sklearn
     def set_params(self, params: Dict) -> None:
@@ -136,21 +144,48 @@ class AbstractHpEstimator(BaseEstimator, metaclass=generic('TParams')):
         return super(cls, cls)._get_param_names.__func__(cls.TParams)
 
 
-def do_hp_search(estimator: AbstractHpEstimator,
+class MyBaseEstimator(BaseEstimator, metaclass=generic('MLModel')):
+    def fit(self, X, y):
+        self.MLModel.fit(X, y)
+
+
+class MyMLModel(MLModel):
+    @property
+    def params(self) -> "UglyEstimator":
+        return super().params
+
+    def _create_model(self) -> Model:
+        self.model = tf.keras.Sequential([
+            tf.keras.layers.Dense(14, activation=self.params.activation),
+            tf.keras.layers.Dense(1, activation='sigmoid')
+        ])
+
+
+class UglyEstimator(MyBaseEstimator[MyMLModel()]):
+    def __init__(self, num_epochs=5, activation='relu'):
+        self.num_epochs = num_epochs
+        self.activation = activation
+
+
+def do_hp_search(TEstimator: type,
                  data_source: DataSource,
                  result_writer: ResultWriter,
-                 parameterRanges: Params,
+                 parameterRanges: dict,
                  combination_number: Optional[int] = None) -> pd.DataFrame:
     hp_searcher = mt.HyperParameterSearcher(scoring='f1',
                                             data_source=data_source,
                                             result_writer=result_writer)
 
-    parameters = parameterRanges.getParameters()
-    for key, value in parameters.items():
+    initial_params = {}
+
+    for key, value in parameterRanges.items():
         if not isinstance(value, List):
-            parameters[key] = [value]
+            parameterRanges[key] = [value]
+        initial_params[key] = parameterRanges[key][0]
+
+    estimator = TEstimator(**initial_params)
 
     return hp_searcher.fit(estimator_name='Keras',
                            estimator=estimator,
-                           parameters=parameters,
+                           parameters=parameterRanges,
                            combination_number=combination_number)

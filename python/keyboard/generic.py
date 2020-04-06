@@ -18,9 +18,9 @@ def generic(*params: str) -> type:
         def __getitem__(self, *args):
             if(len(args) != len(params)):
                 raise ValueError(f"{len(params)} type arguments must be specified.")
-            for arg in args:
-                if not isinstance(arg, type):
-                    raise ValueError()
+            # for arg in args:
+            #     if not isinstance(arg, type):
+            #         raise ValueError()
 
             newcls = type(f"{self.__name__}<{', '.join(params)}>", self.__bases__, dict(self.__dict__))
             for typeArg, name in zip(args, params):

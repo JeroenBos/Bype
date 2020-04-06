@@ -1,5 +1,5 @@
 import unittest
-from python.keyboard.hp import Params, MLModel, AbstractHpEstimator, do_hp_search
+from python.keyboard.hp import Params, MLModel, AbstractHpEstimator, do_hp_search, UglyEstimator
 from typing import List, Union
 from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
@@ -178,10 +178,10 @@ class HpParamsTests(unittest.TestCase):
 
     def test_hp_search(self):
         df = pd.DataFrame(data=[[1, 4], [2, 5], [3, 6]], columns=['X', 'y'])
-        do_hp_search(AbstractHpEstimator[Params](lambda params: TestMLModel(params)),
+        do_hp_search(UglyEstimator,
                      InMemoryDataSource(df, 'y'),
                      ResultOutputWriter(),
-                     Params())
+                     Params(num_epochs=[5, 6]).__dict__)
 
 
 if __name__ == '__main__':
