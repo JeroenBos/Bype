@@ -43,7 +43,7 @@ class MyBaseEstimator(BaseEstimator):
 
     def predict(self, X):
         X = self._preprocess(X)
-        return self._model.predict(X)
+        return self.current_model.predict(X)
 
     def _preprocess(self, X):
         return X
@@ -63,7 +63,7 @@ class MyBaseEstimator(BaseEstimator):
         params = self._get_params_repr()
         if params not in self.history:
             model = self._create_model()
-            assert self._model is not None, '_create_model() returned None'
+            assert model is not None, '_create_model() returned None'
             self.history[params] = model
         return self.history[params]
 
