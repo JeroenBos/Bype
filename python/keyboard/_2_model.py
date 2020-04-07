@@ -3,6 +3,7 @@ from typing import List, Union, Optional  # noqa
 import tensorflow as tf
 
 
+# Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 class KeyboardEstimator(MyBaseEstimator):
     def __init__(self, num_epochs=5, activation='relu'):
