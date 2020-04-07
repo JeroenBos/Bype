@@ -15,8 +15,8 @@ class Scorer():
     Again, by convention higher numbers are better, so if your scorer returns loss, that value should be negated.
     """
 
-    def __init__(self, trainigs_data: List[Input]):
-        self.trainigs_data = trainigs_data
+    def __init__(self, trainings_data: List[Input]):
+        self.trainings_data = trainings_data
 
     def __call__(self, estimator: KeyboardEstimator, X: xType, y: None) -> float:
         # int wrongCounts = data.labeledSwipes
@@ -28,7 +28,7 @@ class Scorer():
         print(type(X))
         print(type(y))
         word, correctSwipe = decode(X)
-        swipes = (t.swipe for t in self.trainigs_data)
+        swipes = (t.swipe for t in self.trainings_data)
         intermediate = (Convolution(self._predict(word, swipe), swipe == correctSwipe) for swipe in swipes)
         sortedIntermediate = sorted(intermediate, key=lambda t: t.convolution)
         result = count(takewhile(lambda t: not t.correct, sortedIntermediate))
