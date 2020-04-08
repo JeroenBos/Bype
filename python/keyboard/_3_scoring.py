@@ -16,9 +16,17 @@ class Scorer():
     """
 
     def __init__(self, trainings_data: List[Input]):
+        assert isinstance(trainings_data, List), "Argument of wrong type. Expected a list"
+        for element in trainings_data:
+            assert isinstance(element, Input), "Argument of wrong type. Expected a list of Inputs"
         self.trainings_data = trainings_data
 
     def __call__(self, estimator: KeyboardEstimator, X: xType, y: None) -> float:
+        """
+        :param X: Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
+                  So this X should be (timesteps, features)?
+        """
+
         # int wrongCounts = data.labeledSwipes
         #               .Select(_ => _.Swipe)
         #               .Select(swipe => (Convolution: model(X.word, swipe), Correct: swipe == X.Swipe))
@@ -50,4 +58,3 @@ score_function = Scorer(data)
 
 #     def get_error(self, y_true, y_pred):
 #         return 0
-
