@@ -5,6 +5,7 @@ from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
+from python.keyboard._2_model import KeyboardEstimator
 
 
 class HpParamsTests(unittest.TestCase):
@@ -135,6 +136,12 @@ class HpParamsTests(unittest.TestCase):
         repr = UglyEstimator()._get_params_repr()
         assert repr == "(activation='relu', num_epochs=5)"
 
+
+class Testkeyboard(unittest.TestCase):
+    pass
+
+
+class TDD(unittest.TestCase):
     def test_hp_search(self):
 
         class UglyEstimator(MyBaseEstimator):
@@ -156,6 +163,10 @@ class HpParamsTests(unittest.TestCase):
                      InMemoryDataSource(df, 'y'),
                      ResultOutputWriter(),
                      ranges)
+
+    def test_can_create_model(self):
+        estimator = KeyboardEstimator()
+        estimator._create_model()
 
 
 if __name__ == '__main__':
