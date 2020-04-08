@@ -1,5 +1,5 @@
 import unittest
-from python.keyboard.hp import do_hp_search, MyBaseEstimator, Model
+from python.keyboard.hp import do_hp_search, MyBaseEstimator, Models
 from typing import List, Union
 from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
@@ -150,7 +150,7 @@ class TDD(unittest.TestCase):
                 self.num_epochs = num_epochs
                 self.activation = activation
 
-            def _create_model(self) -> Model:
+            def _create_model(self) -> Models:
                 return tf.keras.Sequential([
                     tf.keras.layers.Dense(14, activation=self.activation),
                     tf.keras.layers.Dense(1, activation='sigmoid')
