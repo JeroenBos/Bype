@@ -6,7 +6,7 @@ from typing import TypeVar
 import python.model_training as mt
 from python.model_training import ResultWriter, DataSource
 import pandas as pd
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa
 from python.keyboard.generic import generic  # noqa
 
 Models = TypeVar('tensorflow.keras.Models')  # can't find it
