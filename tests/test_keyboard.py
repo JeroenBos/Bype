@@ -5,7 +5,6 @@ from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
-from python.keyboard._2_model import sliding_windows
 
 
 class HpParamsTests(unittest.TestCase):
@@ -157,11 +156,6 @@ class HpParamsTests(unittest.TestCase):
                      InMemoryDataSource(df, 'y'),
                      ResultOutputWriter(),
                      ranges)
-
-
-    def test_windowing(self):
-        sequence = [i + 10 for i in range(0, 100)]
-        sliding_windows(sequence)
 
 
 if __name__ == '__main__':
