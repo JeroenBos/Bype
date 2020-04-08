@@ -1,4 +1,4 @@
-from python.keyboard.hp import MyBaseEstimator, Model
+from python.keyboard.hp import MyBaseEstimator, Models
 from typing import List, Union, Optional  # noqa
 import tensorflow as tf  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
@@ -21,7 +21,7 @@ class KeyboardEstimator(MyBaseEstimator):
         self.word_input_strategy = word_input_strategy
         self.swipe_timesteps_count = swipe_timesteps_count
 
-    def _create_model(self) -> Model:
+    def _create_model(self) -> Models:
         # None here means variable over batches (but not within a batch)
         swipe_input = Input(shape=(self.swipe_feature_count, self.swipe_timesteps_count))
         if isinstance(self.word_input_strategy, CappedWordStrategy):
@@ -33,7 +33,7 @@ class KeyboardEstimator(MyBaseEstimator):
         model = Model(inputs=[swipe_input, word_input], outputs=merged)
         return model
 
-    def _compile(self, model: Optional[Model] = None) -> None:
+    def _compile(self, model: Optional[Models] = None) -> None:
         model = model if model else self.current_model
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',

@@ -9,11 +9,11 @@ import pandas as pd
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
 from python.keyboard.generic import generic  # noqa
 
-Model = TypeVar('tensorflow.keras.Models')  # can't find it
+Models = TypeVar('tensorflow.keras.Models')  # can't find it
 
 
 class MyBaseEstimator(BaseEstimator):
-    models: Dict[str, Model]
+    models: Dict[str, Models]
     history: Dict[str, List[Any]]
     verbose: bool
     _log_dir: str
@@ -61,17 +61,17 @@ class MyBaseEstimator(BaseEstimator):
         return X
 
     @abstractmethod
-    def _create_model(self) -> Model:
+    def _create_model(self) -> Models:
         pass
 
-    def _compile(self, model: Optional[Model] = None) -> None:
+    def _compile(self, model: Optional[Models] = None) -> None:
         model = model if model else self.current_model
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
 
     @property
-    def current_model(self) -> Model:
+    def current_model(self) -> Models:
         params = self._get_params_repr()
         if params not in self.models:
             model = self._create_model()
