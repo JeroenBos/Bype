@@ -138,7 +138,9 @@ class HpParamsTests(unittest.TestCase):
 
 
 class Testkeyboard(unittest.TestCase):
-    pass
+    def test_can_create_model(self):
+        estimator = KeyboardEstimator()
+        estimator._create_model()
 
 
 class TDD(unittest.TestCase):
@@ -164,10 +166,6 @@ class TDD(unittest.TestCase):
                      ResultOutputWriter(),
                      ranges)
 
-    def test_can_create_model(self):
-        estimator = KeyboardEstimator()
-        estimator._create_model()
-
 
 if __name__ == '__main__':
-    TDD().test_can_create_model()
+    Testkeyboard().test_can_create_model()
