@@ -1,7 +1,7 @@
 from python.keyboard.hp import MyBaseEstimator, Model
 from typing import List, Union, Optional  # noqa
 import tensorflow as tf  # noqa
-from tf.keras.layers import Input, Dense, LSTM, concatenate  # noqa
+from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
 from python.keyboard._2a_word_input_model import CappedWordStrategy, WordStrategy
 
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
