@@ -81,15 +81,15 @@ class HpParamsTests(unittest.TestCase):
 
     def test_access_to_type_param_on_cls(self):
         class T(metaclass=generic('TParams')):
-            def get_param(cls):
-                return cls.TParams
+            def get_param(self):
+                return self.TParams
 
         assert T[int].TParams == int
 
     def test_access_to_type_param_on_self(self):
         class T(metaclass=generic('TParams')):
-            def get_param(cls):
-                return cls.TParams
+            def get_param(self):
+                return self.TParams
 
         assert T[int]().TParams == int
 
