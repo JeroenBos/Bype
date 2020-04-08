@@ -170,4 +170,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    HpParamsTests().test_hp_search()
+    TDD().test_can_create_model()
