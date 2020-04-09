@@ -172,6 +172,33 @@ class TDD(unittest.TestCase):
                      ResultOutputWriter(),
                      ranges)
 
+    def test_keyboard_layout(self):
+        from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
+        from python.keyboard._2_transform import get_keyboard, Key
+
+        test_data = {
+            "codes": [[1, 3]],
+            "x": [1],
+            "y": [2],
+            "width": [10],
+            "height": [10],
+            "edgeFlags": [0],
+            "repeatable": [True],
+            "toggleable": [True],
+        }
+
+        df = pd.DataFrame(test_data, columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        assert len(df.columns) == len(test_data)
+        assert len(df) == 1
+        assert isinstance(df['x'][0], int)
+        assert isinstance(df['codes'][0], List)
+
+        keyboard = get_keyboard(df)
+        assert len(keyboard) == 2
+        assert isinstance(keyboard[0], Key)
+        assert isinstance(keyboard[1], Key)
+        assert keyboard[0].code == 1
+
     def test_generating(self):
         from python.keyboard._0_generate import single_letters_data  # noqa
         words, swipes = single_letters_data
@@ -185,4 +212,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    Testkeyboard().test_load_keyboard_layout()
+    TDD().test_keyboard_layout()
