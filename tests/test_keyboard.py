@@ -166,6 +166,11 @@ class TDD(unittest.TestCase):
                      ResultOutputWriter(),
                      ranges)
 
+    def test_generating(self):
+        from python.keyboard._0_generate import single_letter_df  # noqa
+        assert len(single_letter_df.columns) > 10
+        assert len(single_letter_df) == 0
+
 
 if __name__ == '__main__':
-    Testkeyboard().test_can_create_model()
+    TDD().test_generating()
