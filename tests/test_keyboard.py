@@ -169,11 +169,15 @@ class TDD(unittest.TestCase):
                      ranges)
 
     def test_generating(self):
-        from python.keyboard._0_generate import single_letters_df as df  # noqa
-        assert len(df.columns) > 10
-        assert len(df) == 26
-        assert df['X'][0] == 'a'
-        assert math.isnan(df['Y'][0])
+        from python.keyboard._0_generate import single_letters_data  # noqa
+        words, swipes = single_letters_data
+        assert isinstance(words, pd.DataFrame)
+        assert isinstance(swipes, pd.DataFrame)
+        assert len(words.columns) == 1
+        assert len(swipes.columns) > 10
+        assert len(words) == len(swipes)
+        assert swipes['X'][0] == 'a'
+        assert math.isnan(swipes['Y'][0])
 
 
 if __name__ == '__main__':
