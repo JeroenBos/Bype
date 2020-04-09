@@ -177,17 +177,17 @@ class TDD(unittest.TestCase):
         from python.keyboard._2_transform import get_keyboard, Key
 
         test_data = {
-            "codes": [[1, 3]],
-            "x": [1],
-            "y": [2],
-            "width": [10],
-            "height": [10],
-            "edgeFlags": [0],
-            "repeatable": [True],
-            "toggleable": [True],
+            "codes": [1, 3],
+            "x": 1,
+            "y": 2,
+            "width": 10,
+            "height": 10,
+            "edgeFlags": 0,
+            "repeatable": True,
+            "toggleable": True,
         }
 
-        df = pd.DataFrame(test_data, columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        df = pd.DataFrame([test_data], columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
         assert len(df.columns) == len(test_data)
         assert len(df) == 1
         assert isinstance(df['x'][0], int)
