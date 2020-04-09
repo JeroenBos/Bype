@@ -6,6 +6,8 @@ from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
 from python.keyboard._3_model import KeyboardEstimator
+from tests.test_cluster import print_fully  # noqa
+import math
 
 
 class HpParamsTests(unittest.TestCase):
@@ -167,9 +169,11 @@ class TDD(unittest.TestCase):
                      ranges)
 
     def test_generating(self):
-        from python.keyboard._0_generate import single_letter_df  # noqa
-        assert len(single_letter_df.columns) > 10
-        assert len(single_letter_df) == 0
+        from python.keyboard._0_generate import single_letters_df as df  # noqa
+        assert len(df.columns) > 10
+        assert len(df) == 26
+        assert df['X'][0] == 'a'
+        assert math.isnan(df['Y'][0])
 
 
 if __name__ == '__main__':
