@@ -144,6 +144,10 @@ class Testkeyboard(unittest.TestCase):
         estimator = KeyboardEstimator()
         estimator._create_model()
 
+    def test_load_keyboard_layout(self):
+        from python.keyboard._1_import import keyboard_layouts  # noqa
+        assert len(keyboard_layouts) > 0
+
 
 class TDD(unittest.TestCase):
     def test_hp_search(self):
@@ -181,4 +185,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    TDD().test_generating()
+    Testkeyboard().test_load_keyboard_layout()

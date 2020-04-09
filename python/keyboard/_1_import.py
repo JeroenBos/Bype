@@ -1,6 +1,7 @@
-import pandas
+import pandas as pd
 import numpy as np
 from pathlib import Path
+from typing import List
 
 
 SPEC = {
@@ -24,13 +25,13 @@ SPEC = {
     "KeyboardHeight": np.int32,
 }
 
-raw_data: pandas.DataFrame = pandas.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
-                                             names=SPEC.keys(),
-                                             dtype=SPEC)
+raw_data: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
+                                     names=SPEC.keys(),
+                                     dtype=SPEC)
 
 
 KEYBOARD_LAYOUT_SPEC = {
-    "codes": np.int32,  # this is technically not correct because it's an array of int32s. But pandas accepts it... ???
+    "codes": np.int32,  # this is technically not correct because it's an array of int32s. But pd accepts it... ???
     "x": np.int32,
     "y": np.int32,
     "width": np.int32,
@@ -41,14 +42,19 @@ KEYBOARD_LAYOUT_SPEC = {
 }
 
 
-keyboard_layouts = pandas.DataFrame()
-for column in KEYBOARD_LAYOUT_SPEC:
-    keyboard_layouts[column] = pandas.Series(dtype=KEYBOARD_LAYOUT_SPEC[column])
+keyboard_layouts: List[pd.DataFrame] = []
 
 
 def _loadLayoutFile(path: str) -> None:
-    layout = pandas.read_json(path)
-    globals()['keyboard_layouts'] = layout
+    df: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/empty.csv',
+                                   names=KEYBOARD_LAYOUT_SPEC.keys(),
+                                   dtype=KEYBOARD_LAYOUT_SPEC)
+    assert len(df.columns) == len(KEYBOARD_LAYOUT_SPEC)
+    layout = pd.read_json(path)
+    df = df.append(layout)
+    assert len(df.columns) == len(KEYBOARD_LAYOUT_SPEC)
+
+    keyboard_layouts.append(df)
 
 
 # Load all keyboard layout files
