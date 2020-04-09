@@ -187,7 +187,7 @@ class TDD(unittest.TestCase):
             "toggleable": True,
         }
 
-        df = pd.DataFrame(None, columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        df = pd.DataFrame([], columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
         for key, value in test_data.items():
             df[key][0] = value
         assert len(df.columns) == len(test_data)
