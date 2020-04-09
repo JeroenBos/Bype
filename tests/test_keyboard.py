@@ -187,7 +187,8 @@ class TDD(unittest.TestCase):
             "toggleable": True,
         }
 
-        df = pd.DataFrame([test_data], columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        df = pd.DataFrame(None, columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        df.append(test_data)
         assert len(df.columns) == len(test_data)
         assert len(df) == 1
         assert isinstance(df['x'][0], int)
