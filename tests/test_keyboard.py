@@ -148,31 +148,7 @@ class Testkeyboard(unittest.TestCase):
         from python.keyboard._1_import import keyboard_layouts  # noqa
         assert len(keyboard_layouts) > 0
 
-
-class TDD(unittest.TestCase):
-    def test_hp_search(self):
-
-        class UglyEstimator(MyBaseEstimator):
-            def __init__(self, num_epochs=5, activation='relu'):
-                super().__init__()
-                self.num_epochs = num_epochs
-                self.activation = activation
-
-            def _create_model(self) -> Models:
-                return tf.keras.Sequential([
-                    tf.keras.layers.Dense(14, activation=self.activation),
-                    tf.keras.layers.Dense(1, activation='sigmoid')
-                ])
-
-        ranges = UglyEstimator(num_epochs=[5, 6]).params
-
-        df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['X', 'y'])
-        do_hp_search(UglyEstimator,
-                     InMemoryDataSource(df, 'y'),
-                     ResultOutputWriter(),
-                     ranges)
-
-    def test_keyboard_layout(self):
+    def test_interpreting_keyboard_layout(self):
         from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
         from python.keyboard._2_transform import get_keyboard, Key
 
@@ -197,9 +173,39 @@ class TDD(unittest.TestCase):
 
         keyboard = get_keyboard(df)
         assert len(keyboard) == 2
-        assert isinstance(keyboard[0], Key)
+        assert 0 not in keyboard
+        assert 1 in keyboard
+        assert 2 not in keyboard
+        assert 3 in keyboard
         assert isinstance(keyboard[1], Key)
-        assert keyboard[0].code == 1
+        assert isinstance(keyboard[3], Key)
+        assert keyboard[1].code == 1
+        assert keyboard[1].y == 2
+        assert keyboard[3].y == 2
+
+
+class TDD(unittest.TestCase):
+    def test_hp_search(self):
+
+        class UglyEstimator(MyBaseEstimator):
+            def __init__(self, num_epochs=5, activation='relu'):
+                super().__init__()
+                self.num_epochs = num_epochs
+                self.activation = activation
+
+            def _create_model(self) -> Models:
+                return tf.keras.Sequential([
+                    tf.keras.layers.Dense(14, activation=self.activation),
+                    tf.keras.layers.Dense(1, activation='sigmoid')
+                ])
+
+        ranges = UglyEstimator(num_epochs=[5, 6]).params
+
+        df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['X', 'y'])
+        do_hp_search(UglyEstimator,
+                     InMemoryDataSource(df, 'y'),
+                     ResultOutputWriter(),
+                     ranges)
 
     def test_generating(self):
         from python.keyboard._0_generate import single_letters_data  # noqa
@@ -214,4 +220,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    TDD().test_keyboard_layout()
+    Testkeyboard().test_interpreting_keyboard_layout()
