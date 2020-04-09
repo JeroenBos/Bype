@@ -1,6 +1,6 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
-from python.keyboard._0_import import raw_data, keyboard_layouts  # noqa
+from python.keyboard._1_import import raw_data, keyboard_layouts  # noqa
 from collections import namedtuple
 
 

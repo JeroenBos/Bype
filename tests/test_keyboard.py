@@ -5,7 +5,7 @@ from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
-from python.keyboard._2_model import KeyboardEstimator
+from python.keyboard._3_model import KeyboardEstimator
 
 
 class HpParamsTests(unittest.TestCase):

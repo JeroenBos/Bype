@@ -3,7 +3,7 @@ from typing import List, Union, Optional  # noqa
 import tensorflow as tf  # noqa
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
-from python.keyboard._2a_word_input_model import CappedWordStrategy, WordStrategy
+from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
 
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel

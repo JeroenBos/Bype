@@ -1,6 +1,6 @@
 import numpy as np  # noqa
-from python.keyboard._1_transform import data, Input, xType, encode, decode  # noqa
-from python.keyboard._2_model import KeyboardEstimator
+from python.keyboard._2_transform import data, Input, xType, encode, decode  # noqa
+from python.keyboard._3_model import KeyboardEstimator
 from typing import List
 from collections import namedtuple
 from itertools import count, takewhile
