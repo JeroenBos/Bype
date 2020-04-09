@@ -1,7 +1,8 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
-from python.keyboard._1_import import raw_data, keyboard_layouts  # noqa
+from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC  # noqa
 from collections import namedtuple
+from typing import Dict, List, Union  # noqa
 
 
 Input = namedtuple('Pair', 'word swipe')
@@ -19,3 +20,31 @@ def encode(word, swipe) -> xType:
 def decode(x: xType) -> Input:
     """Converts the specified list of features into a word and swipe."""
     return Input('', '')
+
+
+class Key:
+    def __init__(self, code: int, x: int, y: int, width: int, height: int,
+                 edgeFlags: int, repeatable: bool, toggleable: bool):
+        self.code = code
+        self.x = x
+        self.y = y
+        self.width = width
+        self.edge_flags = edgeFlags
+        self.repeatable = repeatable
+        self.toggleable = toggleable
+
+
+def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
+    result = List[Key]
+    keyboard = keyboard_layouts[keyboard_layout] if isinstance(keyboard_layout, int) else keyboard_layout
+
+    def key_from_row(row, code):
+        return Key(code=code, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
+
+    result: Dict[int, Key] = {code: key_from_row(row, code)
+                              for _index, row in keyboard.iterrows()
+                              for code in row['codes']}
+    return result
+
+
+# def get_key(keyboard_layout: int, char: str) -> namedtuple(
