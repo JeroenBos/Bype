@@ -188,7 +188,7 @@ class TDD(unittest.TestCase):
         }
 
         df = pd.DataFrame(None, columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
-        df.append(test_data)
+        df.append(pd.Series[test_data])
         assert len(df.columns) == len(test_data)
         assert len(df) == 1
         assert isinstance(df['x'][0], int)
