@@ -43,7 +43,7 @@ class Scorer():
         return result
 
     def _predict(self, word, swipe) -> float:
-        return self.estimator.predict(encode(word, swipe))
+        return self.estimator.predict(encode(swipe, word))
 
 
 score_function = Scorer(data)

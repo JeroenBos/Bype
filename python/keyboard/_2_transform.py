@@ -12,7 +12,7 @@ df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['
 data = InMemoryDataSource(df, 'y')
 
 
-def encode(word, swipe) -> xType:
+def encode(swipe: pd.Series, word: pd.Series) -> xType:
     """Converts the specified word and swipe data into a list of features."""
     return [0, 1, 2, 3, 4]
 
@@ -51,4 +51,3 @@ def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
     return result
 
 
-# def get_key(keyboard_layout: int, char: str) -> namedtuple(
