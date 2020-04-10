@@ -1,5 +1,6 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
+from python.keyboard._0_types import Key, Keyboard
 from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC, SPEC  # noqa
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable  # noqa
@@ -29,28 +30,6 @@ def encode(swipe: pd.Series, word: pd.Series) -> xType:
 def decode(x: xType) -> Input:
     """Converts the specified list of features into a word and swipe."""
     return Input('', '')
-
-
-class Key:
-    def __init__(self, code: int, code_index: int, x: int, y: int, width: int, height: int,
-                 edgeFlags: int, repeatable: bool, toggleable: bool):
-        self.code = code
-        self.code_index = code_index
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.edge_flags = edgeFlags
-        self.repeatable = repeatable
-        self.toggleable = toggleable
-
-
-class Keyboard(Dict[int, Key]):
-    def __init__(self, layout_id: int, width: int, height: int, iterable=None):
-        super().__init__(iterable)
-        self.layout_id = layout_id
-        self.width = width
-        self.height = height
 
 
 def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:

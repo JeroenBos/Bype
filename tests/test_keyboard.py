@@ -5,6 +5,7 @@ from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
+from python.keyboard._0_types import T, Key, Keyboard  # noqa
 from python.keyboard._1_import import SPECs
 from python.keyboard._3_model import KeyboardEstimator
 from tests.test_cluster import print_fully  # noqa
@@ -20,14 +21,14 @@ class HpParamsTests(unittest.TestCase):
                 ref_var[0] = 1
                 return self
 
-        class T(metaclass=Meta):
+        class TestType(metaclass=Meta):
             pass
 
-        Tprime = T[0]
+        Tprime = TestType[0]
         assert ref_var[0] == 1
         t = Tprime()
         assert isinstance(t, Tprime)
-        assert isinstance(t, T)
+        assert isinstance(t, TestType)
 
     def test_metaclass_typeparameter(self):
         class Meta(type):
@@ -40,14 +41,14 @@ class HpParamsTests(unittest.TestCase):
                 newcls.T = key
                 return newcls
 
-        class T(metaclass=Meta):
+        class TestType(metaclass=Meta):
             pass
 
-        Tprime = T[0]
+        Tprime = TestType[0]
         assert Tprime.T == 0
         t = Tprime()
         assert t.T == 0
-        Tdoubleprime = T[1]
+        Tdoubleprime = TestType[1]
         assert Tdoubleprime.T == 1
         u = Tdoubleprime()
         assert u.T == 1
@@ -151,7 +152,7 @@ class Testkeyboard(unittest.TestCase):
 
     def test_interpreting_keyboard_layout(self):
         from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
-        from python.keyboard._2_transform import get_keyboard, Key
+        from python.keyboard._2_transform import get_keyboard
 
         test_data = {
             "codes": [1, 3],
