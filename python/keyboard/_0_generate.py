@@ -34,7 +34,7 @@ def generate_taps_for(word: str) -> pd.DataFrame:
     return result
 
 
-single_letters = [chr(i) for i in range(97, 97 + 26)]
-single_letter_words = DataFrame(single_letters, columns=['word'], dtype=str)
+_single_letters = [chr(i) for i in range(97, 97 + 26)]
+_single_letter_words = DataFrame(_single_letters, columns=['word'], dtype=str)
 
-single_letter_swipes = create_swipe_embedding_df(single_letters, generate_taps_for)
+single_letter_swipes = create_swipe_embedding_df(_single_letters, generate_taps_for)
