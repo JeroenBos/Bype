@@ -56,6 +56,13 @@ class SwipeDataFrame(pd.DataFrame):
     columns: Any
 
 
+    # TODO: implement like https://stackoverflow.com/q/13135712/308451
+    @staticmethod 
+    def is_instance(obj: Any) -> bool:
+        return isinstance(obj, pd.DataFrame) and 'XPrecision' in obj.columns.values
+
+
+
 class SwipeEmbeddingDataFrame(pd.DataFrame):
     """
     Represents a collection of swipes.
@@ -64,5 +71,25 @@ class SwipeEmbeddingDataFrame(pd.DataFrame):
     """
 
     swipes: SwipeDataFrame
+    words: pd.Series
 
     columns: Any
+
+    @staticmethod 
+    def is_instance(obj: Any) -> bool:
+        return isinstance(obj, pd.DataFrame) and sorted(obj.columns.values) == sorted(['swipes', 'words']) 
+
+
+
+class Input:
+    """Represents the tuple 'swipe' + 'word'."""
+
+    def __init__(self, swipe: SwipeDataFrame, word: str):
+        assert isinstance(word, str)
+        assert SwipeDataFrame.is_instance(swipe)
+        self.swipe = swipe
+        self.word = word
+
+    @staticmethod
+    def is_instance(obj) -> bool:
+        return isinstance(obj, Input) and isinstance(obj.word, str) and SwipeDataFrame.is_instance(obj.swipe)
