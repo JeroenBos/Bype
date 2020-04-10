@@ -25,6 +25,81 @@ SPEC = {
     "KeyboardHeight": np.int32,
 }
 
+
+class SPECs:
+    @property
+    def pointer_index(self) -> float:
+        return "PointerIndex"
+
+    @property
+    def action(self) -> float:
+        return "Action"
+
+    @property
+    def time_stap(self) -> float:
+        return "Timestamp"
+
+    @property
+    def x(self) -> float:
+        return "X"
+
+    @property
+    def y(self) -> float:
+        return "Y"
+
+    @property
+    def pressure(self) -> float:
+        return "Pressure"
+
+    @property
+    def size(self) -> float:
+        return "Size"
+
+    @property
+    def orientation(self) -> float:
+        return "Orientation"
+
+    @property
+    def tool_major(self) -> float:
+        return "ToolMajor"
+
+    @property
+    def tool_minor(self) -> float:
+        return "ToolMinor"
+
+    @property
+    def touch_minor(self) -> float:
+        return "TouchMinor"
+
+    @property
+    def touch_major(self) -> float:
+        return "TouchMajor"
+
+    @property
+    def x_precision(self) -> float:
+        return "XPrecision"
+
+    @property
+    def y_precision(self) -> float:
+        return "YPrecision"
+
+    @property
+    def edge_flags(self) -> float:
+        return "EdgeFlags"
+
+    @property
+    def keyboard_layout(self) -> float:
+        return "KeyboardLayout"
+
+    @property
+    def keyboard_width(self) -> float:
+        return "KeyboardWidth"
+
+    @property
+    def keyboard_height(self) -> float:
+        return "KeyboardHeight"
+
+
 raw_data: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
                                      names=SPEC.keys(),
                                      dtype=SPEC)

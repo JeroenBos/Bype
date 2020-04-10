@@ -6,6 +6,7 @@ from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
 from python.keyboard._3_model import KeyboardEstimator
+from python.keyboard._1_import import SPECs
 from tests.test_cluster import print_fully  # noqa
 import math
 
@@ -183,6 +184,36 @@ class Testkeyboard(unittest.TestCase):
         assert keyboard[1].y == 2
         assert keyboard[3].y == 2
 
+    def test_generate_single_letters(self):
+        from python.keyboard._0_generate import generate_taps_for
+        tap = generate_taps_for('a')
+        assert isinstance(tap, pd.DataFrame)
+        assert 'X' in tap.columns.values
+        assert len(tap) == 1
+        assert tap[SPECs.keyboard_layout][0] == 0
+        assert tap[SPECs.x][0] == 54
+
+    def test_swipe_embedding(self):
+        from python.keyboard._2_transform import create_empty_swipe_embedding_df
+        df = create_empty_swipe_embedding_df(1)
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 1
+        assert len(df.columns) == 1
+        assert df.columns.values[0] == 'swipes'
+
+    def test_swipe_embedding_with_entries(self):
+        from python.keyboard._2_transform import create_empty_swipe_embedding_df, create_empty_swipe_df
+        df = create_empty_swipe_embedding_df(1)
+        df['swipes'][0] = create_empty_swipe_df(5)
+
+        assert isinstance(df, pd.DataFrame)
+        assert len(df.columns) == 1
+        assert df.columns.values[0] == 'swipes'
+        assert len(df) == 1
+        assert isinstance(df['swipes'][0], pd.DataFrame)
+        entry = df['swipes'][0]
+        assert len(entry) == 5
+
 
 class TDD(unittest.TestCase):
     def test_hp_search(self):
@@ -220,4 +251,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    Testkeyboard().test_interpreting_keyboard_layout()
+    Testkeyboard().test_generate_single_letters()
