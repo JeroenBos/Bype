@@ -41,6 +41,10 @@ def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
     def key_from_row(row, code):
         return Key(code=code, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
 
+    allcodes = list(code for _index, row in keyboard.iterrows() for code in row['codes'])
+    if len(allcodes) != len(set(allcodes)):
+        raise KeyError("The same code at multiple places isn't supported yet")
+
     result: Dict[int, Key] = {code: key_from_row(row, code)
                               for _index, row in keyboard.iterrows()
                               for code in row['codes']}
