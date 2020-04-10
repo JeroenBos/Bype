@@ -85,18 +85,18 @@ class HpParamsTests(unittest.TestCase):
         assert Tdoubleprime.U == type
 
     def test_access_to_type_param_on_cls(self):
-        class T(metaclass=generic('TParams')):
+        class U(metaclass=generic('TParams')):
             def get_param(self):
                 return self.TParams
 
-        assert T[int].TParams == int
+        assert U[int].TParams == int
 
     def test_access_to_type_param_on_self(self):
-        class T(metaclass=generic('TParams')):
+        class U(metaclass=generic('TParams')):
             def get_param(self):
                 return self.TParams
 
-        assert T[int]().TParams == int
+        assert U[int]().TParams == int
 
     def test_generic_classmethod_overriding(self):
         class GenericBaseType(metaclass=generic()):
