@@ -7,12 +7,6 @@ from pandas import DataFrame
 from python.model_training import InMemoryDataSource, TrivialDataSource  # noqa
 
 
-def generate_tap_for(char: int):
-    c = chr(char)
-    assert isinstance(c, str)
-    return generate_taps_for(c)
-
-
 def generate_taps_for(word: str) -> pd.DataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
 
