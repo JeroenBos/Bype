@@ -23,9 +23,10 @@ def decode(x: xType) -> Input:
 
 
 class Key:
-    def __init__(self, code: int, x: int, y: int, width: int, height: int,
+    def __init__(self, code: int, code_index: int, x: int, y: int, width: int, height: int,
                  edgeFlags: int, repeatable: bool, toggleable: bool):
         self.code = code
+        self.code_index = code_index
         self.x = x
         self.y = y
         self.width = width
@@ -39,8 +40,8 @@ def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
     result = List[Key]
     keyboard = keyboard_layouts[keyboard_layout] if isinstance(keyboard_layout, int) else keyboard_layout
 
-    def key_from_row(row, code):
-        return Key(code=code, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
+    def key_from_row(row, code, code_index):
+        return Key(code=code, code_index=code_index, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
 
     allcodes = list(code for _index, row in keyboard.iterrows() for code in row['codes'])
     if len(allcodes) != len(set(allcodes)):
