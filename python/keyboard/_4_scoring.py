@@ -46,7 +46,7 @@ class Scorer():
         return self.estimator.predict(encode(word, swipe))
 
 
-# score_function = Scorer(data)
+score_function = Scorer(data)
 
 
 # class MyError(losses.LossFunctionWrapper):
