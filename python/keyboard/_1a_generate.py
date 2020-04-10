@@ -1,6 +1,6 @@
 # this file generates training data
 
-from python.keyboard._0_types import T
+from python.keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame
 from python.keyboard._1_import import SPEC, SPECs
 from python.keyboard._2_transform import keyboards, Key
 import pandas as pd
@@ -9,7 +9,7 @@ from python.model_training import InMemoryDataSource, TrivialDataSource
 from typing import Callable, List, TypeVar
 
 
-def create_empty_swipe_df(length: int, **defaults) -> pd.DataFrame:
+def create_empty_swipe_df(length: int, **defaults) -> SwipeDataFrame:
     """
     Creates an empty df of the correct format and shape determined by SPEC,
     initialized with default values, which default to 0.
@@ -17,12 +17,12 @@ def create_empty_swipe_df(length: int, **defaults) -> pd.DataFrame:
     return create_empty_df(length, columns=list(SPEC.keys()), **defaults)
 
 
-def create_empty_swipe_embedding_df(length: int) -> pd.DataFrame:
+def create_empty_swipe_embedding_df(length: int) -> SwipeEmbeddingDataFrame:
     defaults = {'swipes': create_empty_swipe_df(0)}
     return create_empty_df(length, columns=['swipes'], **defaults)
 
 
-def create_swipe_embedding_df(inputs: List[T], swipe_selector: Callable[[T], pd.DataFrame]) -> pd.DataFrame:
+def create_swipe_embedding_df(inputs: List[T], swipe_selector: Callable[[T], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
     result = create_empty_swipe_embedding_df(len(inputs))
     swipes = [swipe_selector(input) for input in inputs]
 
@@ -50,7 +50,7 @@ def create_empty_df(length: int, columns: List[str], **defaults) -> pd.DataFrame
     return result
 
 
-def generate_taps_for(word: str) -> pd.DataFrame:
+def generate_taps_for(word: str) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
 
     # first generate dataframe of the correct format and size:
