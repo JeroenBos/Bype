@@ -1,9 +1,9 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
 from python.keyboard._0_types import Key, Keyboard
-from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC, SPEC  # noqa
+from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC, SPEC
 from collections import namedtuple
-from typing import Dict, List, Union, TypeVar, Callable  # noqa
+from typing import Dict, List, Union, TypeVar, Callable
 
 
 Input = namedtuple('Pair', 'word swipe')

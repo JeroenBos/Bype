@@ -5,10 +5,10 @@ from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
-from python.keyboard._0_types import T, Key, Keyboard  # noqa
+from python.keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
 from python.keyboard._1_import import SPECs
 from python.keyboard._3_model import KeyboardEstimator
-from tests.test_cluster import print_fully  # noqa
+from tests.test_cluster import print_fully
 import math
 
 

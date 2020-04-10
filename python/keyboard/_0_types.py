@@ -1,4 +1,4 @@
-from typing import Dict, List, Callable, TypeVar  # noqa
+from typing import Dict, List, Callable, TypeVar
 
 T = TypeVar('T')
 

@@ -1,6 +1,6 @@
 from python.keyboard.hp import MyBaseEstimator, Models
-from typing import List, Union, Optional  # noqa
-import tensorflow as tf  # noqa
+from typing import List, Union, Optional
+import tensorflow as tf
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
 from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy

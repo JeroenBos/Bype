@@ -3,7 +3,7 @@ from python.keyboard._3_model import KeyboardEstimator
 from python.keyboard._4_scoring import score_function
 from python.keyboard._5_output import KeyboardResultWriter
 from python.keyboard.hp import do_hp_search
-from typing import List, Union  # noqa
+from typing import List, Union
 
 # estimator = KeyboardEstimator()
 # result = estimator.fit_data_source(data)

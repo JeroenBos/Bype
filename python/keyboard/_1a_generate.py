@@ -1,12 +1,12 @@
 # this file generates training data
 
 from python.keyboard._0_types import T
-from python.keyboard._1_import import SPEC, SPECs  # noqa
-from python.keyboard._2_transform import keyboards, Key  # noqa
+from python.keyboard._1_import import SPEC, SPECs
+from python.keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
-from python.model_training import InMemoryDataSource, TrivialDataSource  # noqa
-from typing import Callable, List, TypeVar  # noqa
+from python.model_training import InMemoryDataSource, TrivialDataSource
+from typing import Callable, List, TypeVar
 
 
 def create_empty_swipe_df(length: int, **defaults) -> pd.DataFrame:

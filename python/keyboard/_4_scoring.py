@@ -1,5 +1,5 @@
-import numpy as np  # noqa
-from python.keyboard._2_transform import data, Input, xType, encode, decode  # noqa
+import numpy as np
+from python.keyboard._2_transform import data, Input, xType, encode, decode
 from python.keyboard._3_model import KeyboardEstimator
 from typing import List
 from collections import namedtuple
