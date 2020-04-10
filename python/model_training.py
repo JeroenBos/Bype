@@ -56,3 +56,21 @@ class InMemoryDataSource(DataSource):
         if result is None:
             raise ValueError()
         return result
+
+class TrivialDataSource(DataSource):
+    X: pd.DataFrame
+    y: pd.DataFrame
+
+    def __init__(self, X: pd.DataFrame, y: pd.DataFrame):
+        # assert is_valid_dataframe(X), 'Invalid dataframe X'
+        # assert is_valid_dataframe(y), 'invalid dataframe y'
+        assert len(X) == len(y), 'expected same length X and y dataframes'
+
+        self.X = X
+        self.y = y
+
+    def get_train(self):
+        return self.X
+
+    def get_target(self):
+        return self.y
