@@ -27,14 +27,6 @@ class Scorer():
                   So this X should be (timesteps, features)?
         """
 
-        # int wrongCounts = data.labeledSwipes
-        #               .Select(_ => _.Swipe)
-        #               .Select(swipe => (Convolution: model(X.word, swipe), Correct: swipe == X.Swipe))
-        #               .OrderBy(_ => _.Convolution)
-        #               .TakeWhile(_ => !_.Correct)
-        #               .Count();
-        print(type(X))
-        print(type(y))
         word, correctSwipe = decode(X)
         swipes = (t.swipe for t in self.trainings_data)
         intermediate = (Convolution(self._predict(word, swipe), swipe == correctSwipe) for swipe in swipes)
