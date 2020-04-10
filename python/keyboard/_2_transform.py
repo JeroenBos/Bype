@@ -40,8 +40,8 @@ def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
     result = List[Key]
     keyboard = keyboard_layouts[keyboard_layout] if isinstance(keyboard_layout, int) else keyboard_layout
 
-    def key_from_row(row, code, code_index):
-        return Key(code=code, code_index=code_index, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
+    def key_from_row(row, code, index):
+        return Key(code=code, code_index=index, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
 
     allcodes = list(code for _index, row in keyboard.iterrows() for code in row['codes'])
     if len(allcodes) != len(set(allcodes)):
