@@ -5,8 +5,8 @@ from python.keyboard.generic import generic
 from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
-from python.keyboard._3_model import KeyboardEstimator
 from python.keyboard._1_import import SPECs
+from python.keyboard._3_model import KeyboardEstimator
 from tests.test_cluster import print_fully  # noqa
 import math
 
@@ -185,7 +185,7 @@ class Testkeyboard(unittest.TestCase):
         assert keyboard[3].y == 2
 
     def test_generate_single_letters(self):
-        from python.keyboard._0_generate import generate_taps_for
+        from python.keyboard._1a_generate import generate_taps_for
         tap = generate_taps_for('a')
         assert isinstance(tap, pd.DataFrame)
         assert 'X' in tap.columns.values
@@ -194,7 +194,7 @@ class Testkeyboard(unittest.TestCase):
         assert tap[SPECs.x][0] == 54
 
     def test_swipe_embedding(self):
-        from python.keyboard._2_transform import create_empty_swipe_embedding_df
+        from python.keyboard._1a_generate import create_empty_swipe_embedding_df
         df = create_empty_swipe_embedding_df(1)
         assert isinstance(df, pd.DataFrame)
         assert len(df) == 1
@@ -202,7 +202,7 @@ class Testkeyboard(unittest.TestCase):
         assert df.columns.values[0] == 'swipes'
 
     def test_swipe_embedding_with_entries(self):
-        from python.keyboard._2_transform import create_empty_swipe_embedding_df, create_empty_swipe_df
+        from python.keyboard._1a_generate import create_empty_swipe_embedding_df, create_empty_swipe_df
         df = create_empty_swipe_embedding_df(1)
         df['swipes'][0] = create_empty_swipe_df(5)
 
@@ -239,7 +239,7 @@ class TDD(unittest.TestCase):
                      ranges)
 
     def test_generating(self):
-        from python.keyboard._0_generate import single_letters_data  # noqa
+        from python.keyboard._1a_generate import single_letters_data  # noqa
         words, swipes = single_letters_data
         assert isinstance(words, pd.DataFrame)
         assert isinstance(swipes, pd.DataFrame)
