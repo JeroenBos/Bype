@@ -29,6 +29,7 @@ class Key:
         self.x = x
         self.y = y
         self.width = width
+        self.height = height
         self.edge_flags = edgeFlags
         self.repeatable = repeatable
         self.toggleable = toggleable
