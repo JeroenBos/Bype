@@ -22,9 +22,9 @@ def create_empty_swipe_embedding_df(length: int) -> SwipeEmbeddingDataFrame:
     return create_empty_df(length, columns=list(defaults.keys()), **defaults)
 
 
-def create_swipe_embedding_df(inputs: List[str], swipe_selector: Callable[[str], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
-    result = create_empty_swipe_embedding_df(len(inputs))
-    swipes = [swipe_selector(input) for input in inputs]
+def create_swipe_embedding_df(words: List[str], swipe_selector: Callable[[str], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
+    result = create_empty_swipe_embedding_df(len(words))
+    swipes = [swipe_selector(word) for word in words]
 
     for swipe in swipes:
         assert isinstance(swipe, pd.DataFrame)
@@ -32,7 +32,8 @@ def create_swipe_embedding_df(inputs: List[str], swipe_selector: Callable[[str],
     assert len(set(len(swipe.columns) for swipe in swipes)) == 1, 'not all swipes have same columns'
 
     for i, swipe in enumerate(swipes):
-        result['swipes'][i] = swipe
+        result.swipes[i] = swipe
+        result.words[i] = words[i]
     return result
 
 
