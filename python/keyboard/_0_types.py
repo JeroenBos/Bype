@@ -11,6 +11,8 @@ class Keyboard(Dict[int, "Key"]):
         self.layout_id = layout_id
         self.width = width
         self.height = height
+        self.left = left
+        self.top = top
         for key in self.values():
             key.keyboard = self
 
