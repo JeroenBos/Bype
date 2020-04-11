@@ -100,6 +100,15 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
 
     columns: Any
 
+    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
+        super().__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
+        assert SwipeEmbeddingDataFrame.is_instance(self)
+        assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
+        assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
+        assert all(isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
+        
+        
+
     @staticmethod 
     def is_instance(obj: Any) -> bool:
         return isinstance(obj, pd.DataFrame) and sorted(obj.columns.values) == sorted(['swipes', 'words']) 
