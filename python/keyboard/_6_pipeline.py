@@ -10,7 +10,7 @@ from typing import List, Union
 
 data = SwipeEmbeddingDataFrame.__as__(single_letter_swipes)
 
-hp_space = KeyboardEstimator(
+hp_space = KeyboardEstimator[None](
             num_epochs=[5, 6]
         ).params
 
@@ -18,7 +18,7 @@ scorer = Scorer(data)
 preprocessor = Preprocessor()
 
 
-result = do_hp_search(lambda **initial_params: KeyboardEstimator.create(preprocessor, **initial_params),
+result = do_hp_search(KeyboardEstimator[preprocessor],
                       data,
                       KeyboardResultWriter(),
                       hp_space,

@@ -8,6 +8,8 @@ def generic(*params: str) -> type:
 
     class GenericTypeWithSuperclass(metaclass=generic('T', 'U'), superclass):
         pass
+
+    also note that the superclass can be accessed via super(self.__class__, self) and super(cls, cls)
     """
     if len(params) == 0:
         params = ['T']

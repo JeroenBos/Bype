@@ -82,7 +82,8 @@ class MyBaseEstimator(BaseEstimator):
     def params(self) -> dict:
         result = {**self.__dict__}
         for key in ['models', 'verbose', 'history', '_log_dir', 'preprocessor']:
-            del result[key]
+            if key in result:
+                del result[key]
         return result
 
     def _get_params_repr(self):
