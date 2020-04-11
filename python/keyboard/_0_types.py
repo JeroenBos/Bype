@@ -1,13 +1,21 @@
-from typing import Dict, List, Callable, TypeVar, Any
+from typing import Dict, List, Callable, TypeVar, Any, Tuple, Optional
 import pandas as pd
 from abc import ABC
 
 T = TypeVar('T')
 
 
+class Keyboard(Dict[int, "Key"]):
+    def __init__(self, layout_id: int, width: int, height: int, left: int, top: int, iterable=None):
+        super().__init__(iterable)
+        self.layout_id = layout_id
+        self.width = width
+        self.height = height
+        for key in self.values():
+            key.keyboard = self
 class Key:
     def __init__(self, code: int, code_index: int, x: int, y: int, width: int, height: int,
-                 edgeFlags: int, repeatable: bool, toggleable: bool):
+                 edgeFlags: int, repeatable: bool, toggleable: bool, keyboard: Keyboard = None):
         self.code = code
         self.code_index = code_index
         self.x = x
@@ -17,14 +25,9 @@ class Key:
         self.edge_flags = edgeFlags
         self.repeatable = repeatable
         self.toggleable = toggleable
+        self.keyboard = keyboard
 
 
-class Keyboard(Dict[int, Key]):
-    def __init__(self, layout_id: int, width: int, height: int, iterable=None):
-        super().__init__(iterable)
-        self.layout_id = layout_id
-        self.width = width
-        self.height = height
 
 
 class SwipeDataFrame(pd.DataFrame):
