@@ -4,30 +4,11 @@ import tensorflow as tf
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
 from python.keyboard._0_types import SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
-from python.keyboard._2_transform import encode
+from python.keyboard._2_transform import Preprocessor
 from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
 
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
-
-
-class Preprocessor:
-    def __init__(self, word_input_strategy: WordStrategy = CappedWordStrategy(5)):
-        self.swipe_feature_count = 4
-        self.swipe_timesteps_count = 100
-        self.word_input_strategy = word_input_strategy
-
-    def preprocess(self, X: EmbeddingInput):
-        return self._preprocess()
-
-    def _preprocess(self, X: EmbeddingInput):
-        assert EmbeddingInput.is_instance(X), "Maybe sklearn gives an element to X instead of the entire set?"
-
-        if isinstance(self.word_input_strategy, CappedWordStrategy):
-            # this means the word input is appended to every timestep in the swipe data
-            return encode(X.swipe, X.word)
-        else:
-            raise ValueError()
 
 
 class KeyboardEstimator(MyBaseEstimator):
@@ -46,6 +27,7 @@ class KeyboardEstimator(MyBaseEstimator):
         self.num_epochs = num_epochs
         self.activation = activation
         self.word_input_strategy = word_input_strategy
+        self.preprocessor: Preprocessor = None
 
     def _create_model(self) -> Models:
         # None here means variable over batches (but not within a batch)

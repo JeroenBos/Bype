@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent
 from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
+from python.keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple
 
@@ -18,91 +19,6 @@ def get_code(char: str) -> int:
     assert len(char) == 1
 
     return ord(char[0])
-
-
-def _get_keyboard(touchevent: RawTouchEvent) -> Keyboard:
-    assert hasattr(touchevent, "KeyboardLayout")
-    assert isinstance(touchevent.KeyboardLayout, (int, np.int32, np.int64))
-
-    layout_id = touchevent.KeyboardLayout
-    keyboard = keyboards[layout_id]
-    return keyboard
-
-
-def _get_normalized_x(touchevent: RawTouchEvent) -> float:
-    return _get_keyboard(touchevent).normalize_x(touchevent.X)
-
-
-def _get_normalized_y(touchevent: RawTouchEvent) -> float:
-    return _get_keyboard(touchevent).normalize_y(touchevent.Y)
-
-
-def _get_key(char: str, touchevent: RawTouchEvent) -> Key:
-    code = get_code(char)
-    keyboard = _get_keyboard(touchevent)
-    if code not in keyboard:
-        return Key.NO_KEY
-    else:
-        key = keyboard[code]
-        assert isinstance(key, Key), "Maybe later a list of keys can be implemented?"
-        return key
-
-
-def _get_normalized_button_x(word: str, index: int) -> Callable[[RawTouchEvent], float]:
-    def impl(touchevent: RawTouchEvent) -> float:
-        if index >= len(word):
-            return -1
-
-        key: Key = _get_key(word[index], touchevent)
-        return key.keyboard.normalize_x(key.x + key.width / 2)
-    return impl
-
-
-def _get_normalized_button_y(word: str, index: int) -> Callable[[RawTouchEvent], float]:
-    def impl(touchevent: RawTouchEvent) -> float:
-        if index >= len(word):
-            return -1
-
-        key: Key = _get_key(word[index], touchevent)
-        return key.keyboard.normalize_y(key.y + key.height / 2)
-    return impl
-
-
-def encode(swipe: SwipeDataFrame, word: str) -> xType:
-    """
-    Converts the specified word and swipe data into a list of features.
-    :param swipe: A row in DataSource.get_train().
-    :param word: A row in DataSource.get_target().
-    """
-    assert SwipeDataFrame.is_instance(swipe)
-    assert isinstance(word, str)
-    assert 'X' in swipe
-    assert 'Y' in swipe
-
-
-    features_per_time_step: List[Callable[[pd.Series], float]] = [
-        _get_normalized_x,
-        _get_normalized_y,
-        _get_normalized_button_x(word, 0),
-        _get_normalized_button_y(word, 0),
-        _get_normalized_button_x(word, 1),
-        _get_normalized_button_y(word, 1),
-        _get_normalized_button_x(word, 2),
-        _get_normalized_button_y(word, 2),
-    ]
-
-    result: List[List[float]] = []
-    for i, touchevent in swipe.iterrows():
-        time_step = []
-        for feature_per_time_step in features_per_time_step:
-            time_step.append(feature_per_time_step(touchevent))
-        result.append(time_step)
-    return result
-
-
-def decode(x: xType) -> Input:
-    """Converts the specified list of features into a word and swipe."""
-    return Input('', '')
 
 
 def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
@@ -138,3 +54,116 @@ def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
 
 
 keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in range(len(keyboard_layouts))]
+
+
+
+
+class Preprocessor:
+    def __init__(self, word_input_strategy: WordStrategy = CappedWordStrategy(5)):
+        self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
+        self.swipe_timesteps_count = 1
+        self.word_input_strategy = word_input_strategy
+
+
+    def _get_keyboard(self, touchevent: RawTouchEvent) -> Keyboard:
+        assert hasattr(touchevent, "KeyboardLayout")
+        assert isinstance(touchevent.KeyboardLayout, (int, np.int32, np.int64))
+
+        layout_id = touchevent.KeyboardLayout
+        keyboard = keyboards[layout_id]
+        return keyboard
+
+
+    def _get_normalized_x(self, touchevent: RawTouchEvent) -> float:
+        return self._get_keyboard(touchevent).normalize_x(touchevent.X)
+
+
+    def _get_normalized_y(self, touchevent: RawTouchEvent) -> float:
+        return self._get_keyboard(touchevent).normalize_y(touchevent.Y)
+
+
+    def _get_normalized_word_length(self, word: str) -> Callable[[RawTouchEvent], float]:
+        if isinstance(self.word_input_strategy, CappedWordStrategy):
+            return lambda ev: len(word) / self.word_input_strategy.n
+        raise ValueError(f"Not implemented for word strategy + '{type(self.word_input_strategy)}'")
+
+
+    def _get_key(self, char: str, touchevent: RawTouchEvent) -> Key:
+        code = get_code(char)
+        keyboard = self._get_keyboard(touchevent)
+        if code not in keyboard:
+            return Key.NO_KEY
+        else:
+            key = keyboard[code]
+            assert isinstance(key, Key), "Maybe later a list of keys can be implemented?"
+            return key
+
+    def _get_normalized_button_x(self, word: str, index: int) -> Callable[[RawTouchEvent], float]:
+        def impl(touchevent: RawTouchEvent) -> float:
+            if index >= len(word):
+                return -1
+
+            key: Key = self._get_key(word[index], touchevent)
+            return key.keyboard.normalize_x(key.x + key.width / 2)
+        return impl
+
+    def _get_normalized_button_y(self, word: str, index: int) -> Callable[[RawTouchEvent], float]:
+        def impl(touchevent: RawTouchEvent) -> float:
+            if index >= len(word):
+                return -1
+
+            key: Key = self._get_key(word[index], touchevent)
+            return key.keyboard.normalize_y(key.y + key.height / 2)
+        return impl
+
+
+
+    def preprocess(self, X: Input):
+        return self.encode(X)
+
+    def _preprocess(self, X: Input):
+        assert Input.is_instance(X), "Maybe sklearn gives an element to X instead of the entire set?"
+
+        if isinstance(self.word_input_strategy, CappedWordStrategy):
+            # this means the word input is appended to every timestep in the swipe data
+            return self.encode(X.swipe, X.word)
+        else:
+            raise ValueError()
+
+    def encode(self, swipe: SwipeDataFrame, word: str) -> xType:
+        """
+        Converts the specified word and swipe data into a list of features.
+        :param swipe: A row in DataSource.get_train().
+        :param word: A row in DataSource.get_target().
+        """
+        assert SwipeDataFrame.is_instance(swipe)
+        assert isinstance(word, str)
+        assert 'X' in swipe
+        assert 'Y' in swipe
+
+
+        features_per_time_step: List[Callable[[pd.Series], float]] = [
+            self._get_normalized_x,
+            self._get_normalized_y,
+            self._get_normalized_word_length(word),
+        ]
+        if isinstance(self.word_input_strategy, CappedWordStrategy):
+            for i in range(self.word_input_strategy.n):
+                features_per_time_step.append(self._get_normalized_button_x(word, i))
+                features_per_time_step.append(self._get_normalized_button_y(word, i))
+
+
+        result: List[List[float]] = []
+        for i, touchevent in swipe.iterrows():
+            time_step = []
+            for feature_per_time_step in features_per_time_step:
+                time_step.append(feature_per_time_step(touchevent))
+            result.append(time_step)
+
+        assert self.swipe_feature_count == len(features_per_time_step)
+        assert self.swipe_timesteps_count == len(result)
+        return result
+
+    def decode(self, x: xType) -> Input:
+        """Converts the specified list of features into a word and swipe."""
+        return Input('', '')

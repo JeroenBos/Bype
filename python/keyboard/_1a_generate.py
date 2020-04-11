@@ -63,8 +63,8 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
     key: Key = keyboard[char]
 
     assert isinstance(keyboard.layout_id, int)
-    result.X[0] = key.x + key.width // 2
-    result.Y[0] = key.y + key.height // 2
+    result.X[0] = key.x + key.width / 2
+    result.Y[0] = key.y + key.height / 2
     result.KeyboardLayout[0] = keyboard.layout_id
     result.KeyboardWidth[0] = keyboard.width
     result.KeyboardHeight[0] = keyboard.height

@@ -7,8 +7,8 @@ import pandas as pd
 import tensorflow as tf
 from python.keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
 from python.keyboard._1_import import RawTouchEvent
-from python.keyboard._2_transform import encode, decode
-from python.keyboard._3_model import KeyboardEstimator, Preprocessor
+from python.keyboard._2_transform import Preprocessor
+from python.keyboard._3_model import KeyboardEstimator
 from tests.test_cluster import print_fully
 import math
 
@@ -222,13 +222,15 @@ class Testkeyboard(unittest.TestCase):
         norm_x, norm_y = keyboard.normalize_x, keyboard.normalize_y
 
         swipe = generate_taps_for('a')
-        features = encode(swipe, 'a')
+        features = Preprocessor().encode(swipe, 'a')
         expected_features = [  # an item per touch event
-                                [norm_x(54), norm_y(141),  # tap letter 'a'
-                                 1,                        # length of the word 
-                                 norm_x(54), norm_y(141),  # copy of the word
-                                 -1, -1,                   # padding of the copy
-                                 -1, -1]                   # padding of the copy
+                                [norm_x(108), norm_y(211),    # tap letter 'a'
+                                 0.2,                         # relative word length 
+                                 norm_x(108), norm_y(211.5),  # copy of the word
+                                 -1, -1,                      # padding of the word
+                                 -1, -1,                      # padding of the word
+                                 -1, -1,                      # padding of the word
+                                 -1, -1]                      # padding of the word
                             ]
         assert features == expected_features
 
@@ -272,4 +274,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    Testkeyboard().test_generate_single_letters()
+    Testkeyboard().test_encode_single_letter()

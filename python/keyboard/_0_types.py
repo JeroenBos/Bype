@@ -1,4 +1,4 @@
-from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional
+from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional, Union
 import pandas as pd
 from abc import ABC
 import numpy as np
@@ -17,10 +17,10 @@ class Keyboard(Dict[int, "Key"]):
         for key in self.values():
             key.keyboard = self
 
-    def normalize_x(self, x: int) -> float:
+    def normalize_x(self, x: Union[int, float]) -> float:
         return (x - self.left) / self.width
 
-    def normalize_y(self, y: int) -> float:
+    def normalize_y(self, y: Union[int, float]) -> float:
         return (y - self.top) / self.height
 
 
