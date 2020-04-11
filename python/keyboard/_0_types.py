@@ -95,7 +95,7 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     This class serves no purposes other than type hints.
     """
 
-    swipes: SwipeDataFrame
+    swipes: pd.Series  # with elements of type SwipeDataFrame, but I can't specify that here
     words: pd.Series
 
     columns: Any
@@ -103,6 +103,7 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     @staticmethod 
     def is_instance(obj: Any) -> bool:
         return isinstance(obj, pd.DataFrame) and sorted(obj.columns.values) == sorted(['swipes', 'words']) 
+
 
     @staticmethod
     def __as__(embedding_dataframe: pd.DataFrame) -> "SwipeEmbeddingDataFrame":
@@ -112,10 +113,10 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
             return SwipeEmbeddingDataFrame(embedding_dataframe)
 
     def get_train(self):
-        return self.swipes
+        return self
 
     def get_target(self):
-        return self.words
+        return None
 
 
 
