@@ -6,9 +6,9 @@ from python.model_training import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
 from python.keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
-from python.keyboard._1_import import SPECs
+from python.keyboard._1_import import RawTouchEvent
 from python.keyboard._2_transform import encode, decode
-from python.keyboard._3_model import KeyboardEstimator
+from python.keyboard._3_model import KeyboardEstimator, Preprocessor
 from tests.test_cluster import print_fully
 import math
 
@@ -144,7 +144,7 @@ class HpParamsTests(unittest.TestCase):
 
 class Testkeyboard(unittest.TestCase):
     def test_can_create_model(self):
-        estimator = KeyboardEstimator()
+        estimator = KeyboardEstimator.create(Preprocessor())
         estimator._create_model()
 
     def test_load_keyboard_layout(self):
@@ -192,8 +192,8 @@ class Testkeyboard(unittest.TestCase):
         assert isinstance(tap, pd.DataFrame)
         assert 'X' in tap.columns.values
         assert len(tap) == 1
-        assert tap[SPECs.keyboard_layout][0] == 0
-        assert tap[SPECs.x][0] == 54
+        assert tap.KeyboardLayout[0] == 0
+        assert tap.X[0] == 108
 
     def test_swipe_embedding(self):
         from python.keyboard._1a_generate import create_empty_swipe_embedding_df
@@ -225,10 +225,10 @@ class Testkeyboard(unittest.TestCase):
         features = encode(swipe, 'a')
         expected_features = [  # an item per touch event
                                 [norm_x(54), norm_y(141),  # tap letter 'a'
-                                 1,                       # length of the word 
+                                 1,                        # length of the word 
                                  norm_x(54), norm_y(141),  # copy of the word
-                                 -1, -1,                  # padding of the copy
-                                 -1, -1]                  # padding of the copy
+                                 -1, -1,                   # padding of the copy
+                                 -1, -1]                   # padding of the copy
                             ]
         assert features == expected_features
 
@@ -272,4 +272,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    Testkeyboard().test_encode_single_letter()
+    Testkeyboard().test_generate_single_letters()

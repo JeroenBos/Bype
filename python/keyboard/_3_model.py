@@ -33,10 +33,11 @@ class Preprocessor:
 class KeyboardEstimator(MyBaseEstimator):
     @staticmethod
     def create(preprocessor: Preprocessor, **kwargs) -> "KeyboardEstimator":
-        result = KeyboardEstimator(**preprocessor.__dict__, **kwargs)
+        result = KeyboardEstimator(word_input_strategy=preprocessor.word_input_strategy,
+                                   **kwargs)
         result.preprocessor = preprocessor
         return result
-    
+
     def __init__(self, 
                  num_epochs=5,
                  activation='relu',

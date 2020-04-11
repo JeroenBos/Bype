@@ -1,7 +1,7 @@
 # this file generates training data
 import numpy as np
-from python.keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame
-from python.keyboard._1_import import SPEC, SPECs
+from python.keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame, RawTouchEvent
+from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
 from python.keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
@@ -14,7 +14,7 @@ def create_empty_swipe_df(length: int, **defaults) -> SwipeDataFrame:
     Creates an empty df of the correct format and shape determined by SPEC,
     initialized with default values, which default to 0.
     """
-    return create_empty_df(length, columns=list(SPEC.keys()), **defaults)
+    return create_empty_df(length, columns=RawTouchEvent.get_keys(), **defaults)
 
 
 def create_empty_swipe_embedding_df(length: int) -> SwipeEmbeddingDataFrame:

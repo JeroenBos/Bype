@@ -1,6 +1,7 @@
-from typing import Dict, List, Callable, TypeVar, Any, Tuple, Optional
+from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional
 import pandas as pd
 from abc import ABC
+import numpy as np
 
 T = TypeVar('T')
 
@@ -87,7 +88,7 @@ class SwipeDataFrame(pd.DataFrame):
 
 class SwipeEmbeddingDataFrame(pd.DataFrame):
     """
-    Represents a collection of swipes.
+    Represents a collection of swipes and associated words.
 
     This class serves no purposes other than type hints.
     """
@@ -115,3 +116,57 @@ class Input:
     @staticmethod
     def is_instance(obj) -> bool:
         return isinstance(obj, Input) and isinstance(obj.word, str) and SwipeDataFrame.is_instance(obj.swipe)
+
+
+
+class RawTouchEvent(pd.Series):
+    """Represents a row in a SwipeDataFrame"""
+
+    PointerIndex: int
+    Action: int
+    Timestamp: int  # int64
+    X: float
+    Y: float
+    Pressure: float
+    Size: float
+    Orientation: float
+    ToolMajor: float
+    ToolMinor: float
+    TouchMinor: float
+    TouchMajor: float
+    XPrecision: float
+    YPrecision: float
+    EdgeFlags: float
+    KeyboardLayout: int
+    KeyboardWidth: int
+    KeyboardHeight: int
+
+    SPEC: Dict[str, Type] = {
+               "PointerIndex": np.int32,
+               "Action": np.int32,
+               "Timestamp": np.int64,
+               "X": np.float32,
+               "Y": np.float32,
+               "Pressure": np.float32,
+               "Size": np.float32,
+               "Orientation": np.float32,
+               "ToolMajor": np.float32,
+               "ToolMinor": np.float32,
+               "TouchMinor": np.float32,
+               "TouchMajor": np.float32,
+               "XPrecision": np.float32,
+               "YPrecision": np.float32,
+               "EdgeFlags": np.float32,
+               "KeyboardLayout": np.int32,
+               "KeyboardWidth": np.int32,
+               "KeyboardHeight": np.int32,
+            }
+
+    @staticmethod
+    def get_type(field: str) -> Type:
+        return RawTouchEvent.SPEC[field]
+
+
+    @staticmethod
+    def get_keys() -> List[str]:
+        return list(RawTouchEvent.SPEC.keys())

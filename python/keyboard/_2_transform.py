@@ -1,7 +1,8 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
-from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input
-from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC, SPEC, SPECs
+import numpy as np
+from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent
+from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple
 
@@ -19,24 +20,24 @@ def get_code(char: str) -> int:
     return ord(char[0])
 
 
-def _get_keyboard(touchevent: pd.Series) -> Keyboard:
-    assert isinstance(SPECs.keyboard_layout, str), 'WTF. The property literally returns a string...'
-    assert hasattr(touchevent, SPECs.keyboard_layout)
-    layout_id = touchevent[SPECs.keyboard_layout]
-    assert isinstance(layout_id, int)
+def _get_keyboard(touchevent: RawTouchEvent) -> Keyboard:
+    assert hasattr(touchevent, "KeyboardLayout")
+    assert isinstance(touchevent.KeyboardLayout, (int, np.int32, np.int64))
+
+    layout_id = touchevent.KeyboardLayout
     keyboard = keyboards[layout_id]
     return keyboard
 
 
-def _get_normalized_x(touchevent: pd.Series) -> float:
-    return _get_keyboard(touchevent).normalize_x(touchevent[SPECs.x])
+def _get_normalized_x(touchevent: RawTouchEvent) -> float:
+    return _get_keyboard(touchevent).normalize_x(touchevent.X)
 
 
-def _get_normalized_y(touchevent: pd.Series) -> float:
-    return _get_keyboard(touchevent).normalize_y(touchevent[SPECs.y])
+def _get_normalized_y(touchevent: RawTouchEvent) -> float:
+    return _get_keyboard(touchevent).normalize_y(touchevent.Y)
 
 
-def _get_key(char: str, touchevent: pd.Series) -> Key:
+def _get_key(char: str, touchevent: RawTouchEvent) -> Key:
     code = get_code(char)
     keyboard = _get_keyboard(touchevent)
     if code not in keyboard:
@@ -47,8 +48,8 @@ def _get_key(char: str, touchevent: pd.Series) -> Key:
         return key
 
 
-def _get_normalized_button_x(word: str, index: int) -> Callable[[pd.Series], float]:
-    def impl(touchevent: pd.Series) -> float:
+def _get_normalized_button_x(word: str, index: int) -> Callable[[RawTouchEvent], float]:
+    def impl(touchevent: RawTouchEvent) -> float:
         if index >= len(word):
             return -1
 
@@ -57,8 +58,8 @@ def _get_normalized_button_x(word: str, index: int) -> Callable[[pd.Series], flo
     return impl
 
 
-def _get_normalized_button_y(word: str, index: int) -> Callable[[pd.Series], float]:
-    def impl(touchevent: pd.Series) -> float:
+def _get_normalized_button_y(word: str, index: int) -> Callable[[RawTouchEvent], float]:
+    def impl(touchevent: RawTouchEvent) -> float:
         if index >= len(word):
             return -1
 
