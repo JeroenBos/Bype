@@ -1,5 +1,5 @@
 # this file generates training data
-
+import numpy as np
 from python.keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame
 from python.keyboard._1_import import SPEC, SPECs
 from python.keyboard._2_transform import keyboards, Key
@@ -18,7 +18,7 @@ def create_empty_swipe_df(length: int, **defaults) -> SwipeDataFrame:
 
 
 def create_empty_swipe_embedding_df(length: int) -> SwipeEmbeddingDataFrame:
-    defaults = {'swipes': create_empty_swipe_df(0)}
+    defaults = {'swipes': create_empty_swipe_df(0)}  # TODO: isn't this new df the same one all the time by ref?
     return create_empty_df(length, columns=['swipes'], **defaults)
 
 
@@ -62,11 +62,16 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
         raise ValueError(f"Character '{word[0]}' was not found on the keyboard")
     key: Key = keyboard[char]
 
-    result[SPECs.x] = key.x
-    result[SPECs.y] = key.y
-    result[SPECs.keyboard_layout] = keyboard.layout_id
-    result[SPECs.keyboard_width] = keyboard.width
-    result[SPECs.keyboard_height] = keyboard.height
+    assert isinstance(keyboard.layout_id, int)
+    result.X[0] = key.x + key.width // 2
+    result.Y[0] = key.y + key.height // 2
+    result.KeyboardLayout[0] = keyboard.layout_id
+    result.KeyboardWidth[0] = keyboard.width
+    result.KeyboardHeight[0] = keyboard.height
+
+    assert isinstance(result.X[0], np.int64) 
+    assert isinstance(result.Y[0], np.int64) 
+    assert isinstance(result.KeyboardLayout[0], np.int64)
 
     return result
 
