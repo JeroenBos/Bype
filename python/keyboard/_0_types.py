@@ -13,6 +13,16 @@ class Keyboard(Dict[int, "Key"]):
         self.height = height
         for key in self.values():
             key.keyboard = self
+
+    def normalize_x(self, x: int) -> float:
+        return (x - self.left) / self.width
+
+    def normalize_y(self, y: int) -> float:
+        return (y - self.top) / self.height
+
+
+
+
 class Key:
     def __init__(self, code: int, code_index: int, x: int, y: int, width: int, height: int,
                  edgeFlags: int, repeatable: bool, toggleable: bool, keyboard: Keyboard = None):
