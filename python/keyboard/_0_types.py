@@ -71,7 +71,9 @@ class SwipeDataFrame(pd.DataFrame):
     KeyboardWidth: pd.Series
     KeyboardHeight: pd.Series
 
-    columns: Any
+    @property
+    def columns(self):
+        return super().columns
 
 
     # TODO: implement like https://stackoverflow.com/q/13135712/308451
