@@ -28,16 +28,12 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
 
     def _create_model(self) -> Models:
         # None here means variable over batches (but not within a batch)
-        swipe_input = Input(shape=(self.swipe_feature_count, self.swipe_timesteps_count))
-        if isinstance(self.word_input_strategy, CappedWordStrategy):
-            # this means the word input is appended to every timestep in the swipe data
-            word_input = Input(shape=(self.word_input_strategy.n, self.swipe_timesteps_count))
-        else:
-            raise ValueError()
+        input = Input(shape=(self.swipe_feature_count, self.swipe_timesteps_count))
 
-        merged = concatenate([swipe_input, word_input], axis=1)
+        middle = Dense(20)(input)
+        output = Dense(1, activation='sigmoid')(middle)
 
-        model = Model(inputs=[swipe_input, word_input], outputs=merged)
+        model = Model(inputs=[input], outputs=output)
         return model
 
     # called by super
