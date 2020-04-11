@@ -5,7 +5,8 @@ import numpy as np
 from python.model_training import DataSource
 
 T = TypeVar('T')
-ProcessedInput = List[float]
+ProcessedInputSeries = pd.Series  # where every element is a ProcessedInput
+ProcessedInput = List[List[float]]
 
 
 class Keyboard(Dict[int, "Key"]):

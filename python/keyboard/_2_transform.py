@@ -1,7 +1,7 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
 import numpy as np
-from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, SwipeEmbeddingDataFrame
+from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
 from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
 from python.keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
@@ -113,17 +113,17 @@ class Preprocessor:
 
 
 
-    def preprocess(self, X: SwipeEmbeddingDataFrame):
+    def preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
         return self._preprocess(X)
 
-    def _preprocess(self, X: SwipeEmbeddingDataFrame):
+    def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
         assert SwipeEmbeddingDataFrame.is_instance(X)
         assert isinstance(X.swipes, pd.Series)
         assert isinstance(X.words, pd.Series)
 
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             # this means the word input is appended to every timestep in the swipe data
-            return X.apply(axis=1, func=lambda x: self.encode(x.swipes, x.words))
+            return X.apply(axis=1, func=lambda x: self.encode(x.swipes, x.words), result_type='expand')[0]
         else:
             raise ValueError()
 
