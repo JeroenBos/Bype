@@ -27,6 +27,11 @@ class Key:
         self.toggleable = toggleable
         self.keyboard = keyboard
 
+    NO_KEY: "Key"
+
+
+Key.NO_KEY = Key(code=0, code_index=0, x=0, y=0, width=0, height=0,
+                 edgeFlags=0, repeatable=False, toggleable=False, keyboard=None)
 
 
 
