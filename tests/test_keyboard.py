@@ -9,7 +9,7 @@ from python.keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
 from python.keyboard._1_import import RawTouchEvent
 from python.keyboard._2_transform import Preprocessor
 from python.keyboard._3_model import KeyboardEstimator
-from tests.test_cluster import print_fully
+from python.utilities import print_fully
 import math
 
 
