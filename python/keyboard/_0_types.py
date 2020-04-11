@@ -2,8 +2,10 @@ from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional, Un
 import pandas as pd
 from abc import ABC
 import numpy as np
+from python.model_training import DataSource
 
 T = TypeVar('T')
+ProcessedInput = List[float]
 
 
 class Keyboard(Dict[int, "Key"]):
@@ -86,7 +88,7 @@ class SwipeDataFrame(pd.DataFrame):
 
 
 
-class SwipeEmbeddingDataFrame(pd.DataFrame):
+class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     """
     Represents a collection of swipes and associated words.
 
@@ -101,6 +103,20 @@ class SwipeEmbeddingDataFrame(pd.DataFrame):
     @staticmethod 
     def is_instance(obj: Any) -> bool:
         return isinstance(obj, pd.DataFrame) and sorted(obj.columns.values) == sorted(['swipes', 'words']) 
+
+    @staticmethod
+    def __as__(embedding_dataframe: pd.DataFrame) -> "SwipeEmbeddingDataFrame":
+        if isinstance(embedding_dataframe, SwipeEmbeddingDataFrame):
+            return embedding_dataframe
+        else:
+            return SwipeEmbeddingDataFrame(embedding_dataframe)
+
+    def get_train(self):
+        return self.swipes
+
+    def get_target(self):
+        return self.words
+
 
 
 

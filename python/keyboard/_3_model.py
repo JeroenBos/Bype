@@ -14,8 +14,7 @@ from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrateg
 class KeyboardEstimator(MyBaseEstimator):
     @staticmethod
     def create(preprocessor: Preprocessor, **kwargs) -> "KeyboardEstimator":
-        result = KeyboardEstimator(word_input_strategy=preprocessor.word_input_strategy,
-                                   **kwargs)
+        result = KeyboardEstimator(**kwargs)
         result.preprocessor = preprocessor
         return result
 
@@ -45,7 +44,7 @@ class KeyboardEstimator(MyBaseEstimator):
 
     # called by super
     def _preprocess(self, X):
-        if hasattr(self, 'preprocessor'):
+        if hasattr(self, 'preprocessor') and self.preprocessor is not None:
             return self.preprocessor.preprocess(X)
         return super()._preprocess(X)
 
@@ -54,6 +53,10 @@ class KeyboardEstimator(MyBaseEstimator):
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
+
+    def set_params(self, **params):
+        print('in set params')
+        return super().set_params(**params)
 
     @property
     def swipe_feature_count(self):

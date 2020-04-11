@@ -1,5 +1,5 @@
 import numpy as np
-from python.keyboard._2_transform import data, Input, xType, encode, decode
+from python.keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput
 from python.keyboard._3_model import KeyboardEstimator
 from typing import List
 from collections import namedtuple
@@ -15,19 +15,18 @@ class Scorer():
     Again, by convention higher numbers are better, so if your scorer returns loss, that value should be negated.
     """
 
-    def __init__(self, trainings_data: List[Input]):
-        assert isinstance(trainings_data, List), "Argument of wrong type. Expected a list"
-        for element in trainings_data:
-            assert isinstance(element, Input), "Argument of wrong type. Expected a list of Inputs"
+    def __init__(self, trainings_data: SwipeEmbeddingDataFrame):
+        assert SwipeEmbeddingDataFrame.is_instance(trainings_data), \
+            f"Arg error: expected SwipeEmbeddingDataFrame; got '{str(type(trainings_data))}'"
         self.trainings_data = trainings_data
 
-    def __call__(self, estimator: KeyboardEstimator, X: xType, y: None) -> float:
+    def __call__(self, estimator: KeyboardEstimator, X: ProcessedInput, y: None) -> float:
         """
         :param X: Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
                   So this X should be (timesteps, features)?
         """
 
-        word, correctSwipe = decode(X)
+        word, correctSwipe = estimator.preprocessor.decode(X)
         swipes = (t.swipe for t in self.trainings_data)
         intermediate = (Convolution(self._predict(word, swipe), swipe == correctSwipe) for swipe in swipes)
         sortedIntermediate = sorted(intermediate, key=lambda t: t.convolution)
@@ -35,10 +34,7 @@ class Scorer():
         return result
 
     def _predict(self, word, swipe) -> float:
-        return self.estimator.predict(encode(swipe, word))
-
-
-score_function = Scorer(data)
+        return self.estimator.predict(self.estimator.preprocessor.encode(swipe, word))
 
 
 # class MyError(losses.LossFunctionWrapper):

@@ -1,17 +1,11 @@
 from python.model_training import InMemoryDataSource
 import pandas as pd
 import numpy as np
-from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent
+from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput
 from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
 from python.keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple
-
-
-xType = namedtuple('xType', 'a b c')
-
-df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['X', 'y'])
-data = InMemoryDataSource(df, 'y')
 
 
 def get_code(char: str) -> int:
@@ -130,7 +124,7 @@ class Preprocessor:
         else:
             raise ValueError()
 
-    def encode(self, swipe: SwipeDataFrame, word: str) -> xType:
+    def encode(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
         """
         Converts the specified word and swipe data into a list of features.
         :param swipe: A row in DataSource.get_train().
@@ -164,6 +158,6 @@ class Preprocessor:
         assert self.swipe_timesteps_count == len(result)
         return result
 
-    def decode(self, x: xType) -> Input:
+    def decode(self, x: ProcessedInput) -> Input:
         """Converts the specified list of features into a word and swipe."""
         return Input('', '')

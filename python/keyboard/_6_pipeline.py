@@ -1,24 +1,25 @@
-from python.keyboard._2_transform import data
+from python.keyboard._0_types import SwipeEmbeddingDataFrame
+from python.keyboard._1a_generate import single_letter_swipes
+from python.keyboard._2_transform import Preprocessor
 from python.keyboard._3_model import KeyboardEstimator
-from python.keyboard._4_scoring import score_function
+from python.keyboard._4_scoring import Scorer
 from python.keyboard._5_output import KeyboardResultWriter
 from python.keyboard.hp import do_hp_search
 from typing import List, Union
 
-# estimator = KeyboardEstimator()
-# result = estimator.fit_data_source(data)
-# score_function(estimator)
 
-# print(result)
-# print('DONE')
+data = SwipeEmbeddingDataFrame.__as__(single_letter_swipes)
 
-# exit()
-
-ranges = KeyboardEstimator(
+hp_space = KeyboardEstimator(
             num_epochs=[5, 6]
-        )
-result = do_hp_search(KeyboardEstimator,
+        ).params
+
+scorer = Scorer(data)
+preprocessor = Preprocessor()
+
+
+result = do_hp_search(lambda **initial_params: KeyboardEstimator.create(preprocessor, **initial_params),
                       data,
                       KeyboardResultWriter(),
-                      ranges.params,
-                      scoring=score_function)
+                      hp_space,
+                      scoring=scorer)

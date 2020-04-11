@@ -81,7 +81,7 @@ class MyBaseEstimator(BaseEstimator):
     @property
     def params(self) -> dict:
         result = {**self.__dict__}
-        for key in ['models', 'verbose', 'history', '_log_dir']:
+        for key in ['models', 'verbose', 'history', '_log_dir', 'preprocessor']:
             del result[key]
         return result
 

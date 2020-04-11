@@ -6,7 +6,7 @@ from python.keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
 from python.model_training import InMemoryDataSource, TrivialDataSource
-from typing import Callable, List, TypeVar
+from typing import Callable, List, TypeVar, Any, Union
 
 
 def create_empty_swipe_df(length: int, **defaults) -> SwipeDataFrame:
@@ -18,11 +18,11 @@ def create_empty_swipe_df(length: int, **defaults) -> SwipeDataFrame:
 
 
 def create_empty_swipe_embedding_df(length: int) -> SwipeEmbeddingDataFrame:
-    defaults = {'swipes': create_empty_swipe_df(0)}  # TODO: isn't this new df the same one all the time by ref?
-    return create_empty_df(length, columns=['swipes'], **defaults)
+    defaults = {'swipes': create_empty_swipe_df(0), 'words': pd.Series([], dtype=np.str)}
+    return create_empty_df(length, columns=list(defaults.keys()), **defaults)
 
 
-def create_swipe_embedding_df(inputs: List[T], swipe_selector: Callable[[T], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
+def create_swipe_embedding_df(inputs: List[str], swipe_selector: Callable[[str], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
     result = create_empty_swipe_embedding_df(len(inputs))
     swipes = [swipe_selector(input) for input in inputs]
 
@@ -36,12 +36,16 @@ def create_swipe_embedding_df(inputs: List[T], swipe_selector: Callable[[T], Swi
     return result
 
 
-def create_empty_df(length: int, columns: List[str], **defaults) -> pd.DataFrame:
+def create_empty_df(length: int, columns: List[str], **defaults: Union[Any, Callable[[], Any]]) -> pd.DataFrame:
     """ Creates an empty df of the correct format and shape, initialized with default values, which default to 0. """
     for key, value in defaults.items():
         if key not in set(columns):
             raise ValueError(f"Unexpected default value specified for '{str(key)}'")
 
+    # get lazily evaluable defaults
+    defaults = {key: (value() if isinstance(value, Callable) else value) for key, value in defaults.items()}
+
+    # pad defaults with zeroes
     for column in columns:
         if column not in defaults:
             defaults[column] = 0
