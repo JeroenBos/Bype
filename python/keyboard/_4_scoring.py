@@ -8,6 +8,10 @@ from itertools import count, takewhile
 from tensorflow.keras.losses import Loss  # noqa
 from python.keyboard._2_transform import Preprocessor
 import pandas as pd
+import tensorflow as tf
+from tensorflow.python.framework.ops import disable_eager_execution  # noqa
+
+disable_eager_execution()
 
 Convolution = namedtuple('Convolution', 'swipe correct')
 
@@ -80,6 +84,7 @@ class MyLoss(Loss):
                 self.score_called_count = 0
                 self._get_batch_X = _get_batch_X        
 
+            # @tf.function
             def __call__(self, y_true, y_pred, **kwargs):
                 assert _get_shape(y_pred) == [None, estimator.preprocessor.swipe_timesteps_count, 1]  # is the output count
                 self.score_called_count += 1
