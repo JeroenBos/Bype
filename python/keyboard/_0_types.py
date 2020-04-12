@@ -126,7 +126,7 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         return self
 
     def get_target(self):
-        return None
+        return self.words
 
 
 

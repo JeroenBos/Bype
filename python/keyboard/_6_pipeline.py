@@ -13,10 +13,9 @@ data = SwipeEmbeddingDataFrame.__as__(single_letter_swipes)
 scorer = Scorer(data)
 loss_fn = MyLoss(data)
 
-preprocessor = Preprocessor(loss_ctr=loss_fn)
+preprocessor = Preprocessor(loss_ctor=loss_fn)
 
-
-training = KeyboardEstimator[preprocessor]().fit(data)
+training = KeyboardEstimator[preprocessor].create_initialized().fit(data)
 
 
 # ############# HYPER PARAMETERS #############

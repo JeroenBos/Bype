@@ -7,6 +7,7 @@ from python.keyboard._0_types import SwipeEmbeddingDataFrame, SwipeDataFrame, In
 from python.keyboard._2_transform import Preprocessor
 from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
 from python.keyboard.generic import generic
+from tensorflow.keras.losses import Loss  # noqa
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 
@@ -16,6 +17,19 @@ from python.keyboard.generic import generic
 # along the preprocessor because it's not an hp (it would do a deepclone anyway, which I guess itn't that bad)
 # but the metaclass does tag along the preprocessor then (different one per KeyboardEstimator type, like I said)
 class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
+    preprocessor: Preprocessor
+
+    @classmethod
+    def create_initialized(cls):
+        """ Creates a keyboard estimator and initializes the parameters from the preprocessor"""
+        result = cls()
+        keys = list(result.get_params().keys())
+        ignored_params = [key for key in keys if key not in cls.preprocessor.__dict__]
+        if len(ignored_params) != 0:
+            print('ignored preprocessor attributes: ' + str(ignored_params))
+        params = {key: cls.preprocessor.__dict__[key] for key in keys if key in cls.preprocessor.__dict__}
+        result.set_params(**params)
+        return result
 
     def __init__(self, 
                  num_epochs=5,

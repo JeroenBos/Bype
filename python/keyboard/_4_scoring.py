@@ -4,6 +4,8 @@ from python.keyboard._3_model import KeyboardEstimator
 from typing import List
 from collections import namedtuple
 from itertools import count, takewhile
+from tensorflow.keras.losses import Loss  # noqa
+from python.keyboard._2_transform import Preprocessor
 
 
 Convolution = namedtuple('Convolution', 'swipe correct')
@@ -37,12 +39,17 @@ class Scorer():
         return self.estimator.predict(self.estimator.preprocessor.encode(swipe, word))
 
 
-# class MyError(losses.LossFunctionWrapper):
-#     def __init__(self, model: Model, reduction=losses_utils.Reduction.SUM_OVER_BATCH_SIZE, name='myError'):
-#         self.model = model
-#         super(MyError, self).__init__(lambda y_true, y(pred: self.get_error(y_true, y_pred),
-#                                       name=name,
-#                                       reduction=reduction)
 
-#     def get_error(self, y_true, y_pred):
-#         return 0
+class MyLoss(Loss):
+    def __init__(self,
+                 trainings_data: SwipeEmbeddingDataFrame,
+                 name='myError'):
+        super().__init__()
+        self.scorer = Scorer(trainings_data)
+
+    def __call__(self, preprocessor: Preprocessor) -> float:
+        assert isinstance(preprocessor, Preprocessor)
+
+        def score(**kwargs):
+            return self.scorer.__call__(preprocessor, None)
+        return score

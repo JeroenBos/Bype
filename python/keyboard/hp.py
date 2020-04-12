@@ -34,6 +34,8 @@ class MyBaseEstimator(BaseEstimator):
 
     # gets called by sklearn, without y
     def fit(self, X, y=None):
+        if y is None and isinstance(X, DataSource):
+            X, y = X.get_train(), X.get_target()
         assert hasattr(self, 'num_epochs'), """num_epochs must be present. Set self.num_epochs in __init__"""
         old_X = X  # noqa
 
