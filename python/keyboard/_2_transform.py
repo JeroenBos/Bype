@@ -56,7 +56,8 @@ keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in rang
 class Preprocessor:
     def __init__(self, word_input_strategy: WordStrategy = CappedWordStrategy(5)):
         self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
-        self.swipe_timesteps_count = 1
+        self.swipe_timesteps_count = 3
+        self.batch_count = 1
         self.word_input_strategy = word_input_strategy
 
 
@@ -113,8 +114,26 @@ class Preprocessor:
 
 
 
-    def preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
-        return self._preprocess(X)
+    def preprocess(self, X: SwipeEmbeddingDataFrame) -> np.ndarray:
+        # X[word][touchevent][toucheventprop]
+
+        processed = self._preprocess(X)
+        # processed[word, timestep][feature]
+        assert len(processed) == 26
+
+        intermediate = processed.to_numpy()
+        # intermediate has shape ndarray[word, timestep]List[feature] which isn't much better than processed tbh
+
+        # I've been stuck on this for hours, I'll just do it myself
+        shape = [len(processed), self.swipe_timesteps_count, self.swipe_feature_count]
+        result = np.empty(shape, dtype=np.float)
+        for w in range(len(processed)):
+            for t in range(self.swipe_timesteps_count):
+                for f in range(self.swipe_feature_count):
+                    result[w, t, f] = intermediate[w, t][f]
+
+        assert result.shape == (26, 3, 13)
+        return result
 
     def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
         assert SwipeEmbeddingDataFrame.is_instance(X)
@@ -123,7 +142,8 @@ class Preprocessor:
 
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             # this means the word input is appended to every timestep in the swipe data
-            return X.apply(axis=1, func=lambda x: self.encode(x.swipes, x.words), result_type='expand')[0]
+            result = X.apply(axis=1, func=lambda x: self.encode(x.swipes, x.words), result_type='expand')
+            return result
         else:
             raise ValueError()
 
@@ -156,7 +176,8 @@ class Preprocessor:
             for feature_per_time_step in features_per_time_step:
                 time_step.append(feature_per_time_step(touchevent))
             result.append(time_step)
-
+        result.append(result[0])
+        result.append(result[0])
         assert self.swipe_feature_count == len(features_per_time_step)
         assert self.swipe_timesteps_count == len(result)
         return result

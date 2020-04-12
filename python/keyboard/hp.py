@@ -8,6 +8,7 @@ from python.model_training import ResultWriter, DataSource
 import pandas as pd
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa
 from python.keyboard.generic import generic  # noqa
+import numpy as np
 
 Models = TypeVar('tensorflow.keras.Models')  # can't find it
 
@@ -36,7 +37,7 @@ class MyBaseEstimator(BaseEstimator):
         assert hasattr(self, 'num_epochs'), """num_epochs must be present. Set self.num_epochs in __init__"""
         old_X = X  # noqa
 
-        X = self._preprocess(X)
+        X: np.ndarray = self._preprocess(X)
         model = self.current_model
         self._compile(model)
 
@@ -48,7 +49,7 @@ class MyBaseEstimator(BaseEstimator):
         ]
 
         params_repr = self._get_params_repr()
-        result = model.fit(X.to_numpy(), y.to_numpy() if y else None, epochs=self.num_epochs, callbacks=callbacks)
+        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks)
         self.history.setdefault(params_repr, []).append(result)
         return result
 
