@@ -51,7 +51,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
                       metrics=['accuracy'])
 
     def set_params(self, **params):
-        print('in set params')
+        self.preprocessor.set_params(**params)
         return super(self.__class__, self).set_params(**params)
 
     @property

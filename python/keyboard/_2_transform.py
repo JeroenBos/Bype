@@ -63,6 +63,10 @@ class Preprocessor:
         self.word_input_strategy = word_input_strategy
         self.loss_fn = loss_fn
 
+    def set_params(self, **params):
+        assert all(key in self.__dict__ for key in params.keys())
+        self.__dict__.update(params)
+
 
     def _get_keyboard(self, touchevent: RawTouchEvent) -> Keyboard:
         assert hasattr(touchevent, "KeyboardLayout")
