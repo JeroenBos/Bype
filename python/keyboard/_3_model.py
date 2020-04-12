@@ -8,6 +8,7 @@ from python.keyboard._2_transform import Preprocessor
 from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
 from python.keyboard.generic import generic
 from tensorflow.keras.losses import Loss  # noqa
+from tensorflow.python.keras import layers, models  # noqa
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 
@@ -46,8 +47,8 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         # None here means variable over batches (but not within a batch)
         input = Input(shape=(self.swipe_timesteps_count, self.swipe_feature_count))
 
-        middle = Dense(20)(input)
-        output = Dense(1, activation='sigmoid')(middle)
+        middle = Dense(20, kernel_initializer='random_uniform')(input)
+        output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 
         model = Model(inputs=[input], outputs=output)
         return model
