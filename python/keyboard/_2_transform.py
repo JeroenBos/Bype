@@ -58,7 +58,7 @@ class Preprocessor:
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor='binary_crossentropy'):
         self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
-        self.swipe_timesteps_count = 3
+        self.swipe_timesteps_count = 1
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
@@ -126,7 +126,6 @@ class Preprocessor:
 
         processed = self._preprocess(X)
         # processed[word, timestep][feature]
-        assert len(processed) == 26
 
         intermediate = processed.to_numpy()
         # intermediate has shape ndarray[word, timestep]List[feature] which isn't much better than processed tbh
@@ -139,7 +138,6 @@ class Preprocessor:
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
-        assert result.shape == (26, 3, 13)
         return result
 
     def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
@@ -183,8 +181,7 @@ class Preprocessor:
             for feature_per_time_step in features_per_time_step:
                 time_step.append(feature_per_time_step(touchevent))
             result.append(time_step)
-        result.append(result[0])
-        result.append(result[0])
+        
         assert self.swipe_feature_count == len(features_per_time_step)
         assert self.swipe_timesteps_count == len(result)
         return result
