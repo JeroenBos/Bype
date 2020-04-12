@@ -28,7 +28,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
 
     def _create_model(self) -> Models:
         # None here means variable over batches (but not within a batch)
-        input = Input(shape=(self.swipe_feature_count, self.swipe_timesteps_count))
+        input = Input(shape=(self.swipe_timesteps_count, self.swipe_feature_count))
 
         middle = Dense(20)(input)
         output = Dense(1, activation='sigmoid')(middle)
