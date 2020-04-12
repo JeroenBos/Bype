@@ -10,6 +10,10 @@ from python.keyboard._2_transform import Preprocessor
 import pandas as pd
 import tensorflow as tf
 from tensorflow.python.framework.ops import disable_eager_execution  # noqa
+from tensorflow.python.framework import ops  # noqa
+from tensorflow.python.ops import math_ops # noqa
+from tensorflow.python.keras import backend as K # noqa
+
 
 disable_eager_execution()
 
@@ -84,8 +88,14 @@ class MyLoss(Loss):
                 self.score_called_count = 0
                 self._get_batch_X = _get_batch_X        
 
-            # @tf.function
+            @tf.function
             def __call__(self, y_true, y_pred, **kwargs):
+                y_pred = ops.convert_to_tensor_v2(y_pred)
+                y_true = math_ops.cast(y_true, y_pred.dtype)
+                return K.mean(math_ops.abs(y_pred - y_true), axis=-1)
+                
+                # return tf.keras.backend.zeros(
+
                 assert _get_shape(y_pred) == [None, estimator.preprocessor.swipe_timesteps_count, 1]  # is the output count
                 self.score_called_count += 1
                 if self.score_called_count == 1:
