@@ -20,11 +20,13 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     def __init__(self, 
                  num_epochs=5,
                  activation='relu',
-                 word_input_strategy: WordStrategy = CappedWordStrategy(5)):
+                 word_input_strategy: WordStrategy = CappedWordStrategy(5),
+                 loss_fn='binary_crossentropy'):
         super(self.__class__, self).__init__()
         self.num_epochs = num_epochs
         self.activation = activation
         self.word_input_strategy = word_input_strategy
+        self.loss_fn = loss_fn
 
     def _create_model(self) -> Models:
         # None here means variable over batches (but not within a batch)
@@ -44,7 +46,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
 
     def _compile(self, model: Optional[Models] = None) -> None:
         model = model if model else self.current_model
-        model.compile(loss='binary_crossentropy',
+        model.compile(loss=self.loss_fn,
                       optimizer='adam',
                       metrics=['accuracy'])
 
