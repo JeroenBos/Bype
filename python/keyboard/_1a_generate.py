@@ -22,9 +22,9 @@ def create_empty_swipe_embedding_df(length: int) -> SwipeEmbeddingDataFrame:
     return create_empty_df(length, columns=list(defaults.keys()), **defaults)
 
 
-def create_swipe_embedding_df(words: List[str], swipe_selector: Callable[[str], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
+def create_swipe_embedding_df(words: List[str], swipe_selector: Callable[[str, int], SwipeDataFrame]) -> SwipeEmbeddingDataFrame:
     result = create_empty_swipe_embedding_df(len(words))
-    swipes = [swipe_selector(word) for word in words]
+    swipes = [swipe_selector(word, i) for i, word in enumerate(words)]
 
     for swipe in swipes:
         assert isinstance(swipe, pd.DataFrame)
@@ -84,4 +84,4 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
 _single_letters = [chr(i) for i in range(97, 97 + 26)]
 _single_letter_words = DataFrame(_single_letters, columns=['word'], dtype=str)
 
-single_letter_swipes = create_swipe_embedding_df(_single_letters, generate_taps_for)
+single_letter_swipes = create_swipe_embedding_df(_single_letters, lambda word, i: generate_taps_for(word))

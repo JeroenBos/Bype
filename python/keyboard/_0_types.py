@@ -107,8 +107,8 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
         assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
         assert all(isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
-        
-        
+
+
 
     @staticmethod 
     def is_instance(obj: Any) -> bool:
@@ -127,6 +127,9 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
 
     def get_target(self):
         return self.words
+
+    def get_row(self, i: int) -> "Input":
+        return Input(self.swipes[i], self.words[i])
 
 
 

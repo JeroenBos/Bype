@@ -35,7 +35,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
                  num_epochs=5,
                  activation='relu',
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
-                 loss_ctor: Union[str, Callable[[Preprocessor], Loss]] = 'binary_crossentropy'):
+                 loss_ctor: Union[str, Callable[["KeyboardEstimator"], Loss]] = 'binary_crossentropy'):
         super(self.__class__, self).__init__()
         self.num_epochs = num_epochs
         self.activation = activation
@@ -60,7 +60,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
 
     def _compile(self, model: Optional[Models] = None) -> None:
         model = model if model else self.current_model
-        loss = self.loss_ctor if isinstance(self.loss_ctor, str) else self.loss_ctor(self.preprocessor)
+        loss = self.loss_ctor if isinstance(self.loss_ctor, str) else self.loss_ctor(self)
         model.compile(loss=loss,
                       optimizer='adam',
                       metrics=['accuracy'])

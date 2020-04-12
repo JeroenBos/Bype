@@ -56,8 +56,15 @@ class MyBaseEstimator(BaseEstimator):
         return result
 
     def predict(self, X):
-        X = self._preprocess(X)
-        return self.current_model.predict(X)
+        preprocessedX = self._preprocess(X)
+        return self._predict(preprocessedX)
+
+    def _predict(self, preprocessedX):
+        # if this throws 'Tensor' object has no attribute '_numpy'
+        # that could be due to calling _predict before any trainings has occurred
+        # eschew calling this method on the initial call to the loss function
+        # this initial call is during model compilation and bears a zero-length batch
+        return self.current_model.predict(preprocessedX)
 
     def _preprocess(self, X):
         return X
