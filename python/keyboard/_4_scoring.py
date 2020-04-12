@@ -47,9 +47,15 @@ class MyLoss(Loss):
         super().__init__()
         self.scorer = Scorer(trainings_data)
 
+    def _get_shape(self, tensor) -> List:
+        """ Gets the shape in a list form instead of tensorshape object"""
+        return [dim.value for dim in tensor.shape.dims]
+
     def __call__(self, preprocessor: Preprocessor) -> float:
         assert isinstance(preprocessor, Preprocessor)
 
-        def score(**kwargs):
+        def score(y_true, y_pred, **kwargs):
+            print(self._get_shape(y_true))
+            assert self._get_shape(y_pred) == [None, preprocessor.swipe_timesteps_count, 1]  # is the output count
             return self.scorer.__call__(preprocessor, None)
         return score
