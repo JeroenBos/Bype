@@ -36,9 +36,10 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
         }
 
         assert isinstance(keyboard.layout_id, int)
-        assert isinstance(event["X"], float) 
-        assert isinstance(event["Y"], float) 
-        assert isinstance(event["KeyboardLayout"], int)
+
+        assert isinstance(event["X"], RawTouchEvent.SPEC["X"]) 
+        assert isinstance(event["Y"], RawTouchEvent.SPEC["Y"]) 
+        assert isinstance(event["KeyboardLayout"], RawTouchEvent.SPEC["KeyboardLayout"])
         return event
 
     result = SwipeDataFrame.create(word, create_event)
