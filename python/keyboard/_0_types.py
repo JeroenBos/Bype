@@ -3,6 +3,7 @@ import pandas as pd
 from abc import ABC
 import numpy as np
 from python.model_training import DataSource
+from python.keyboard.generic import create_empty_df
 
 T = TypeVar('T')
 ProcessedInputSeries = pd.Series  # where every element is a ProcessedInput
@@ -87,6 +88,14 @@ class SwipeDataFrame(pd.DataFrame):
     def is_instance(obj: Any) -> bool:
         return isinstance(obj, pd.DataFrame) and 'XPrecision' in obj.columns.values
 
+    @staticmethod
+    def create_empty(length: int, **defaults) -> "SwipeDataFrame":
+        """
+        Creates an empty df of the correct format and shape determined by SPEC,
+        initialized with default values, which default to 0.
+        """
+        return create_empty_df(length, columns=RawTouchEvent.get_keys(), **defaults)
+
 
 
 class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
@@ -122,6 +131,41 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         else:
             return SwipeEmbeddingDataFrame(embedding_dataframe)
 
+
+    @staticmethod
+    def convolve_data(trainings_data: "SwipeEmbeddingDataFrame") -> "SwipeConvolutionDataFrame":
+        # just creates a square matrix of all combinations
+        L = len(trainings_data.words)
+        words = [trainings_data.words[i % L] for i in range(L * L)]
+        return SwipeEmbeddingDataFrame.create(words, lambda word, i: trainings_data.swipes[i // L])
+
+
+    @staticmethod
+    def create_empty(length: int) -> "SwipeEmbeddingDataFrame":
+        defaults = {'swipes': SwipeDataFrame.create_empty(0), 'words': pd.Series([], dtype=np.str)}
+        return create_empty_df(length, columns=list(defaults.keys()), **defaults)
+
+
+    @staticmethod
+    def create(words: List[str], swipe_selector: Callable[[str, int], SwipeDataFrame]) -> "SwipeEmbeddingDataFrame":
+        """
+        Creates a swipe embedding dataframe from the specified words and a mapping function creating the swipe
+        :param words: The words to create swipes for.
+        :param swipe_selector: A function creating the swipe data from the word and index in the param 'words'
+        """
+        result = SwipeEmbeddingDataFrame.create_empty(len(words))
+        swipes = [swipe_selector(word, i) for i, word in enumerate(words)]
+
+        for swipe in swipes:
+            assert isinstance(swipe, pd.DataFrame)
+            assert len(swipe) != 0, 'empty swipe'
+        assert len(set(len(swipe.columns) for swipe in swipes)) == 1, 'not all swipes have same columns'
+
+        for i, swipe in enumerate(swipes):
+            result.swipes[i] = swipe
+            result.words[i] = words[i]
+        return result
+        
     def get_train(self):
         return self
 
@@ -131,8 +175,21 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     def get_row(self, i: int) -> "Input":
         return Input(self.swipes[i], self.words[i])
 
+    def convolve(self) -> "SwipeConvolutionDataFrame":
+        # just creates a square matrix of all combinations
+        L = len(self.words)
+        words = [self.words[i % L] for i in range(L * L)]
+        return SwipeEmbeddingDataFrame.create(words, lambda word, i: self.swipes[i // L])
 
 
+
+
+
+class SwipeConvolutionDataFrame(SwipeEmbeddingDataFrame):
+    correct: pd.Series  # series of booleans
+
+    def convolve_data(self) -> None:
+        raise ValueError("Cannot convolve already convolved dataframe")
 
 class Input:
     """Represents the tuple 'swipe' + 'word'."""

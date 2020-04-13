@@ -274,4 +274,4 @@ class TDD(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    Testkeyboard().test_encode_single_letter()
+    Testkeyboard().test_can_create_model()

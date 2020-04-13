@@ -1,6 +1,5 @@
 import numpy as np
 from python.keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame
-from python.keyboard._1a_generate import create_swipe_embedding_df
 from python.keyboard._3_model import KeyboardEstimator
 from typing import List
 from collections import namedtuple
@@ -11,8 +10,8 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.python.framework.ops import disable_eager_execution  # noqa
 from tensorflow.python.framework import ops  # noqa
-from tensorflow.python.ops import math_ops # noqa
-from tensorflow.python.keras import backend as K # noqa
+from tensorflow.python.ops import math_ops  # noqa
+from tensorflow.python.keras import backend as K  # noqa
 
 
 disable_eager_execution()
@@ -20,8 +19,6 @@ disable_eager_execution()
 Convolution = namedtuple('Convolution', 'swipe correct')
 
 
-class SwipeConvolutionDataFrame(SwipeEmbeddingDataFrame):
-    correct: pd.Series  # series of booleans
 
 class Scorer():
     """
@@ -33,14 +30,7 @@ class Scorer():
         assert SwipeEmbeddingDataFrame.is_instance(trainings_data), \
             f"Arg error: expected SwipeEmbeddingDataFrame; got '{str(type(trainings_data))}'"
         self.trainings_data = trainings_data
-        self.convolved_data = Scorer.convolve_data(trainings_data)
-
-    @staticmethod
-    def convolve_data(trainings_data: SwipeEmbeddingDataFrame) -> SwipeConvolutionDataFrame:
-        # just creates a square matrix of all combinations
-        L = len(trainings_data.words)
-        words = [trainings_data.words[i % L] for i in range(L * L)]
-        return create_swipe_embedding_df(words, lambda word, i: trainings_data.swipes[i // L])
+        self.convolved_data = trainings_data.convolve()
 
     def __call__(self, estimator: KeyboardEstimator, X: Input, y: None) -> float:
         """
@@ -50,7 +40,7 @@ class Scorer():
 
         prediction_matrix = estimator.predict(self.convolved_data)
 
-        create_swipe_embedding_df
+        # create_swipe_embedding_df
         word, correctSwipe = X
         swipes = self.trainings_data.swipes
         for swipe in swipes:
@@ -93,7 +83,7 @@ class MyLoss(Loss):
                 y_pred = ops.convert_to_tensor_v2(y_pred)
                 y_true = math_ops.cast(y_true, y_pred.dtype)
                 return K.mean(math_ops.abs(y_pred - y_true), axis=-1)
-                
+
                 # return tf.keras.backend.zeros(
 
                 assert _get_shape(y_pred) == [None, estimator.preprocessor.swipe_timesteps_count, 1]  # is the output count
