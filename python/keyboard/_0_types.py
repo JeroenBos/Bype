@@ -120,7 +120,7 @@ class SwipeDataFrame(pd.DataFrame):
             for key, value in partialEvents.items():
                 if key not in result.columns.values:
                     raise ValueError(f"Unknown column '{str(key)}' for input {str(word)} at index '{str(i)}'")
-                result[key, i] = value
+                result[key][i] = value
 
         result.validate()
 
