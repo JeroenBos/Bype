@@ -17,16 +17,3 @@ preprocessor = Preprocessor(loss_ctor=loss_fn)
 
 training = KeyboardEstimator[preprocessor].create_initialized().fit(data)
 
-
-# ############# HYPER PARAMETERS #############
-exit()
-
-hp_space = KeyboardEstimator[None](
-            num_epochs=[5, 6]
-        ).params
-
-result = do_hp_search(KeyboardEstimator[preprocessor],
-                      data,
-                      KeyboardResultWriter(),
-                      hp_space,
-                      scoring=scorer)
