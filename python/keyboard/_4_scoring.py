@@ -14,7 +14,7 @@ from tensorflow.python.ops import math_ops  # noqa
 from tensorflow.python.keras import backend as K  # noqa
 
 
-disable_eager_execution()
+# disable_eager_execution()
 
 Convolution = namedtuple('Convolution', 'swipe correct')
 
