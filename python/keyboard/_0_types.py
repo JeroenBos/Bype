@@ -115,7 +115,8 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         assert SwipeEmbeddingDataFrame.is_instance(self)
         assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
         assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
-        assert all(isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
+        words = [word for i, word in self.words.iteritems()]
+        assert all(len(word) == 0 or isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
 
 
 
@@ -143,7 +144,8 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     @staticmethod
     def create_empty(length: int) -> "SwipeEmbeddingDataFrame":
         defaults = {'swipes': SwipeDataFrame.create_empty(0), 'words': pd.Series([], dtype=np.str)}
-        return create_empty_df(length, columns=list(defaults.keys()), **defaults)
+        inner = create_empty_df(length, columns=list(defaults.keys()), **defaults)
+        return SwipeEmbeddingDataFrame(inner)
 
 
     @staticmethod
