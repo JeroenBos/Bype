@@ -1,5 +1,5 @@
 import numpy as np
-from python.keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame
+from python.keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame, SwipeConvolutionDataFrame
 from python.keyboard._3_model import KeyboardEstimator
 from typing import List
 from collections import namedtuple
@@ -26,11 +26,10 @@ class Scorer():
     Again, by convention higher numbers are better, so if your scorer returns loss, that value should be negated.
     """
 
-    def __init__(self, trainings_data: SwipeEmbeddingDataFrame):
+    def __init__(self, trainings_data: SwipeConvolutionDataFrame):
         assert SwipeEmbeddingDataFrame.is_instance(trainings_data), \
             f"Arg error: expected SwipeEmbeddingDataFrame; got '{str(type(trainings_data))}'"
         self.trainings_data = trainings_data
-        self.convolved_data = trainings_data.convolve()
 
     def __call__(self, estimator: KeyboardEstimator, X: Input, y: None) -> float:
         """
@@ -38,7 +37,7 @@ class Scorer():
                   So this X should be (timesteps, features)?
         """
 
-        prediction_matrix = estimator.predict(self.convolved_data)
+        prediction_matrix = estimator.predict(self.trainings_data)
 
         # create_swipe_embedding_df
         word, correctSwipe = X
