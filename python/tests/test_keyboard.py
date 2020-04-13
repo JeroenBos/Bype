@@ -13,6 +13,42 @@ from utilities import print_fully
 import math
 
 
+class IntOrHalfInt:
+    def __init__(self, i: int):
+        self.i = i
+
+    def __eq__(self, value):
+        if isinstance(value, int) or isinstance(value, float):
+            return value == self.i \
+                or value == self.i + 0.5 \
+                or value == self.i - 0.5
+        elif isinstance(value, self.__class__):
+            return self.__eq__(self, value.i)
+        else:
+            return super().__eq__(value)
+
+class TestKey(Key):
+    def __init__(self, key: Key):
+        def to_key(key):
+            if key == 'edge_flags':
+                return 'edgeFlags'
+            return key
+        super().__init__(**{to_key(key): value for key, value in key.__dict__.items()})
+
+    @property
+    def norm_x(self) -> IntOrHalfInt:
+        """ Gets the horizontal middle of the button associated with the specified character """
+        return self.keyboard.normalize_x(self.x + self.width / 2)
+
+    @property
+    def norm_y(self) -> IntOrHalfInt:
+        """ Gets the vertical middle of the button associated with the specified character """
+        return self.keyboard.normalize_y(self.y + self.height / 2)
+
+
+
+
+
 class HpParamsTests(unittest.TestCase):
     def test_metaclass_indexer(self):
         ref_var = [0]
@@ -230,6 +266,38 @@ class Testkeyboard(unittest.TestCase):
                             ]
         assert features == expected_features
 
+    def test_encode_double_letters(self):
+        from python.keyboard._1a_generate import generate_taps_for, keyboards
+        # arrange
+        a = TestKey(keyboards[0].get_key('a'))
+        b = TestKey(keyboards[0].get_key('b'))
+        expected_features = [
+            [  # touch event for 'a'
+                a.norm_x, a.norm_y,    # tap letter 'a'
+                0.2,                   # relative word length 
+                a.norm_x, a.norm_y,    # copy of the word
+                b.norm_x, b.norm_y,    # copy of the word
+                -1, -1,                # padding of the word
+                -1, -1,                # padding of the word
+                -1, -1],               # padding of the word
+            [  # touch event for 'b'
+                b.norm_x, b.norm_y,    # tap letter 'b'
+                0.2,                   # relative word length 
+                a.norm_x, a.norm_y,    # copy of the word
+                b.norm_x, b.norm_y,    # copy of the word
+                -1, -1,                # padding of the word
+                -1, -1,                # padding of the word
+                -1, -1,                # padding of the word
+            ]
+        ]
+
+        # act
+        swipe = generate_taps_for('ab')
+        assert len(swipe) == 2
+        features = Preprocessor(time_steps=2).encode(swipe, 'ab')
+
+        # assert
+        assert features == expected_features
 
 if __name__ == '__main__':
-    Testkeyboard().test_can_create_model()
+    Testkeyboard().test_encode_double_letters()
