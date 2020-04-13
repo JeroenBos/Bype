@@ -190,7 +190,7 @@ class SwipeConvolutionDataFrame(SwipeEmbeddingDataFrame):
         raise ValueError("Cannot convolve already convolved dataframe")
 
     def get_target(self):
-        return self.correct.transform(lambda boolean: 1.0 if boolean else 0.0)
+        return self.correct.transform(lambda boolean: 1.0 if boolean else 0.0, dtype=float)
 
 
 class Input:
