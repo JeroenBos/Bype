@@ -7,36 +7,46 @@ import pandas as pd
 from pandas import DataFrame
 from DataSource import InMemoryDataSource, TrivialDataSource
 from typing import Callable, List, TypeVar, Any, Union
-
+import random
 
 
 def generate_taps_for(word: str) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
+    assert isinstance(word, str)
+    assert len(word) != 0
 
     # first generate dataframe of the correct format and size:
-    result = SwipeDataFrame.create_empty(1)
 
-    keyboard = keyboards[0]
-    char = ord(word[0])
-    if char not in keyboard:
-        raise ValueError(f"Character '{word[0]}' was not found on the keyboard")
-    key: Key = keyboard[char]
+    def create_event(char: str, i: int):
+        assert isinstance(word, str)
 
-    assert isinstance(keyboard.layout_id, int)
-    result.X[0] = key.x + key.width / 2
-    result.Y[0] = key.y + key.height / 2
-    result.KeyboardLayout[0] = keyboard.layout_id
-    result.KeyboardWidth[0] = keyboard.width
-    result.KeyboardHeight[0] = keyboard.height
+        keyboard = keyboards[0]
+        code = ord(char)
+        if code not in keyboard:
+            raise ValueError(f"Character '{char}' was not found on the keyboard")
+        key: Key = keyboard[code]
 
-    assert isinstance(result.X[0], np.int64) 
-    assert isinstance(result.Y[0], np.int64) 
-    assert isinstance(result.KeyboardLayout[0], np.int64)
 
+        event: RawTouchEvent = {
+            "X": key.x + key.width / 2,
+            "Y": key.y + key.height / 2,
+            "KeyboardLayout": keyboard.layout_id,
+            "KeyboardWidth": keyboard.width,
+            "KeyboardHeight": keyboard.height,
+        }
+
+        assert isinstance(keyboard.layout_id, int)
+        assert isinstance(event["X"], float) 
+        assert isinstance(event["Y"], float) 
+        assert isinstance(event["KeyboardLayout"], int)
+        return event
+
+    result = SwipeDataFrame.create(word, create_event)
     return result
 
 
 _single_letters = [chr(i) for i in range(97, 97 + 26)]
-_single_letter_words = DataFrame(_single_letters, columns=['word'], dtype=str)
+_double_letters = random.sample([chr(i) + chr(j) for i in range(97, 97 + 26) for j in range(97, 97 + 26)], 50)
 
 single_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters, lambda word, i: generate_taps_for(word))
+double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, lambda word, i: generate_taps_for(word))
