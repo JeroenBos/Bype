@@ -5,7 +5,7 @@ from generic import generic
 from DataSource import InMemoryDataSource
 import pandas as pd
 import tensorflow as tf
-from keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
+from keyboard._0_types import Key, Keyboard, SwipeDataFrame, SwipeEmbeddingDataFrame, T
 from keyboard._1_import import RawTouchEvent
 from keyboard._2_transform import Preprocessor
 from keyboard._3_model import KeyboardEstimator
@@ -144,7 +144,7 @@ class HpParamsTests(unittest.TestCase):
 
 class Testkeyboard(unittest.TestCase):
     def test_can_create_model(self):
-        estimator = KeyboardEstimator.create(Preprocessor())
+        estimator = KeyboardEstimator[Preprocessor()].create_initialized()
         estimator._create_model()
 
     def test_load_keyboard_layout(self):
@@ -199,22 +199,18 @@ class Testkeyboard(unittest.TestCase):
         from keyboard._1a_generate import create_empty_swipe_embedding_df
         df = create_empty_swipe_embedding_df(1)
         assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, SwipeEmbeddingDataFrame)
         assert len(df) == 1
-        assert len(df.columns) == 1
-        assert df.columns.values[0] == 'swipes'
+        assert sorted(df.columns.values) == sorted(['swipes', 'words', 'correct'])
 
     def test_swipe_embedding_with_entries(self):
-        from keyboard._1a_generate import create_empty_swipe_embedding_df, create_empty_swipe_df
-        df = create_empty_swipe_embedding_df(1)
-        df['swipes'][0] = create_empty_swipe_df(5)
+        df = SwipeEmbeddingDataFrame.create_empty(1)
+        df['swipes'][0] = SwipeDataFrame.create_empty(5)
 
         assert isinstance(df, pd.DataFrame)
-        assert len(df.columns) == 1
-        assert df.columns.values[0] == 'swipes'
-        assert len(df) == 1
-        assert isinstance(df['swipes'][0], pd.DataFrame)
-        entry = df['swipes'][0]
-        assert len(entry) == 5
+        assert isinstance(df.swipes[0], pd.DataFrame)
+        # assert isinstance(df.swipes[0], SwipeDataFrame)
+        assert len(df.swipes[0]) == 5
 
     def test_encode_single_letter(self):
         from keyboard._1a_generate import generate_taps_for, keyboards
