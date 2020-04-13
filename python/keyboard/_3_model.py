@@ -9,6 +9,7 @@ from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrateg
 from python.keyboard.generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa
+from python.model_training import DataSource
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 
@@ -77,3 +78,12 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     @property
     def swipe_timesteps_count(self):
         return self.preprocessor.swipe_timesteps_count
+
+    def fit(self, X, y=None) -> None:
+        if y is None and isinstance(X, DataSource):
+            X, y = X.get_train(), X.get_target()
+        assert y.name == 'correct'
+        assert len(X) == len(y)
+        targets = [target for i, target in y.iteritems()]
+        assert all(isinstance(target, float) for target in y)
+        super(self.__class__, self).fit(X, y)
