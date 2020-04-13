@@ -1,5 +1,6 @@
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, List, Union, Dict, Type
 import pandas as pd
+from ctypes import cast
 
 
 def generic(*params: str) -> type:
@@ -37,7 +38,7 @@ def generic(*params: str) -> type:
 
 # I'm abusing this file here to mean 'utils' rather than generics
 
-def create_empty_df(length: int, columns: List[str], **defaults: Union[Any, Callable[[], Any]]) -> pd.DataFrame:
+def create_empty_df(length: int, columns: Union[List[str], Dict[str, Type]], **defaults: Union[Any, Callable[[], Any]]) -> pd.DataFrame:
     """ Creates an empty df of the correct format and shape, initialized with default values, which default to 0. """
     for key, value in defaults.items():
         if key not in set(columns):
@@ -46,10 +47,24 @@ def create_empty_df(length: int, columns: List[str], **defaults: Union[Any, Call
     # get lazily evaluable defaults
     defaults = {key: (value() if isinstance(value, Callable) else value) for key, value in defaults.items()}
 
-    # pad defaults with zeroes
-    for column in columns:
-        if column not in defaults:
-            defaults[column] = 0
+    # pad defaults with defaults
+    if isinstance(columns, List):
+        for column in columns:
+            if column not in defaults:
+                defaults[column] = 0
+    else:
+        for column, dtype in columns.items():
+            if column not in defaults:
+                if dtype is bool:
+                    defaults[column] = False
+                else:
+                    try:
+                        defaults[column] = (dtype)(0)
+                    except (TypeError, ValueError):
+                        raise ValueError(f"The specified dtype '{str(dtype)}' has unknown default. Specify it manually")
+
 
     result = pd.DataFrame([list(defaults[key] for key in columns) for _ in range(length)], columns=columns)
+    if isinstance(columns, Dict):
+        result.astype(dtype=columns, copy=False)
     return result
