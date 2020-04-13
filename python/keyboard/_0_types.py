@@ -236,7 +236,7 @@ class RawTouchEvent(pd.Series):
     KeyboardWidth: int
     KeyboardHeight: int
 
-    SPEC: Dict[str, Type] = {
+    SPEC_np: Dict[str, Type] = {
                "PointerIndex": np.int32,
                "Action": np.int32,
                "Timestamp": np.int64,
@@ -256,6 +256,7 @@ class RawTouchEvent(pd.Series):
                "KeyboardWidth": np.int32,
                "KeyboardHeight": np.int32,
             }
+    SPEC: Dict[str, Type]
 
     @staticmethod
     def get_type(field: str) -> Type:
@@ -265,3 +266,7 @@ class RawTouchEvent(pd.Series):
     @staticmethod
     def get_keys() -> List[str]:
         return list(RawTouchEvent.SPEC.keys())
+
+
+np_dtype_map = {np.int32: int, np.float32: float, np.int64: int, np.bool: bool}
+RawTouchEvent.SPEC = {key: np_dtype_map[value] for key, value in RawTouchEvent.SPEC_np.items()}
