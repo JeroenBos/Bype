@@ -82,11 +82,17 @@ def create_empty_df(length: int, columns: Union[List[str], Dict[str, Type]], **d
         result.astype(dtype=columns, copy=False)
     if isinstance(columns, Dict):
         def validate(self: pd.DataFrame):
+            for column in self.columns:
+                if column not in set(columns):
+                    raise ValueError(f"A wild column appeared: '{str(column)}'")
             for column, dtype in columns.items():
                 for elem in result[column]:
                     assert isinstance(elem, dtype)
     else:
         def validate(self: pd.DataFrame):
+            for column in self.columns:
+                if column not in columns:
+                    raise ValueError(f"A wild column appeared: '{str(column)}'")
             for column, dtype in zip(self.columns, self.dtypes):
                 if dtype.type is not np.object_:
                     for elem in result[column]:
