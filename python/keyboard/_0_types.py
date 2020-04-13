@@ -105,8 +105,9 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     This class serves no purposes other than type hints.
     """
 
-    swipes: pd.Series  # with elements of type SwipeDataFrame, but I can't specify that here
-    words: pd.Series
+    swipes: pd.Series   # with elements of type SwipeDataFrame, but I can't specify that here
+    words: pd.Series    # series of strings
+    correct: pd.Series  # series of booleans
 
     columns: Any
 
@@ -115,14 +116,14 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         assert SwipeEmbeddingDataFrame.is_instance(self)
         assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
         assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
-        words = [word for i, word in self.words.iteritems()]
         assert all(len(word) == 0 or isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
 
 
 
     @staticmethod 
     def is_instance(obj: Any) -> bool:
-        return isinstance(obj, pd.DataFrame) and sorted(obj.columns.values) == sorted(['swipes', 'words']) 
+        return isinstance(obj, SwipeEmbeddingDataFrame) or \
+               isinstance(obj, pd.DataFrame) and 'swipes' in obj.columns.values and 'words' in obj.columns.values
 
 
     @staticmethod
@@ -143,7 +144,10 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
 
     @staticmethod
     def create_empty(length: int) -> "SwipeEmbeddingDataFrame":
-        defaults = {'swipes': SwipeDataFrame.create_empty(0), 'words': pd.Series([], dtype=np.str)}
+        defaults = {
+            'swipes': SwipeDataFrame.create_empty(0), 
+            'words': pd.Series([], dtype=np.str), 
+            'correct': pd.Series([], dtype=np.bool)}
         inner = create_empty_df(length, columns=list(defaults.keys()), **defaults)
         return SwipeEmbeddingDataFrame(inner)
 
@@ -166,13 +170,14 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         for i, swipe in enumerate(swipes):
             result.swipes[i] = swipe
             result.words[i] = words[i]
+            result.correct[i] = True
         return result
-        
+
     def get_train(self):
         return self
 
     def get_target(self):
-        return self.words
+        return self.correct.transform(lambda boolean: 1.0 if boolean else 0.0)
 
     def get_row(self, i: int) -> "Input":
         return Input(self.swipes[i], self.words[i])
@@ -181,18 +186,17 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
         # just creates a square matrix of all combinations
         L = len(self.words)
         words = [self.words[i % L] for i in range(L * L)]
-        return SwipeEmbeddingDataFrame.create(words, lambda word, i: self.swipes[i // L])
+        data = SwipeConvolutionDataFrame.create(words, lambda word, i: self.swipes[i // L])
+        data.correct = [i % L == i for i in range(L * L)]  # a diagonal of trues
+        return SwipeConvolutionDataFrame(data)
 
 
 
 class SwipeConvolutionDataFrame(SwipeEmbeddingDataFrame):
-    correct: pd.Series  # series of booleans
 
     def convolve_data(self) -> None:
         raise ValueError("Cannot convolve already convolved dataframe")
 
-    def get_target(self):
-        return self.correct.transform(lambda boolean: 1.0 if boolean else 0.0, dtype=float)
 
 
 class Input:
