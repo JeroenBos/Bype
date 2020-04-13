@@ -27,6 +27,12 @@ class Keyboard(Dict[int, "Key"]):
     def normalize_y(self, y: Union[int, float]) -> float:
         return (y - self.top) / self.height
 
+    def get_key(self, char: Union[str, int]) -> "Key":
+        assert isinstance(char, str) or isinstance(char, int)
+        assert len(char) == 1
+        code = ord(char) if isinstance(char, str) else char
+        return self.get(code)
+
 
 
 
@@ -45,6 +51,7 @@ class Key:
         self.keyboard = keyboard
 
     NO_KEY: "Key"
+
 
 
 Key.NO_KEY = Key(code=0, code_index=0, x=0, y=0, width=0, height=0,
@@ -94,9 +101,30 @@ class SwipeDataFrame(pd.DataFrame):
         Creates an empty df of the correct format and shape determined by SPEC,
         initialized with default values, which default to 0.
         """
-        return create_empty_df(length, columns=RawTouchEvent.get_keys(), **defaults)
+
+        result: pd.DataFrame = create_empty_df(length, columns=RawTouchEvent.SPEC, **defaults)
+        result.astype(dtype=RawTouchEvent.SPEC, copy=False)
+        return result
 
 
+    @staticmethod
+    def create(inputs: List[T], selector: Callable[[T, int], "Partial[RawTouchEvent]"]) -> "SwipeDataFrame":
+        """
+        :param selector: A function creating a partial RawTouchEvent from the specified input and index
+        """
+        result = SwipeDataFrame.create_empty(len(inputs))
+        for i, word in enumerate(inputs):
+            partialEvents = selector(word, i)
+            partialEvents = partialEvents.__dict__ if not isinstance(partialEvents, Dict) else partialEvents
+
+            for key, value in partialEvents.items():
+                if key not in result.columns.values:
+                    raise ValueError(f"Unknown column '{str(key)}' for input {str(word)} at index '{str(i)}'")
+                result[key, i] = value
+
+        result.validate()
+
+        return result
 
 class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     """
