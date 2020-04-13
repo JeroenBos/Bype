@@ -85,6 +85,5 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
             X, y = X.get_train(), X.get_target()
         assert y.name == 'correct'
         assert len(X) == len(y)
-        targets = [target for i, target in y.iteritems()]
         assert all(isinstance(target, float) for target in y)
         super(self.__class__, self).fit(X, y)

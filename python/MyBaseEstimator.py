@@ -47,7 +47,7 @@ class MyBaseEstimator(BaseEstimator):
         ]
 
         params_repr = self._get_params_repr()
-        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks)
+        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, validation_split=0.2)
         self.history.setdefault(params_repr, []).append(result)
         return result
 
