@@ -54,10 +54,11 @@ keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in rang
 
 class Preprocessor:
     def __init__(self, 
+                 time_steps=1,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor='binary_crossentropy'):
         self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
-        self.swipe_timesteps_count = 1
+        self.swipe_timesteps_count = time_steps
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
