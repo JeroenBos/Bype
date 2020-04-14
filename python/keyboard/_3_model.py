@@ -29,7 +29,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         keys = list(result.get_params().keys())
         ignored_params = [key for key in keys if key not in cls.preprocessor.__dict__]
         if len(ignored_params) != 0:
-            print('ignored preprocessor attributes: ' + str(ignored_params))
+            print("Attributes not copied from preprocessor because it doesn't have them" + str(ignored_params))
         params = {key: cls.preprocessor.__dict__[key] for key in keys if key in cls.preprocessor.__dict__}
         result.set_params(**params)
         return result
