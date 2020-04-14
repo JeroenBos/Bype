@@ -49,7 +49,8 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         # None here means variable over batches (but not within a batch)
         input = Input(shape=(self.swipe_timesteps_count, self.swipe_feature_count))
 
-        middle = Dense(20, kernel_initializer='random_uniform')(input)
+        a = LSTM(64, kernel_initializer='random_uniform')(input)
+        middle = Dense(20, kernel_initializer='random_uniform')(a)
         output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 
         model = Model(inputs=[input], outputs=output)
