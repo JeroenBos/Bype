@@ -3,7 +3,7 @@ import pandas as pd
 from abc import ABC
 import numpy as np
 from DataSource import DataSource
-from generic import create_empty_df
+from generic import create_empty_df, bind
 
 T = TypeVar('T')
 ProcessedInputSeries = pd.Series  # where every element is a ProcessedInput
@@ -58,8 +58,24 @@ Key.NO_KEY = Key(code=0, code_index=0, x=0, y=0, width=0, height=0,
                  edgeFlags=0, repeatable=False, toggleable=False, keyboard=None)
 
 
+class MyDataFrame(pd.DataFrame):
+    columns: Any  # or this: @property def columns(self): return super().columns
 
-class SwipeDataFrame(pd.DataFrame):
+    def rows(self) -> object:
+        class Row:
+            def __getitem__(self, *args):
+                if len(args) != 1:
+                    raise ValueError('Expected one key')
+                return self.__dict__[args[0]]
+
+        value = Row()  # object doesn't implement __dict__
+        for i in range(len(self)):
+            for column in self.columns:
+                value.__dict__[column] = self[column][i]
+            yield value
+
+
+class SwipeDataFrame(MyDataFrame):
     """
     Represents the data from one swipe.
 
@@ -85,10 +101,6 @@ class SwipeDataFrame(pd.DataFrame):
     KeyboardWidth: pd.Series
     KeyboardHeight: pd.Series
 
-    @property
-    def columns(self):
-        return super().columns
-
 
     # TODO: implement like https://stackoverflow.com/q/13135712/308451
     @staticmethod 
@@ -104,6 +116,7 @@ class SwipeDataFrame(pd.DataFrame):
 
         result: pd.DataFrame = create_empty_df(length, columns=RawTouchEvent.SPEC, **defaults)
         result.astype(dtype=RawTouchEvent.SPEC, copy=False)
+        bind(result, SwipeDataFrame.rows)
         return result
 
 
@@ -126,7 +139,7 @@ class SwipeDataFrame(pd.DataFrame):
 
         return result
 
-class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
+class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
     """
     Represents a collection of swipes and associated words.
 
@@ -136,8 +149,6 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     swipes: pd.Series   # with elements of type SwipeDataFrame, but I can't specify that here
     words: pd.Series    # series of strings
     correct: pd.Series  # series of booleans
-
-    columns: Any
 
     def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
         super().__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)

@@ -5,8 +5,9 @@ from keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEven
 from keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
 from keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
-from typing import Dict, List, Union, TypeVar, Callable, Tuple
-
+from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any
+from utilities import print_fully
+from more_itertools.more import first
 
 def get_code(char: str) -> int:
     assert isinstance(char, str)
@@ -165,7 +166,7 @@ class Preprocessor:
         assert 'Y' in swipe
 
 
-        features_per_time_step: List[Callable[[pd.Series], float]] = [
+        features_per_time_step: List[Callable[[Dict[str, Any]], float]] = [
             self._get_normalized_x,
             self._get_normalized_y,
             self._get_normalized_word_length(word),
@@ -180,7 +181,7 @@ class Preprocessor:
         keyboardLayoutCol = swipe['KeyboardLayout'][0]
 
         print(f"when accessed via the columns the type is: {type(keyboardLayoutCol)}")
-        firstrow = list(elem for i, elem in swipe.iterrows())[0]
+        firstrow = first(row for row in swipe.rows())
         # print(firstrow)
         keyboardLayoutRow = firstrow['KeyboardLayout']
         # columnindex = swipe.columns.values.tolist().index('KeyboardLayout')
@@ -189,7 +190,7 @@ class Preprocessor:
         print(f"when accessed via the rows the type is: {type(keyboardLayoutRow)}")
         # assert isinstance(keyboardLayout, int)
         result: List[List[float]] = []
-        for i, touchevent in swipe.iterrows():
+        for touchevent in swipe.rows():
             print(type(touchevent.KeyboardLayout))
             time_step = []
             for feature_per_time_step in features_per_time_step:
