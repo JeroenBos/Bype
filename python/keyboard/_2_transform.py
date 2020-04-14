@@ -71,7 +71,6 @@ class Preprocessor:
 
     def _get_keyboard(self, touchevent: RawTouchEvent) -> Keyboard:
         assert hasattr(touchevent, "KeyboardLayout")
-        print(type(touchevent.KeyboardLayout))
         assert isinstance(touchevent.KeyboardLayout, (int, np.int32, np.int64))
 
         layout_id = touchevent.KeyboardLayout
@@ -176,19 +175,6 @@ class Preprocessor:
                 features_per_time_step.append(self._get_normalized_button_x(word, i))
                 features_per_time_step.append(self._get_normalized_button_y(word, i))
 
-        swipe.validate()
-
-        keyboardLayoutCol = swipe['KeyboardLayout'][0]
-
-        print(f"when accessed via the columns the type is: {type(keyboardLayoutCol)}")
-        firstrow = first(row for row in swipe.rows())
-        # print(firstrow)
-        keyboardLayoutRow = firstrow['KeyboardLayout']
-        # columnindex = swipe.columns.values.tolist().index('KeyboardLayout')
-        # keyboardLayoutRow = firstrow[columnindex]
-        # print(firstrow.shape)
-        print(f"when accessed via the rows the type is: {type(keyboardLayoutRow)}")
-        # assert isinstance(keyboardLayout, int)
         result: List[List[float]] = []
         for touchevent in swipe.rows():
             print(type(touchevent.KeyboardLayout))
