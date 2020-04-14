@@ -274,7 +274,7 @@ class Testkeyboard(unittest.TestCase):
         expected_features = [
             [  # touch event for 'a'
                 a.norm_x, a.norm_y,    # tap letter 'a'
-                0.2,                   # relative word length 
+                0.4,                   # relative word length 
                 a.norm_x, a.norm_y,    # copy of the word
                 b.norm_x, b.norm_y,    # copy of the word
                 -1, -1,                # padding of the word
@@ -282,7 +282,7 @@ class Testkeyboard(unittest.TestCase):
                 -1, -1],               # padding of the word
             [  # touch event for 'b'
                 b.norm_x, b.norm_y,    # tap letter 'b'
-                0.2,                   # relative word length 
+                0.4,                   # relative word length 
                 a.norm_x, a.norm_y,    # copy of the word
                 b.norm_x, b.norm_y,    # copy of the word
                 -1, -1,                # padding of the word
@@ -297,6 +297,10 @@ class Testkeyboard(unittest.TestCase):
         features = Preprocessor(time_steps=2).encode(swipe, 'ab')
 
         # assert
+        diffs = [f"({i}, {j}): {features[i][j]} whereas expected: {expected_features[i][j]}"  # noqa
+                 for i in range(len(expected_features)) 
+                 for j in range(len(expected_features[i]))
+                 if features[i][j] != expected_features[i][j]]
         assert features == expected_features
 
 if __name__ == '__main__':

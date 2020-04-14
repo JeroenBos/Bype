@@ -49,5 +49,5 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
 _single_letters = [chr(i) for i in range(97, 97 + 26)]
 _double_letters = random.sample([chr(i) + chr(j) for i in range(97, 97 + 26) for j in range(97, 97 + 26)], 50)
 
-double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, lambda word, i: generate_taps_for(word))
 single_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters, lambda word, i: generate_taps_for(word))
+double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, lambda word, i: generate_taps_for(word))
