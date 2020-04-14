@@ -32,6 +32,12 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         if len(ignored_params) != 0:
             print("Attributes not directly specified and not copied from preprocessor because it doesn't have them: "
                   + str(ignored_params))
+
+        duplicate_kwargs = [key for key in keyboard__init__kwargs if key in cls.preprocessor.__dict__]
+        if len(duplicate_kwargs) != 0:
+            print("The following keyboard attributes where specified to KeyboardEstimator.__init__, "
+                  + "but should probably be specified on the preprocessor, because it has them too: "
+                  + str(duplicate_kwargs))
         params = {key: cls.preprocessor.__dict__[key] for key in keys if key in cls.preprocessor.__dict__}
         result.set_params(**params)
         return result
