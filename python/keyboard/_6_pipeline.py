@@ -10,4 +10,4 @@ data = SwipeEmbeddingDataFrame.__as__(double_letter_swipes).convolve()
 
 preprocessor = Preprocessor(time_steps=len(data.swipes[0]))
 
-training = KeyboardEstimator[preprocessor].create_initialized().fit(data)
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=10).fit(data)
