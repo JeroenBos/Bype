@@ -39,7 +39,7 @@ class MyBaseEstimator(BaseEstimator):
         model = self.current_model
         self._compile(model)
 
-        log_dir = self._log_dir + datetime.datetime.now().strftime("%Y%m%d-%H")
+        log_dir = self._log_dir + datetime.datetime.now().strftime("%Y_%m_%d")
         callbacks = [
             EarlyStopping(monitor='loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
