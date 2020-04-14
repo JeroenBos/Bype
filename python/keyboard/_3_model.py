@@ -23,13 +23,15 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     preprocessor: Preprocessor
 
     @classmethod
-    def create_initialized(cls):
+    def create_initialized(cls, **keyboard__init__kwargs):
         """ Creates a keyboard estimator and initializes the parameters from the preprocessor"""
-        result = cls()
+        result = cls(**keyboard__init__kwargs)
         keys = list(result.get_params().keys())
-        ignored_params = [key for key in keys if key not in cls.preprocessor.__dict__]
+        ignored_params = [key for key in keys 
+                          if key not in cls.preprocessor.__dict__ and key not in keyboard__init__kwargs.keys()]
         if len(ignored_params) != 0:
-            print("Attributes not copied from preprocessor because it doesn't have them" + str(ignored_params))
+            print("Attributes not directly specified and not copied from preprocessor because it doesn't have them: "
+                  + str(ignored_params))
         params = {key: cls.preprocessor.__dict__[key] for key in keys if key in cls.preprocessor.__dict__}
         result.set_params(**params)
         return result
