@@ -4,6 +4,16 @@ from abc import ABC
 import numpy as np
 from DataSource import DataSource
 from generic import create_empty_df, bind
+# import sys
+#
+# class Test:
+#     def write(self, *args, **kwargs):
+#         if self is not None:
+#             if True:
+#                 pass
+# 
+# 
+# sys.stdout = Test() 
 
 T = TypeVar('T')
 ProcessedInputSeries = pd.Series  # where every element is a ProcessedInput
