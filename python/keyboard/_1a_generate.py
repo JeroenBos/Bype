@@ -47,7 +47,11 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
 
 
 _single_letters = [chr(i) for i in range(97, 97 + 26)]
-_double_letters = random.sample([chr(i) + chr(j) for i in range(97, 97 + 26) for j in range(97, 97 + 26)], 50)
+_double_letters = random.sample([chr(i) + chr(j) for i in range(97, 97 + 26) for j in range(97, 97 + 26)], 25)
 
 single_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters, lambda word, i: generate_taps_for(word))
 double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, lambda word, i: generate_taps_for(word))
+
+single_and_double_letter_swipes = pd.concat([single_letter_swipes, double_letter_swipes])
+# bug in pandas: 
+# Unable to open 'index_class_helper.pxi': Unable to read file '/home/jeroen/git/ml-setup/venv3.7/lib/python3.7/site-packages/pandas/_libs/index_class_helper.pxi' (Error: Unable to resolve non-existing file '/home/jeroen/git/ml-setup/venv3.7/lib/python3.7/site-packages/pandas/_libs/index_class_helper.pxi').
