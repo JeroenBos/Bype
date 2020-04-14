@@ -177,7 +177,6 @@ class Preprocessor:
 
         result: List[List[float]] = []
         for touchevent in swipe.rows():
-            print(type(touchevent.KeyboardLayout))
             time_step = []
             for feature_per_time_step in features_per_time_step:
                 time_step.append(feature_per_time_step(touchevent))
