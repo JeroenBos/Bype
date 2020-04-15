@@ -184,7 +184,7 @@ class Testkeyboard(unittest.TestCase):
         estimator._create_model()
 
     def test_load_keyboard_layout(self):
-        from python.keyboard._1_import import keyboard_layouts  # noqa
+        from keyboard._1_import import keyboard_layouts
         assert len(keyboard_layouts) > 0
 
     def test_interpreting_keyboard_layout(self):
@@ -232,8 +232,7 @@ class Testkeyboard(unittest.TestCase):
         assert tap.X[0] == 108
 
     def test_swipe_embedding(self):
-        from keyboard._1a_generate import create_empty_swipe_embedding_df
-        df = create_empty_swipe_embedding_df(1)
+        df = SwipeEmbeddingDataFrame.create_empty(1)
         assert isinstance(df, pd.DataFrame)
         assert isinstance(df, SwipeEmbeddingDataFrame)
         assert len(df) == 1
@@ -241,33 +240,33 @@ class Testkeyboard(unittest.TestCase):
 
     def test_swipe_embedding_with_entries(self):
         df = SwipeEmbeddingDataFrame.create_empty(1)
-        df['swipes'][0] = SwipeDataFrame.create_empty(5)
+        df.swipes[0] = SwipeDataFrame.create_empty(5)
 
         assert isinstance(df, pd.DataFrame)
+        assert len(df) == 1
         assert isinstance(df.swipes[0], pd.DataFrame)
-        # assert isinstance(df.swipes[0], SwipeDataFrame)
-        assert len(df.swipes[0]) == 5
+        entry = df.swipes[0]
+        assert len(entry) == 5
 
     def test_encode_single_letter(self):
         from keyboard._1a_generate import generate_taps_for, keyboards
-        keyboard = keyboards[0]
-        norm_x, norm_y = keyboard.normalize_x, keyboard.normalize_y
 
+        a = TestKey(keyboards[0].get_key('a'))
         swipe = generate_taps_for('a')
         features = Preprocessor().encode(swipe, 'a')
         expected_features = [  # an item per touch event
-                                [norm_x(108), norm_y(211),    # tap letter 'a'
-                                 0.2,                         # relative word length 
-                                 norm_x(108), norm_y(211.5),  # copy of the word
-                                 -1, -1,                      # padding of the word
-                                 -1, -1,                      # padding of the word
-                                 -1, -1,                      # padding of the word
-                                 -1, -1]                      # padding of the word
+                                [a.norm_x, a.norm_y,  # tap letter 'a'
+                                 0.2,                 # relative word length 
+                                 a.norm_x, a.norm_y,  # copy of the word
+                                 -1, -1,              # padding of the word
+                                 -1, -1,              # padding of the word
+                                 -1, -1,              # padding of the word
+                                 -1, -1]              # padding of the word
                             ]
         assert features == expected_features
 
     def test_encode_double_letters(self):
-        from python.keyboard._1a_generate import generate_taps_for, keyboards
+        from keyboard._1a_generate import generate_taps_for, keyboards
         # arrange
         a = TestKey(keyboards[0].get_key('a'))
         b = TestKey(keyboards[0].get_key('b'))
@@ -302,6 +301,7 @@ class Testkeyboard(unittest.TestCase):
                  for j in range(len(expected_features[i]))
                  if features[i][j] != expected_features[i][j]]
         assert features == expected_features
+
 
 if __name__ == '__main__':
     Testkeyboard().test_encode_double_letters()

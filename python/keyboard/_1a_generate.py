@@ -10,7 +10,7 @@ from typing import Callable, List, TypeVar, Any, Union
 import random
 
 
-def generate_taps_for(word: str, i: None) -> SwipeDataFrame:
+def generate_taps_for(word: str, i=None) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
     assert isinstance(word, str)
     assert len(word) != 0
