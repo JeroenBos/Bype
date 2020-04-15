@@ -1,8 +1,8 @@
 import unittest
-from MyBaseEstimator import do_hp_search, MyBaseEstimator, Models
+from MyBaseEstimator import MyBaseEstimator
 from typing import List, Union
 from generic import generic
-from DataSource import InMemoryDataSource, ResultOutputWriter
+from DataSource import InMemoryDataSource
 import pandas as pd
 import tensorflow as tf
 from keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
@@ -233,44 +233,6 @@ class Testkeyboard(unittest.TestCase):
                                  -1, -1]                      # padding of the word
                             ]
         assert features == expected_features
-
-
-
-
-
-class TDD(unittest.TestCase):
-    def test_hp_search(self):
-
-        class UglyEstimator(MyBaseEstimator):
-            def __init__(self, num_epochs=5, activation='relu'):
-                super().__init__()
-                self.num_epochs = num_epochs
-                self.activation = activation
-
-            def _create_model(self) -> Models:
-                return tf.keras.Sequential([
-                    tf.keras.layers.Dense(14, activation=self.activation),
-                    tf.keras.layers.Dense(1, activation='sigmoid')
-                ])
-
-        ranges = UglyEstimator(num_epochs=[5, 6]).params
-
-        df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['X', 'y'])
-        do_hp_search(UglyEstimator,
-                     InMemoryDataSource(df, 'y'),
-                     ResultOutputWriter(),
-                     ranges)
-
-    def test_generating(self):
-        from python.keyboard._1a_generate import single_letters_data  # noqa
-        words, swipes = single_letters_data
-        assert isinstance(words, pd.DataFrame)
-        assert isinstance(swipes, pd.DataFrame)
-        assert len(words.columns) == 1
-        assert len(swipes.columns) > 10
-        assert len(words) == len(swipes)
-        assert swipes['X'][0] == 'a'
-        assert math.isnan(swipes['Y'][0])
 
 
 if __name__ == '__main__':
