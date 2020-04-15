@@ -1,15 +1,15 @@
 import unittest
-from python.keyboard.hp import do_hp_search, MyBaseEstimator, Models
+from MyBaseEstimator import do_hp_search, MyBaseEstimator, Models
 from typing import List, Union
-from python.keyboard.generic import generic
-from python.model_training import InMemoryDataSource, ResultOutputWriter
+from generic import generic
+from DataSource import InMemoryDataSource, ResultOutputWriter
 import pandas as pd
 import tensorflow as tf
-from python.keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
-from python.keyboard._1_import import RawTouchEvent
-from python.keyboard._2_transform import Preprocessor
-from python.keyboard._3_model import KeyboardEstimator
-from python.utilities import print_fully
+from keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
+from keyboard._1_import import RawTouchEvent
+from keyboard._2_transform import Preprocessor
+from keyboard._3_model import KeyboardEstimator
+from utilities import print_fully
 import math
 
 
@@ -152,8 +152,8 @@ class Testkeyboard(unittest.TestCase):
         assert len(keyboard_layouts) > 0
 
     def test_interpreting_keyboard_layout(self):
-        from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
-        from python.keyboard._2_transform import get_keyboard
+        from keyboard._1_import import KEYBOARD_LAYOUT_SPEC
+        from keyboard._2_transform import get_keyboard
 
         test_data = {
             "codes": [1, 3],
@@ -187,7 +187,7 @@ class Testkeyboard(unittest.TestCase):
         assert keyboard[3].y == 2
 
     def test_generate_single_letters(self):
-        from python.keyboard._1a_generate import generate_taps_for
+        from keyboard._1a_generate import generate_taps_for
         tap = generate_taps_for('a')
         assert isinstance(tap, pd.DataFrame)
         assert 'X' in tap.columns.values
@@ -196,7 +196,7 @@ class Testkeyboard(unittest.TestCase):
         assert tap.X[0] == 108
 
     def test_swipe_embedding(self):
-        from python.keyboard._1a_generate import create_empty_swipe_embedding_df
+        from keyboard._1a_generate import create_empty_swipe_embedding_df
         df = create_empty_swipe_embedding_df(1)
         assert isinstance(df, pd.DataFrame)
         assert len(df) == 1
@@ -204,7 +204,7 @@ class Testkeyboard(unittest.TestCase):
         assert df.columns.values[0] == 'swipes'
 
     def test_swipe_embedding_with_entries(self):
-        from python.keyboard._1a_generate import create_empty_swipe_embedding_df, create_empty_swipe_df
+        from keyboard._1a_generate import create_empty_swipe_embedding_df, create_empty_swipe_df
         df = create_empty_swipe_embedding_df(1)
         df['swipes'][0] = create_empty_swipe_df(5)
 
@@ -217,7 +217,7 @@ class Testkeyboard(unittest.TestCase):
         assert len(entry) == 5
 
     def test_encode_single_letter(self):
-        from python.keyboard._1a_generate import generate_taps_for, keyboards
+        from keyboard._1a_generate import generate_taps_for, keyboards
         keyboard = keyboards[0]
         norm_x, norm_y = keyboard.normalize_x, keyboard.normalize_y
 

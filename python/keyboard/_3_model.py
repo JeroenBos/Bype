@@ -1,4 +1,4 @@
-from hp import MyBaseEstimator
+from MyBaseEstimator import MyBaseEstimator
 from typing import List, Union, Optional, Callable
 import tensorflow as tf
 from tensorflow.keras import Model  # noqa
@@ -10,7 +10,7 @@ from keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
 from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa
-from model_training import DataSource
+from DataSource import DataSource
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 

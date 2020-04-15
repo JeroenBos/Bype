@@ -1,4 +1,4 @@
-from model_training import InMemoryDataSource
+from DataSource import InMemoryDataSource
 import pandas as pd
 import numpy as np
 from keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame

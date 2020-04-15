@@ -2,7 +2,7 @@ from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional, Un
 import pandas as pd
 from abc import ABC
 import numpy as np
-from model_training import DataSource
+from DataSource import DataSource
 from generic import create_empty_df
 
 T = TypeVar('T')

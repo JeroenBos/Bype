@@ -3,8 +3,7 @@ from sklearn.base import BaseEstimator
 import datetime
 from typing import List, Optional, Dict, Any
 from typing import TypeVar
-import model_training
-from model_training import DataSource
+from DataSource import DataSource
 from tensorflow.keras import Model  # noqa
 import pandas as pd
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa

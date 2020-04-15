@@ -5,7 +5,7 @@ from keyboard._1_import import KEYBOARD_LAYOUT_SPEC
 from keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
-from model_training import InMemoryDataSource, TrivialDataSource
+from DataSource import InMemoryDataSource, TrivialDataSource
 from typing import Callable, List, TypeVar, Any, Union
 
 
