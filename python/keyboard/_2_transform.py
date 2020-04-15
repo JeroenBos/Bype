@@ -93,7 +93,7 @@ class Preprocessor:
 
 
     def _get_key(self, char: str, touchevent: RawTouchEvent) -> Key:
-        code = get_code(char)
+        code = get_code(char)  # noqa
         keyboard = self._get_keyboard(touchevent)
         if code not in keyboard:
             return Key.NO_KEY
