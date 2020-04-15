@@ -42,7 +42,7 @@ class MyBaseEstimator(BaseEstimator):
 
         log_dir = self._log_dir + datetime.datetime.now().strftime("%Y%m%d-%H")
         callbacks = [
-            EarlyStopping(monitor='val_loss', patience=5),
+            EarlyStopping(monitor='loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
             ModelCheckpoint(log_dir + '/model.h5', save_best_only=True, save_weights_only=False)
         ]
@@ -105,4 +105,3 @@ class MyBaseEstimator(BaseEstimator):
 
         result = f"({', '.join(f'{entry[0]}={repr(entry[1])}' for entry in params )})"
         return result
-
