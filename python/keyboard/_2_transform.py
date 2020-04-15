@@ -1,12 +1,11 @@
-from python.model_training import InMemoryDataSource
+from model_training import InMemoryDataSource
 import pandas as pd
 import numpy as np
-from python.keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
-from python.keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
-from python.keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
+from keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
+from keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
+from keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple
-from python.utilities import print_fully
 
 
 def get_code(char: str) -> int:
@@ -181,7 +180,7 @@ class Preprocessor:
             for feature_per_time_step in features_per_time_step:
                 time_step.append(feature_per_time_step(touchevent))
             result.append(time_step)
-        
+
         assert self.swipe_feature_count == len(features_per_time_step)
         assert self.swipe_timesteps_count == len(result)
         return result

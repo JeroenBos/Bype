@@ -1,11 +1,11 @@
 # this file generates training data
 import numpy as np
-from python.keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame, RawTouchEvent
-from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
-from python.keyboard._2_transform import keyboards, Key
+from keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame, RawTouchEvent
+from keyboard._1_import import KEYBOARD_LAYOUT_SPEC
+from keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
-from python.model_training import InMemoryDataSource, TrivialDataSource
+from model_training import InMemoryDataSource, TrivialDataSource
 from typing import Callable, List, TypeVar, Any, Union
 
 

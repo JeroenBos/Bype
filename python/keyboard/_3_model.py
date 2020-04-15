@@ -1,15 +1,15 @@
-from python.keyboard.hp import MyBaseEstimator, Models
+from hp import MyBaseEstimator, Models
 from typing import List, Union, Optional, Callable
 import tensorflow as tf
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
-from python.keyboard._0_types import SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
-from python.keyboard._2_transform import Preprocessor
-from python.keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
-from python.keyboard.generic import generic
+from keyboard._0_types import SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
+from keyboard._2_transform import Preprocessor
+from keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
+from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa
-from python.model_training import DataSource
+from model_training import DataSource
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 

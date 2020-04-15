@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import List
-from python.keyboard._0_types import RawTouchEvent
+from keyboard._0_types import RawTouchEvent
 
 raw_data: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
                                      names=RawTouchEvent.SPEC.keys(),
