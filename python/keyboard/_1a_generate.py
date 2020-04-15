@@ -10,7 +10,7 @@ from typing import Callable, List, TypeVar, Any, Union
 import random
 
 
-def generate_taps_for(word: str) -> SwipeDataFrame:
+def generate_taps_for(word: str, i: None) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
     assert isinstance(word, str)
     assert len(word) != 0
@@ -49,9 +49,7 @@ def generate_taps_for(word: str) -> SwipeDataFrame:
 _single_letters = [chr(i) for i in range(97, 97 + 26)]
 _double_letters = random.sample([chr(i) + chr(j) for i in range(97, 97 + 26) for j in range(97, 97 + 26)], 25)
 
-single_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters, lambda word, i: generate_taps_for(word))
-double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, lambda word, i: generate_taps_for(word))
+single_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters, generate_taps_for)
+double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, generate_taps_for)
 
-single_and_double_letter_swipes = pd.concat([single_letter_swipes, double_letter_swipes])
-# bug in pandas: 
-# Unable to open 'index_class_helper.pxi': Unable to read file '/home/jeroen/git/ml-setup/venv3.7/lib/python3.7/site-packages/pandas/_libs/index_class_helper.pxi' (Error: Unable to resolve non-existing file '/home/jeroen/git/ml-setup/venv3.7/lib/python3.7/site-packages/pandas/_libs/index_class_helper.pxi').
+single_and_double_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters + _double_letters, generate_taps_for)

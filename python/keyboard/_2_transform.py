@@ -124,6 +124,7 @@ class Preprocessor:
 
     def preprocess(self, X: SwipeEmbeddingDataFrame) -> np.ndarray:
         # X[word][touchevent][toucheventprop]
+        timesteps = set(len(swipe) for swipe in X.swipes)
 
         processed = self._preprocess(X)
         # processed[word, timestep][feature]
@@ -131,14 +132,17 @@ class Preprocessor:
         intermediate = processed.to_numpy()
         # intermediate has shape ndarray[word, timestep]List[feature] which isn't much better than processed tbh
 
-        # I've been stuck on this for hours, I'll just do it myself
-        shape = [len(processed), self.swipe_timesteps_count, self.swipe_feature_count]
+
+        shape = [max(timesteps) - 1, len(processed), None, self.swipe_feature_count]
         result = np.empty(shape, dtype=np.float)
+        val = result[0, 0, 0]
         for w in range(len(processed)):
             for t in range(self.swipe_timesteps_count):
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
+        # max([len(x) for x in [a, b]])
+        # np.concatenate([np.zeros(len(b), dtype=bool), np.ones(max_entries - len(b), dtype=bool)])
         return result
 
     def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
