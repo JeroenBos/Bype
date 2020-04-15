@@ -36,7 +36,7 @@ class InMemoryDataSource(DataSource):
     df: pd.DataFrame
 
     def __init__(self, df: pd.DataFrame, target_column_name_or_index: Union[int, str]):
-        assert is_valid_dataframe(df), 'Invalid dataframe'
+        # assert is_valid_dataframe(df), 'Invalid dataframe'
         self.df = df
         x = target_column_name_or_index  # shorten name
         if isinstance(x, str):

@@ -1,20 +1,19 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 import datetime
-from typing import List, Optional, Dict, Any  # noqa
+from typing import List, Optional, Dict, Any
 from typing import TypeVar
-import python.model_training as mt
-from python.model_training import ResultWriter, DataSource
+import model_training
+from model_training import DataSource
+from tensorflow.keras import Model  # noqa
 import pandas as pd
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa
-from python.keyboard.generic import generic  # noqa
+from generic import generic
 import numpy as np
-
-Models = TypeVar('tensorflow.keras.Models')  # can't find it
 
 
 class MyBaseEstimator(BaseEstimator):
-    models: Dict[str, Models]
+    models: Dict[str, Model]
     history: Dict[str, List[Any]]
     verbose: bool
     _log_dir: str
@@ -68,17 +67,17 @@ class MyBaseEstimator(BaseEstimator):
         return X
 
     @abstractmethod
-    def _create_model(self) -> Models:
+    def _create_model(self) -> Model:
         pass
 
-    def _compile(self, model: Optional[Models] = None) -> None:
+    def _compile(self, model: Optional[Model] = None) -> None:
         model = model if model else self.current_model
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
 
     @property
-    def current_model(self) -> Models:
+    def current_model(self) -> Model:
         params = self._get_params_repr()
         if params not in self.models:
             model = self._create_model()
@@ -107,27 +106,3 @@ class MyBaseEstimator(BaseEstimator):
         result = f"({', '.join(f'{entry[0]}={repr(entry[1])}' for entry in params )})"
         return result
 
-
-def do_hp_search(TEstimator: type,
-                 data_source: DataSource,
-                 result_writer: ResultWriter,
-                 parameterRanges: dict,
-                 scoring='f1',
-                 combination_number: Optional[int] = None) -> pd.DataFrame:
-    hp_searcher = mt.HyperParameterSearcher(scoring=scoring,
-                                            data_source=data_source,
-                                            result_writer=result_writer)
-
-    initial_params = {}
-
-    for key, value in parameterRanges.items():
-        if not isinstance(value, List):
-            parameterRanges[key] = [value]
-        initial_params[key] = parameterRanges[key][0]
-
-    estimator = TEstimator(**initial_params)
-
-    return hp_searcher.fit(estimator_name='Keras',
-                           estimator=estimator,
-                           parameters=parameterRanges,
-                           combination_number=combination_number)

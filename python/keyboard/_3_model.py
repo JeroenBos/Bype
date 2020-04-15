@@ -1,6 +1,7 @@
-from hp import MyBaseEstimator, Models
+from hp import MyBaseEstimator
 from typing import List, Union, Optional, Callable
 import tensorflow as tf
+from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
 from keyboard._0_types import SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
@@ -44,7 +45,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
 
-    def _create_model(self) -> Models:
+    def _create_model(self) -> Model:
         # None here means variable over batches (but not within a batch)
         input = Input(shape=(self.swipe_timesteps_count, self.swipe_feature_count))
 
@@ -60,7 +61,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
             return self.preprocessor.preprocess(X)
         return super(self.__class__, self)._preprocess(X)
 
-    def _compile(self, model: Optional[Models] = None) -> None:
+    def _compile(self, model: Optional[Model] = None) -> None:
         model = model if model else self.current_model
         loss = self.loss_ctor if isinstance(self.loss_ctor, str) else self.loss_ctor(self)
         model.compile(loss=loss,
