@@ -55,11 +55,11 @@ keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in rang
 
 class Preprocessor:
     def __init__(self, 
-                 time_steps=1,
+                 max_time_steps=1,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor='binary_crossentropy'):
         self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
-        self.swipe_timesteps_count = time_steps
+        self.max_timesteps = max_time_steps
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
@@ -137,7 +137,7 @@ class Preprocessor:
         result = np.empty(shape, dtype=np.float)
         val = result[0, 0, 0]
         for w in range(len(processed)):
-            for t in range(self.swipe_timesteps_count):
+            for t in range(self.max_timesteps):
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
@@ -187,7 +187,7 @@ class Preprocessor:
             result.append(time_step)
 
         assert self.swipe_feature_count == len(features_per_time_step)
-        assert self.swipe_timesteps_count == len(result)
+        assert self.max_timesteps >= len(result)
         return result
 
     def decode(self, x: ProcessedInput) -> Input:

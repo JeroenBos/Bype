@@ -55,7 +55,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
 
     def _create_model(self) -> Model:
         # None here means variable over batches (but not within a batch)
-        input = Input(shape=(self.swipe_timesteps_count, self.swipe_feature_count))
+        input = Input(shape=(self.max_timesteps, self.swipe_feature_count))
 
         a = LSTM(64, kernel_initializer='random_uniform')(input)
         middle = Dense(20, kernel_initializer='random_uniform')(a)
@@ -86,8 +86,8 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         return self.preprocessor.swipe_feature_count
 
     @property
-    def swipe_timesteps_count(self):
-        return self.preprocessor.swipe_timesteps_count
+    def max_timesteps(self):
+        return self.preprocessor.max_timesteps
 
     def fit(self, X, y=None) -> None:
         if y is None and isinstance(X, DataSource):

@@ -6,6 +6,6 @@ from typing import List, Union
 
 data = SwipeEmbeddingDataFrame.__as__(single_and_double_letter_swipes).convolve()
 
-preprocessor = Preprocessor(time_steps='?')
+preprocessor = Preprocessor(max_time_steps=2)
 
 training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=10).fit(data)
