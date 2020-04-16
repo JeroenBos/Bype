@@ -9,6 +9,7 @@ import pandas as pd
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa
 from generic import generic
 import numpy as np
+import os
 
 def get_log_dir(log_base_dir: str):
     return log_base_dir + datetime.datetime.now().strftime("%Y_%m_%d")
@@ -46,7 +47,7 @@ class MyBaseEstimator(BaseEstimator):
         callbacks = [
             EarlyStopping(monitor='val_loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
-            ModelCheckpoint(log_dir + '/model.h5', save_best_only=True, save_weights_only=False)
+            ModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
         ]
 
         params_repr = self._get_params_repr()
