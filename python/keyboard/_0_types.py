@@ -211,6 +211,9 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
         :param words: The words to create swipes for.
         :param swipe_selector: A function creating the swipe data from the word and index in the param 'words'
         """
+        if not isinstance(words, List):
+            words = list(words)
+
         result = SwipeEmbeddingDataFrame.create_empty(len(words))
         swipes = [swipe_selector(word, i) for i, word in enumerate(words)]
 
