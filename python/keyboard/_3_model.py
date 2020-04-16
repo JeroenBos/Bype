@@ -3,8 +3,8 @@ from typing import List, Union, Optional, Callable
 import tensorflow as tf
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import Model  # noqa
-from tensorflow.keras.layers import Input, Dense, LSTM, concatenate  # noqa
-from keyboard._0_types import SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
+from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
+from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
 from keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
 from generic import generic
@@ -56,8 +56,9 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     def _create_model(self) -> Model:
         # None here means variable over batches (but not within a batch)
         input = Input(shape=(self.max_timesteps, self.swipe_feature_count))
+        masking = Masking(mask_value=myNaN)(input)
 
-        a = LSTM(64, kernel_initializer='random_uniform')(input)
+        a = LSTM(64, kernel_initializer='random_uniform')(masking)
         middle = Dense(20, kernel_initializer='random_uniform')(a)
         output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 

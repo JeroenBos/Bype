@@ -1,8 +1,7 @@
-from math import nan
 from DataSource import InMemoryDataSource
 import pandas as pd
 import numpy as np
-from keyboard._0_types import Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
+from keyboard._0_types import myNaN, Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
 from keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
 from keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
@@ -134,9 +133,9 @@ class Preprocessor:
         # intermediate has shape ndarray[word, timestep]List[feature] which isn't much better than processed tbh
 
 
-        shape = [max(timesteps) - 1, len(processed), None, self.swipe_feature_count]
+        shape = [len(processed), max(timesteps), self.swipe_feature_count]
         result = np.empty(shape, dtype=np.float)
-        val = result[0, 0, 0]
+        val = result[0, 0, 0]  # noqa
         for w in range(len(processed)):
             for t in range(self.max_timesteps):
                 for f in range(self.swipe_feature_count):
@@ -144,7 +143,7 @@ class Preprocessor:
 
         # max([len(x) for x in [a, b]])
         # np.concatenate([np.zeros(len(b), dtype=bool), np.ones(max_entries - len(b), dtype=bool)])
-        return result
+        return np.ma.masked_invalid(result)
 
     def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
         assert SwipeEmbeddingDataFrame.is_instance(X)
@@ -162,7 +161,7 @@ class Preprocessor:
         """ Pads the encoding with nanned-out timesteps until self.max_timesteps. """
         encoded = self.encode(swipe, word)
         while(len(encoded)) < self.max_timesteps:
-            encoded.append([nan] * len(encoded[0]))
+            encoded.append([myNaN] * len(encoded[0]))
         return encoded
 
     def encode(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
