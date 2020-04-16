@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Any, Callable, List, Union, Dict, Type
+from functools import lru_cache
 
 def print_fully(df: pd.DataFrame) -> None:
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
@@ -69,3 +70,11 @@ def create_empty_df(length: int, columns: Union[List[str], Dict[str, Type]], **d
     bind(result, validate)
     result.validate()
     return result
+
+
+def memoize(decorate_function: Callable):
+    """ 
+    This decorator memoizes the results of the specified function.
+    """
+    return lru_cache(maxsize=None)(decorate_function)
+
