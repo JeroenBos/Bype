@@ -3,7 +3,7 @@ import pandas as pd
 from abc import ABC
 import numpy as np
 from DataSource import DataSource
-from generic import create_empty_df, bind
+from utilities import create_empty_df, bind
 
 # keras.Layers.Marking doesn't support math.nan, nor the infinities for that matter, so I just use a different number then
 myNaN = 12345678.9
