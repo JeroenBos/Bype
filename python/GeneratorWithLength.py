@@ -26,10 +26,13 @@ class GeneratorWithLength:
         return self.length
 
     def __add__(self, other):
+        def concat(a, b):
+            yield from a
+            yield from b
         if isinstance(other, _gwlClass):
-            return GeneratorWithLength((*self.iterable, *other.iterable), len(self) + len(other))
+            return GeneratorWithLength(concat(self.iterable, other.iterable), len(self) + len(other))
         elif isinstance(other, Iterable) and hasattr(other, '__len__'):
-            return GeneratorWithLength((*self.iterable, *other), len(self) + len(other))
+            return GeneratorWithLength(concat(self.iterable, other.iterable), len(self) + len(other))
         return super(self.__class__, self).__add__(other)
 
 
