@@ -9,7 +9,7 @@ from DataSource import InMemoryDataSource, TrivialDataSource
 from typing import Callable, List, TypeVar, Any, Union
 import random
 from time import time
-from GeneratorWithLength import GeneratorWithLength
+from utilities import memoize, print_name
 
 def generate_taps_for(word: str, i=None) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
@@ -52,21 +52,29 @@ def _get_random_str(length: int):
     return "".join(random.sample(_letters, length))
 
 
-
-print(time())
-_single_letters = GeneratorWithLength(lambda i: _get_random_str(1), 25)
-_double_letters = GeneratorWithLength(lambda i: _get_random_str(2), 25)
-_triple_letters = GeneratorWithLength(lambda i: _get_random_str(3), 25)
+_single_letters = [_get_random_str(1) for _ in range(25)]
+_double_letters = [_get_random_str(2) for _ in range(25)]
+_triple_letters = [_get_random_str(3) for _ in range(25)]
 
 
-# assert len(list(_single_letters)) == 25
-# assert len(list(_triple_letters)) == 25
-assert len(list(_single_letters + _triple_letters)) == 50
-single_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters, generate_taps_for)
-double_letter_swipes = SwipeEmbeddingDataFrame.create(_double_letters, generate_taps_for)
-triple_letter_swipes = SwipeEmbeddingDataFrame.create(_triple_letters, generate_taps_for)
+@memoize
+@print_name
+def single_letter_swipes():
+    return SwipeEmbeddingDataFrame.create(_single_letters, generate_taps_for)
+@memoize
+@print_name
+def double_letter_swipes():
+    return SwipeEmbeddingDataFrame.create(_double_letters, generate_taps_for)
+@memoize
+@print_name
+def triple_letter_swipes():
+    return SwipeEmbeddingDataFrame.create(_triple_letters, generate_taps_for)
 
-single_and_double_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters + _double_letters, generate_taps_for)
-single_double_and_triple_letter_swipes = SwipeEmbeddingDataFrame.create(_single_letters + _double_letters, generate_taps_for)
-
-print(time())
+@memoize
+@print_name
+def single_and_double_letter_swipes():
+    return SwipeEmbeddingDataFrame.create(_single_letters + _double_letters, generate_taps_for)
+@memoize
+@print_name
+def single_double_and_triple_letter_swipes():
+    return SwipeEmbeddingDataFrame.create(_single_letters + _double_letters + _triple_letters, generate_taps_for)

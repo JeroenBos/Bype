@@ -4,7 +4,7 @@ from keyboard._2_transform import Preprocessor
 from keyboard._3_model import KeyboardEstimator
 from typing import List, Union
 
-data = SwipeEmbeddingDataFrame.__as__(single_and_double_letter_swipes).convolve()
+data = SwipeEmbeddingDataFrame.__as__(single_and_double_letter_swipes()).convolve()
 
 preprocessor = Preprocessor(max_time_steps=2)
 
