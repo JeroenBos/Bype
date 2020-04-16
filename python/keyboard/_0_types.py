@@ -246,7 +246,8 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
         words = [self.words[i % L] for i in range(L * L)]
         data = SwipeConvolutionDataFrame.create(words, lambda word, i: self.swipes[i // L])
         data.correct = [i % L == i for i in range(L * L)]  # a diagonal of trues
-        return SwipeConvolutionDataFrame(data)
+        bind(data, SwipeConvolutionDataFrame.convolve_data)
+        return data
 
 
 
