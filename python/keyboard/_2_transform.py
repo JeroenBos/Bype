@@ -200,3 +200,6 @@ class Preprocessor:
     def decode(self, x: ProcessedInput) -> Input:
         """Converts the specified list of features into a word and swipe."""
         return Input('', '')
+
+    def save(self, filepath: str) -> None:
+        raise ValueError('not implemented')
