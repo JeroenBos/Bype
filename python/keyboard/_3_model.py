@@ -1,5 +1,5 @@
 from MyBaseEstimator import MyBaseEstimator
-from typing import List, Union, Optional, Callable
+from typing import List, Union, Optional, Callable, Type
 import tensorflow as tf
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import Model  # noqa
@@ -11,6 +11,7 @@ from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa
 from DataSource import DataSource
+from keyboard.MyModelCheckpoint import MyModelCheckpoint
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 
@@ -21,6 +22,10 @@ from DataSource import DataSource
 # but the metaclass does tag along the preprocessor then (different one per KeyboardEstimator type, like I said)
 class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     preprocessor: Preprocessor
+
+    def __new__(cls, *args, **kwargs):
+        cls.TModelCheckpoint = MyModelCheckpoint[cls.preprocessor]
+        return super(cls.__class__, cls).__new__(cls)
 
     @classmethod
     def create_initialized(cls, **keyboard__init__kwargs):

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Type
 from typing import TypeVar
 from DataSource import DataSource
 from tensorflow.keras import Model  # noqa
@@ -10,6 +10,7 @@ from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStoppi
 from generic import generic
 import numpy as np
 import os
+from time import time
 
 def get_log_dir(log_base_dir: str):
     return log_base_dir + datetime.datetime.now().strftime("%Y_%m_%d")
@@ -21,6 +22,9 @@ class MyBaseEstimator(BaseEstimator):
     verbose: bool
     _log_dir: str
 
+    # The type of ModelCheckpoint to use. Can be overridden in subclasses
+    TModelCheckpoint: Type[ModelCheckpoint] = ModelCheckpoint
+    
     def __init__(self):
         # you cannot add any args here like log_dir: str = 'logs', verbose=False
         # because they will be considered to be hyperparameters by sklearn
@@ -44,11 +48,10 @@ class MyBaseEstimator(BaseEstimator):
         self._compile(model)
 
         log_dir = get_log_dir(self._log_dir)
-        modelCheckpoint = model.ModelCheckpoint if hasattr(model, 'ModelCheckpoint') else ModelCheckpoint
         callbacks = [
             EarlyStopping(monitor='val_loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
-            modelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
+            self.TModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
         ]
 
         params_repr = self._get_params_repr()
