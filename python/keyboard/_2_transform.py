@@ -1,3 +1,4 @@
+from math import nan
 from DataSource import InMemoryDataSource
 import pandas as pd
 import numpy as np
@@ -152,10 +153,17 @@ class Preprocessor:
 
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             # this means the word input is appended to every timestep in the swipe data
-            result = X.apply(axis=1, func=lambda x: self.encode(x.swipes, x.words), result_type='expand')
+            result = X.apply(axis=1, func=lambda x: self.encode_padded(x.swipes, x.words), result_type='expand')
             return result
         else:
             raise ValueError()
+
+    def encode_padded(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
+        """ Pads the encoding with nanned-out timesteps until self.max_timesteps. """
+        encoded = self.encode(swipe, word)
+        while(len(encoded)) < self.max_timesteps:
+            encoded.append([nan] * len(encoded[0]))
+        return encoded
 
     def encode(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
         """
