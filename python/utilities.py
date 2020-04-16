@@ -21,7 +21,7 @@ def bind(instance, func, as_name=None):
     return bound_method
 
 
-def create_empty_df(length: int, columns: Union[List[str], Dict[str, Type]], **defaults: Union[Any, Callable[[], Any]]) -> pd.DataFrame:
+def create_empty_df(length: int, columns: Union[List[str], Dict[str, Type]], verify=False, **defaults: Union[Any, Callable[[], Any]]) -> pd.DataFrame:
     """ Creates an empty df of the correct format and shape, initialized with default values, which default to 0. """
     for key, value in defaults.items():
         if key not in set(columns):
@@ -50,25 +50,26 @@ def create_empty_df(length: int, columns: Union[List[str], Dict[str, Type]], **d
     result = pd.DataFrame([list(defaults[key] for key in columns) for _ in range(length)], columns=columns)
     if isinstance(columns, Dict):
         result.astype(dtype=columns, copy=False)
-    if isinstance(columns, Dict):
-        def validate(self: pd.DataFrame):
-            for column in self.columns:
-                if column not in set(columns):
-                    raise ValueError(f"A wild column appeared: '{str(column)}'")
-            for column, dtype in columns.items():
-                for elem in result[column]:
-                    assert isinstance(elem, dtype)
-    else:
-        def validate(self: pd.DataFrame):
-            for column in self.columns:
-                if column not in columns:
-                    raise ValueError(f"A wild column appeared: '{str(column)}'")
-            for column, dtype in zip(self.columns, self.dtypes):
-                if dtype.type is not np.object_:
+    if verify:
+        if isinstance(columns, Dict):
+            def validate(self: pd.DataFrame):
+                for column in self.columns:
+                    if column not in set(columns):
+                        raise ValueError(f"A wild column appeared: '{str(column)}'")
+                for column, dtype in columns.items():
                     for elem in result[column]:
-                        assert isinstance(elem, dtype.type)
-    bind(result, validate)
-    result.validate()
+                        assert isinstance(elem, dtype)
+        else:
+            def validate(self: pd.DataFrame):
+                for column in self.columns:
+                    if column not in columns:
+                        raise ValueError(f"A wild column appeared: '{str(column)}'")
+                for column, dtype in zip(self.columns, self.dtypes):
+                    if dtype.type is not np.object_:
+                        for elem in result[column]:
+                            assert isinstance(elem, dtype.type)
+        bind(result, validate)
+        result.validate()
     return result
 
 

@@ -5,13 +5,14 @@ from keyboard._3_model import KeyboardEstimator
 from typing import List, Union
 from time import time
 
-starttime = time()
+verify = False
 
-data = SwipeEmbeddingDataFrame.__as__(single_double_and_triple_letter_swipes())
+starttime = time()
+data: SwipeEmbeddingDataFrame = SwipeEmbeddingDataFrame.__as__(single_double_and_triple_letter_swipes(), verify)
 print(f'generating data took {time() - starttime} seconds')
-starttime = time()
 
-data = data.convolve()
+starttime = time()
+data = data.convolve(verify)
 print(f'convolving took {time() - starttime} seconds')
 
 preprocessor = Preprocessor(max_time_steps=3)

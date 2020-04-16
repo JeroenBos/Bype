@@ -134,7 +134,7 @@ class SwipeDataFrame(MyDataFrame):
 
 
     @staticmethod
-    def create(inputs: List[T], selector: Callable[[T, int], "Partial[RawTouchEvent]"]) -> "SwipeDataFrame":
+    def create(inputs: List[T], selector: Callable[[T, int], "Partial[RawTouchEvent]"], verify=False) -> "SwipeDataFrame":
         """
         :param selector: A function creating a partial RawTouchEvent from the specified input and index
         """
@@ -147,8 +147,9 @@ class SwipeDataFrame(MyDataFrame):
                 if key not in result.columns.values:
                     raise ValueError(f"Unknown column '{str(key)}' for input {str(word)} at index '{str(i)}'")
                 result[key][i] = value
-
-        result.validate()
+        
+        if verify and hasattr(result, 'validate'):
+            result.validate()
 
         return result
 
@@ -163,12 +164,13 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
     words: pd.Series    # series of strings
     correct: pd.Series  # series of booleans
 
-    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
+    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, verify=False):
         super().__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
-        assert SwipeEmbeddingDataFrame.is_instance(self)
-        assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
-        assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
-        assert all(len(word) == 0 or isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
+        if verify:
+            assert SwipeEmbeddingDataFrame.is_instance(self)
+            assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
+            assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
+            assert all(len(word) == 0 or isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
 
 
 
@@ -179,11 +181,11 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
 
 
     @staticmethod
-    def __as__(embedding_dataframe: pd.DataFrame) -> "SwipeEmbeddingDataFrame":
+    def __as__(embedding_dataframe: pd.DataFrame, verify=False) -> "SwipeEmbeddingDataFrame":
         if isinstance(embedding_dataframe, SwipeEmbeddingDataFrame):
             return embedding_dataframe
         else:
-            return SwipeEmbeddingDataFrame(embedding_dataframe)
+            return SwipeEmbeddingDataFrame(embedding_dataframe, verify=verify)
 
 
     @staticmethod
@@ -195,17 +197,17 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
 
 
     @staticmethod
-    def create_empty(length: int) -> "SwipeEmbeddingDataFrame":
+    def create_empty(length: int, verify=False) -> "SwipeEmbeddingDataFrame":
         defaults = {
             'swipes': SwipeDataFrame.create_empty(0), 
             'words': pd.Series([], dtype=np.str), 
             'correct': pd.Series([], dtype=np.bool)}
-        inner = create_empty_df(length, columns=list(defaults.keys()), **defaults)
-        return SwipeEmbeddingDataFrame(inner)
+        inner = create_empty_df(length, columns=list(defaults.keys()), verify=verify, **defaults)
+        return SwipeEmbeddingDataFrame(inner, verify=verify)
 
 
     @staticmethod
-    def create(words: List[str], swipe_selector: Callable[[str, int], SwipeDataFrame]) -> "SwipeEmbeddingDataFrame":
+    def create(words: List[str], swipe_selector: Callable[[str, int], SwipeDataFrame], verify=False) -> "SwipeEmbeddingDataFrame":
         """
         Creates a swipe embedding dataframe from the specified words and a mapping function creating the swipe
         :param words: The words to create swipes for.
@@ -214,13 +216,14 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
         if not isinstance(words, List):
             words = list(words)
 
-        result = SwipeEmbeddingDataFrame.create_empty(len(words))
+        result = SwipeEmbeddingDataFrame.create_empty(len(words), verify=verify)
         swipes = [swipe_selector(word, i) for i, word in enumerate(words)]
 
-        for swipe in swipes:
-            assert isinstance(swipe, pd.DataFrame)
-            assert len(swipe) != 0, 'empty swipe'
-        assert len(set(len(swipe.columns) for swipe in swipes)) == 1, 'not all swipes have same columns'
+        if verify:
+            for swipe in swipes:
+                assert isinstance(swipe, pd.DataFrame)
+                assert len(swipe) != 0, 'empty swipe'
+            assert len(set(len(swipe.columns) for swipe in swipes)) == 1, 'not all swipes have same columns'
 
         for i, swipe in enumerate(swipes):
             result.swipes[i] = swipe
@@ -237,7 +240,7 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
     def get_row(self, i: int) -> "Input":
         return Input(self.swipes[i], self.words[i])
 
-    def convolve(self) -> "SwipeConvolutionDataFrame":
+    def convolve(self, verify=False) -> "SwipeConvolutionDataFrame":
         # just creates a square matrix of all combinations
         L = len(self.words)
         words = [self.words[i % L] for i in range(L * L)]
