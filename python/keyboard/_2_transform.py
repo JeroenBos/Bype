@@ -1,3 +1,4 @@
+from time import time
 from DataSource import InMemoryDataSource
 import pandas as pd
 import numpy as np
@@ -152,7 +153,14 @@ class Preprocessor:
 
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             # this means the word input is appended to every timestep in the swipe data
-            result = X.apply(axis=1, func=lambda x: self.encode_padded(x.swipes, x.words), result_type='expand')
+            starttime = time()
+            this = self
+
+            def f(x):
+                return this.encode_padded(x.swipes, x.words)
+
+            result = X.apply(axis=1, func=f, result_type='expand')
+            print(f'applying encoding took {time() - starttime} seconds')
             return result
         else:
             raise ValueError()
