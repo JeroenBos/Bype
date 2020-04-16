@@ -43,11 +43,12 @@ class MyBaseEstimator(BaseEstimator):
         model = self.current_model
         self._compile(model)
 
-        log_dir = MyBaseEstimator.get_log_dir(self._log_dir)
+        log_dir = get_log_dir(self._log_dir)
+        modelCheckpoint = model.ModelCheckpoint if hasattr(model, 'ModelCheckpoint') else ModelCheckpoint
         callbacks = [
             EarlyStopping(monitor='val_loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
-            ModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
+            modelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
         ]
 
         params_repr = self._get_params_repr()
