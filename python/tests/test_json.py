@@ -27,10 +27,8 @@ class TestEncoder(unittest.TestCase):
 
     def test_preprocessor_repr(self):
         expected = """Preprocessor(
-                batch_count=1,
                 loss_ctor='binary_crossentropy',
                 max_timesteps=1,
-                swipe_feature_count=13,
                 word_input_strategy=CappedWordStrategy(n=5)
                 )
             """.replace('\n', '').replace(' ', '').replace('\t', '').replace('\r', '')

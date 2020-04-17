@@ -11,6 +11,7 @@ from utilities import print_fully
 from more_itertools.more import first
 import json as JSON
 from myjson import json
+from sklearn.base import BaseEstimator
 
 def get_code(char: str) -> int:
     assert isinstance(char, str)
@@ -216,7 +217,8 @@ class Preprocessor:
 
     @json
     def __repr__(self):
-        args = ",".join(sorted(f'{key}={repr(value)}' for key, value in self.__dict__.items()))
+        param_names = BaseEstimator._get_param_names.__func__(Preprocessor)
+        args = ",".join(sorted(f'{key}={repr(self.__dict__[key])}' for key in param_names))
         return f"{Preprocessor.__name__}({args})"
 
     def save(self, filepath: str) -> None:
