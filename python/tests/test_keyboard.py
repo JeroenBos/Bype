@@ -8,7 +8,7 @@ import tensorflow as tf
 from keyboard._0_types import Key, Keyboard, SwipeDataFrame, SwipeEmbeddingDataFrame, T
 from keyboard._1_import import RawTouchEvent
 from keyboard._2_transform import Preprocessor
-from keyboard._3_model import KeyboardEstimator
+from keyboard._4_model import KeyboardEstimator
 from utilities import print_fully
 import math
 

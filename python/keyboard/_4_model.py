@@ -6,7 +6,7 @@ from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
 from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
-from keyboard._3a_word_input_model import CappedWordStrategy, WordStrategy
+from keyboard._4a_word_input_model import CappedWordStrategy, WordStrategy
 from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa

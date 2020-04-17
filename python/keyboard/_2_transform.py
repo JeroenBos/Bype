@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from keyboard._0_types import myNaN, Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
 from keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
-from keyboard._3a_word_input_model import WordStrategy, CappedWordStrategy
+from keyboard._4a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any
 from utilities import print_fully

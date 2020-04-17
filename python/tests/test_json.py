@@ -1,6 +1,6 @@
 import unittest
 from keyboard._2_transform import Preprocessor
-from keyboard._3a_word_input_model import CappedWordStrategy
+from keyboard._4a_word_input_model import CappedWordStrategy
 from myjson import json_decoders
 
 class TestEncoder(unittest.TestCase):
