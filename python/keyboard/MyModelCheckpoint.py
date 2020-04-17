@@ -13,4 +13,9 @@ class MyModelCheckpoint(ModelCheckpoint, metaclass=generic('preprocessor')):
 
     @property
     def preprocessor_filepath(self):
-        return self.filepath[0:self.filepath.rindex('.')] + '.json'
+        return get_processor_path(self.filepath)
+
+def get_processor_path(h5path: str):
+    assert isinstance(h5path, str)
+    assert h5path.endswith('.h5')
+    return h5path[0:h5path.rindex('.')] + '.json'
