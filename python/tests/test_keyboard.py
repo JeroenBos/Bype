@@ -293,7 +293,7 @@ class Testkeyboard(unittest.TestCase):
         # act
         swipe = generate_taps_for('ab')
         assert len(swipe) == 2
-        features = Preprocessor(max_time_steps=2).encode(swipe, 'ab')
+        features = Preprocessor(max_timesteps=2).encode(swipe, 'ab')
 
         # assert
         diffs = [f"({i}, {j}): {features[i][j]} whereas expected: {expected_features[i][j]}"  # noqa

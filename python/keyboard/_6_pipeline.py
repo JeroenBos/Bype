@@ -15,6 +15,6 @@ starttime = time()
 data = data.convolve(verify)
 print(f'convolving took {time() - starttime} seconds')
 
-preprocessor = Preprocessor(max_time_steps=3)
+preprocessor = Preprocessor(max_timesteps=3)
 
 training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=10).fit(data)
