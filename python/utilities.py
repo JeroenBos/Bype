@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import Any, Callable, List, Union, Dict, Type
 from functools import lru_cache
+import inspect 
 
 def print_fully(df: pd.DataFrame) -> None:
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
@@ -87,3 +88,19 @@ def print_name(decorate_function: Callable):
         print('---------:' + decorate_function.__name__)
         return decorate_function(*args, **kwargs)
     return decorating_function
+
+
+def get_declaring_class(method):
+    """ Gets the class that declared the specified method """
+    # copied from https://stackoverflow.com/a/25959545/308451
+
+    if inspect.isfunction(method):
+        return getattr(inspect.getmodule(method), method.__qualname__.split('.<locals>', 1)[0].rsplit('.', 1)[0])
+   
+    if inspect.ismethod(method):
+        print('this is a method')
+        for cls in inspect.getmro(method.__self__.__class__):
+            if cls.__dict__.get(method.__name__) is method:
+                return cls
+        raise ValueError('Specified method could not be found in its mro chain')
+    raise ValueError('Specified method is not a method')
