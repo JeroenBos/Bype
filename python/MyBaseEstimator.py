@@ -39,7 +39,7 @@ class MyBaseEstimator(BaseEstimator):
         self.fit(source.get_train(), source.get_target())
 
     # gets called by sklearn, without y
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, extra_callbacks=[]):  # yes Okay I relaize MyBaseEstimator should have been merged with keyboardEstimator all along....
         assert hasattr(self, 'num_epochs'), """num_epochs must be present. Set self.num_epochs in __init__"""
         old_X = X  # noqa
 
@@ -52,7 +52,7 @@ class MyBaseEstimator(BaseEstimator):
             EarlyStopping(monitor='val_loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
             self.TModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
-        ]
+        ] + extra_callbacks
 
         params_repr = self._get_params_repr()
         result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, validation_split=0.2)

@@ -6,6 +6,7 @@ from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
 from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
+from keyboard._3_scoring import Metrics
 from keyboard._4a_word_input_model import CappedWordStrategy, WordStrategy
 from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
@@ -101,4 +102,4 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         assert y.name == 'correct'
         assert len(X) == len(y)
         assert all(isinstance(target, float) for target in y)
-        super(self.__class__, self).fit(X, y)
+        super(self.__class__, self).fit(X, y, extra_callbacks=[Metrics(self)])
