@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict
 import inspect
 import json as JSON
-from utilities import bind, get_declaring_class
+from utilities import bind, first_non_whitespace_char_is_any_of, get_declaring_class
 
 # dictionary from type name to inverse of __repr__
 decoders: Dict[str, Callable[[str], Any]] = {}
@@ -13,6 +13,7 @@ def json(method: Callable):
     assert isinstance(method, Callable)
 
     def decoder(s: str) -> Any:
+        assert first_non_whitespace_char_is_any_of(s, '{', '[', '"', "'"), "JSONs consisting of a single value should be enclosed in double quotes"
         obj = JSON.loads(s)
         # assumes that __repr__ returns a string interpretable as a python ctor call returning an identical object
         # i.e. assumes that eval ∘ repr is idempotent
