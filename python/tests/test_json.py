@@ -38,6 +38,11 @@ class TestEncoder(unittest.TestCase):
         assert representation == expected
 
 
+    def test_preprocessor_decoder(self):
+        preprocessor = json_decoders['Preprocessor']('"' + repr(Preprocessor()) + '"')
+        assert isinstance(preprocessor, Preprocessor)
+
+
 
 if __name__ == '__main__':
     TestEncoder().test_preprocessor_repr()
