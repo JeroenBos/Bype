@@ -4,7 +4,7 @@ import json as JSON
 from utilities import bind, first_non_whitespace_char_is_any_of, get_declaring_class
 
 # dictionary from type name to inverse of __repr__
-decoders: Dict[str, Callable[[str], Any]] = {}
+json_decoders: Dict[str, Callable[[str], Any]] = {}
 
 def json(method: Callable):
     """
@@ -25,7 +25,7 @@ def json(method: Callable):
     calling_frame = inspect.getouterframes(inspect.currentframe(), 2)[1]
     caller_name = calling_frame[3]
 
-    decoders[caller_name] = decoder
+    json_decoders[caller_name] = decoder
     return method
 
 class Object(object):
