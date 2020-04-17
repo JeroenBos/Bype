@@ -96,7 +96,7 @@ def get_declaring_class(method):
 
     if inspect.isfunction(method):
         return getattr(inspect.getmodule(method), method.__qualname__.split('.<locals>', 1)[0].rsplit('.', 1)[0])
-   
+
     if inspect.ismethod(method):
         print('this is a method')
         for cls in inspect.getmro(method.__self__.__class__):
@@ -104,3 +104,14 @@ def get_declaring_class(method):
                 return cls
         raise ValueError('Specified method could not be found in its mro chain')
     raise ValueError('Specified method is not a method')
+
+def first_non_whitespace_char_is_any_of(s: str, *chars: str) -> bool:
+    assert isinstance(s, str)
+
+    chars = set(chars)
+    for c in s:
+        if not c.isspace():
+            return c in chars
+
+    # in thise case 's' is whitespace only
+    return False
