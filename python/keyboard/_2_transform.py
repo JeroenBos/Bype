@@ -9,6 +9,7 @@ from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any
 from utilities import print_fully
 from more_itertools.more import first
+import json
 
 def get_code(char: str) -> int:
     assert isinstance(char, str)
@@ -68,6 +69,9 @@ class Preprocessor:
     def set_params(self, **params):
         assert all(key in self.__dict__ for key in params.keys())
         self.__dict__.update(params)
+
+    def get_params(self):
+        return self.__dict__
 
 
     def _get_keyboard(self, touchevent: RawTouchEvent) -> Keyboard:
@@ -210,4 +214,9 @@ class Preprocessor:
         return Input('', '')
 
     def save(self, filepath: str) -> None:
-        raise ValueError('not implemented')
+        dictionary = {key: value.__repr__() for key, value in self.get_params().items()}
+
+        json_object = json.dumps(dictionary, indent=4) 
+
+        with open(filepath, "w") as outfile: 
+            outfile.write(json_object)
