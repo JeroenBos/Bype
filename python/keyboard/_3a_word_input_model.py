@@ -1,5 +1,6 @@
 from abc import ABC
-
+from typing import Any
+from myjson import json
 
 class WordStrategy(ABC):
     """
@@ -20,3 +21,7 @@ class CappedWordStrategy(WordStrategy):
 
     def get_feature_count(self):
         return 2 * self.n
+
+    @json
+    def __repr__(self):
+        return f"{CappedWordStrategy.__name__}(n={self.n})"
