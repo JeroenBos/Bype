@@ -9,7 +9,8 @@ from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any
 from utilities import print_fully
 from more_itertools.more import first
-import json
+import json as JSON
+from myjson import json
 
 def get_code(char: str) -> int:
     assert isinstance(char, str)
@@ -213,10 +214,15 @@ class Preprocessor:
         """Converts the specified list of features into a word and swipe."""
         return Input('', '')
 
-    def save(self, filepath: str) -> None:
-        dictionary = {key: value.__repr__() for key, value in self.get_params().items()}
+    @json
+    def __repr__(self):
+        args = ",".join(sorted(f'{key}={repr(value)}' for key, value in self.__dict__.items()))
+        return f"{Preprocessor.__name__}({args})"
 
-        json_object = json.dumps(dictionary, indent=4) 
+    def save(self, filepath: str) -> None:
+        representation = repr(self)
+
+        json_object = JSON.dumps('"' + representation + '"', indent=4) 
 
         with open(filepath, "w") as outfile: 
             outfile.write(json_object)
