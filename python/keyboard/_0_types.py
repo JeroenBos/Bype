@@ -202,14 +202,6 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
 
 
     @staticmethod
-    def convolve_data(trainings_data: "SwipeEmbeddingDataFrame") -> "SwipeConvolutionDataFrame":
-        # just creates a square matrix of all combinations
-        L = len(trainings_data.words)
-        words = [trainings_data.words[i % L] for i in range(L * L)]
-        return SwipeEmbeddingDataFrame.create(words, lambda word, i: trainings_data.swipes[i // L])
-
-
-    @staticmethod
     def create_empty(length: int, verify=False) -> "SwipeEmbeddingDataFrame":
         defaults = {
             'swipes': SwipeDataFrame.create_empty(0), 
