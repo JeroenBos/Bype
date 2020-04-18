@@ -1,4 +1,5 @@
 import math
+import itertools
 import pandas as pd
 import numpy as np
 from tensorflow.keras.callbacks import Callback  # noqa
@@ -59,7 +60,7 @@ class Metrics(Callback):
             # they cannot be the same unless the i is one of the correct indices (indicated by correct_swipe_index == correct_word_index)
             assert swiped_word != input_word or is_correct
 
-        s = ', '.join(f"{_place}/{_count}" for _place, _count in zip(place, occurrences))
+        s = ', '.join(itertools.islice((f"{_place}/{_count}" for _place, _count in zip(place, occurrences)), 20))
         test_loss = (sum(place) - self._L) / len(y_predict)
         # score = sum(a / b for a, b in zip(place, occurrences))
         print(f" - test_loss: {test_loss:.3g}")
