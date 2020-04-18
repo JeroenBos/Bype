@@ -228,8 +228,6 @@ class Preprocessor:
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
-        # max([len(x) for x in [a, b]])
-        # np.concatenate([np.zeros(len(b), dtype=bool), np.ones(max_entries - len(b), dtype=bool)])
         return np.ma.masked_invalid(result)
 
     def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
