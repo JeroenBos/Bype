@@ -18,36 +18,46 @@ from tensorflow.python.keras import backend as K  # noqa
 
 
 class Metrics(Callback):
-    def __init__(self, preprocessed_convolved_validation_data, decode: Callable):
+    def __init__(self, preprocessed_convolved_validation_data, decode: Callable, get_original_swipe_index, L):
         super().__init__()
         self.test_data = preprocessed_convolved_validation_data
         self.decode = decode
         self.decoded_test_data = [decode(t) for t in self.test_data]
-        assert self._L ** 2 == len(self.test_data), "How come the convolved data isn't square?"
-
-    @property
-    def _L(self):
-        return (int)(math.sqrt(len(self.test_data)))
+        self.get_original_swipe_index = get_original_swipe_index
+        self._L = L 
 
     def on_train_begin(self, logs={}):
         self._data = []
 
     def on_epoch_end(self, batch, logs={}):
-        L = self._L
         # assuming correct ones are on diagonal
         y = self.model.predict(self.test_data)
         y_predict = np.asarray(y)
         # place indicates howmaniest place the word would be suggested
-        place = np.zeros(len(y_predict) // L, int)
+        # i.e. for each swipe+word combi with that swipe 
+        # i.e. place[swipe_index]
+        occurrences = np.zeros(self._L, int)
+        place = np.zeros(self._L, int)
         for i in range(len(y_predict)):
-            correct_index = (i // L) * (L + 1)
-            correct_word = self.decode(self.test_data[correct_index])
+            # note that the correct_swipe and correct_word index are 
+            correct_swipe_index, swiped_word, correct_word_index = self.get_original_swipe_index.__func__(i)
+            occurrences[correct_swipe_index] += 1
+            if y_predict[i] >= y_predict[correct_swipe_index]:
+                place[correct_swipe_index] += 1
+
+            # whether it's one of the correct indices:
+            is_correct = (correct_swipe_index == correct_word_index)
+
+            # the word that was swiped is:
+            # swiped_word = self.decode(self.test_data[correct_word_index])
+            # the word it was convolved with:
             input_word = self.decode(self.test_data[i])
-            assert correct_word != input_word or correct_index == i
-            if y_predict[i] >= y_predict[correct_index]:
-                place[i // L] += 1
-        
-        print('\n - average: ' + str(place.mean()))
+
+            # they cannot be the same unless the i is one of the correct indices (indicated by correct_swipe_index == correct_word_index)
+            assert swiped_word != input_word or is_correct
+
+        s = ', '.join(f"{_place}/{_count}" for _place, _count in zip(place, occurrences))
+        print('\n - places: [' + s + ']')
 
         # # create_swipe_embedding_df
         # word, correctSwipe = X
