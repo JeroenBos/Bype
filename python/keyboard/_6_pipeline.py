@@ -17,4 +17,8 @@ print(f'convolving took {time() - starttime} seconds')
 
 preprocessor = Preprocessor(max_timesteps=3)
 
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=10).fit(data)
+metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode)
+
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=10)  \
+                                          .with_callback(metric)              \
+                                          .fit(convolved_data)
