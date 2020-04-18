@@ -1,12 +1,12 @@
 from MyBaseEstimator import MyBaseEstimator
 from typing import List, Union, Optional, Callable, Type
 import tensorflow as tf
+from tensorflow.keras.callbacks import Callback # noqa
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
 from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
-from keyboard._3_scoring import Metrics
 from keyboard._4a_word_input_model import CappedWordStrategy, WordStrategy
 from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
@@ -23,6 +23,11 @@ from keyboard.MyModelCheckpoint import MyModelCheckpoint
 # but the metaclass does tag along the preprocessor then (different one per KeyboardEstimator type, like I said)
 class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     preprocessor: Preprocessor
+    extra_callbacks: List[Callback] = []
+
+    def with_callback(self, callback: Callback) -> "KeyboardEstimator":
+        self.extra_callbacks.append(callback)
+        return self
 
     def __new__(cls, *args, **kwargs):
         cls.TModelCheckpoint = MyModelCheckpoint[cls.preprocessor]
@@ -102,4 +107,4 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         assert y.name == 'correct'
         assert len(X) == len(y)
         assert all(isinstance(target, float) for target in y)
-        super(self.__class__, self).fit(X, y, extra_callbacks=[Metrics(self)])
+        super(self.__class__, self).fit(X, y, extra_callbacks=self.extra_callbacks)
