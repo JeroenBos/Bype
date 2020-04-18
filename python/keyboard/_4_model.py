@@ -73,8 +73,8 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         masking = Masking(mask_value=myNaN)(input)
 
         d = Dense(50, kernel_initializer='random_uniform', activation='linear')(masking)
-#        a = LSTM(64, kernel_initializer='random_uniform')(d)
-        middle = Dense(50, kernel_initializer='random_uniform', activation='relu')(d)
+        lstm = LSTM(16, kernel_initializer='random_uniform')(d)
+        middle = Dense(50, kernel_initializer='random_uniform', activation='relu')(lstm)
         output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 
         model = Model(inputs=[input], outputs=output)

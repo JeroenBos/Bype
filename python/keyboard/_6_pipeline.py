@@ -10,14 +10,14 @@ from time import time
 verify = False
 
 starttime = time()
-data: SwipeEmbeddingDataFrame = SwipeEmbeddingDataFrame.__as__(single_letter_swipes(), verify)
+data: SwipeEmbeddingDataFrame = SwipeEmbeddingDataFrame.__as__(double_letter_swipes(), verify)
 print(f'generating data took {time() - starttime} seconds')
 
 starttime = time()
 convolved_data = data.convolve(fraction=1, verify=verify)
 print(f'convolving took {time() - starttime} seconds')
 
-preprocessor = Preprocessor(max_timesteps=1)
+preprocessor = Preprocessor(max_timesteps=2)
 
 metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data))
 
