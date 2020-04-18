@@ -32,13 +32,12 @@ class Metrics(Callback):
     def on_train_begin(self, logs={}):
         self._data = []
 
-    def on_epoch_end(self, batch, logs={}):
-        # assuming correct ones are on diagonal
-        y = self.model.predict(self.test_data)
-        y_predict = np.asarray(y)
-        # place indicates howmaniest place the word would be suggested
-        # i.e. for each swipe+word combi with that swipe 
-        # i.e. place[swipe_index]
+    def on_train_end(self, logs={}):
+        pass
+
+    def _get_places(self):
+        y_predict = np.asarray(self.model.predict(self.test_data))
+
         occurrences = np.zeros(self._L, int)
         place = np.zeros(self._L, int)
         for i in range(len(y_predict)):
@@ -60,28 +59,17 @@ class Metrics(Callback):
             # they cannot be the same unless the i is one of the correct indices (indicated by correct_swipe_index == correct_word_index)
             assert swiped_word != input_word or is_correct
 
+        return place, occurrences, y_predict
+
+    def on_epoch_end(self, batch, logs={}):
+
+        place, occurrences, y_predict = self._get_places()
+
         s = ', '.join(itertools.islice((f"{_place}/{_count}" for _place, _count in zip(place, occurrences)), 20))
-        test_loss = (sum(place) - self._L) / len(y_predict)
+        test_loss = (sum(place) - self._L) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
         print(f" - test_loss: {test_loss:.3g}")
         print('\n - places: [' + s + ']')
-
-        # # create_swipe_embedding_df
-        # word, correctSwipe = X
-        # swipes = self.trainings_data.swipes
-        # # for swipe in swipes:
-        # #     assert SwipeDataFrame.is_instance(swipe)
-        # intermediate = [Convolution(self._predict(estimator, swipe, word), swipe == correctSwipe) for swipe in swipes]
-        # sortedIntermediate = sorted(intermediate, key=lambda t: t.convolution)
-        # result = count(takewhile(lambda t: not t.correct, sortedIntermediate))
-        # return result
-
-        # X_val, y_val = self.validation_data[0], self.validation_data[1]
-        # y_predict = np.asarray(self.model.predict(X_val))
-
-        # y_val = np.argmax(y_val, axis=1)
-        # y_predict = np.argmax(y_predict, axis=1)
-        # print(' - metric: 0 %')
 
         with metrics_writer.as_default():
             tf.summary.scalar('pred/min', data=float(y_predict.min()), step=batch)
