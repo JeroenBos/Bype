@@ -5,6 +5,7 @@ from tensorflow.keras.callbacks import Callback # noqa
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
+from tensorflow.keras.optimizers import Adam  # noqa
 from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
 from keyboard._4a_word_input_model import CappedWordStrategy, WordStrategy
@@ -69,8 +70,9 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         input = Input(shape=(self.max_timesteps, self.swipe_feature_count))
         masking = Masking(mask_value=myNaN)(input)
 
-        a = LSTM(64, kernel_initializer='random_uniform')(masking)
-        middle = Dense(20, kernel_initializer='random_uniform')(a)
+        d = Dense(100, kernel_initializer='random_uniform')(masking)
+#        a = LSTM(64, kernel_initializer='random_uniform')(d)
+        middle = Dense(20, kernel_initializer='random_uniform')(d)
         output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 
         model = Model(inputs=[input], outputs=output)
@@ -86,7 +88,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         model = model if model else self.current_model
         loss = self.loss_ctor if isinstance(self.loss_ctor, str) else self.loss_ctor(self)
         model.compile(loss=loss,
-                      optimizer='adam',
+                      optimizer=Adam(),
                       metrics=['accuracy'])
 
     def set_params(self, **params):
