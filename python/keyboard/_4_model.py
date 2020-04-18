@@ -72,9 +72,9 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         input = Input(shape=(self.max_timesteps, self.swipe_feature_count))
         masking = Masking(mask_value=myNaN)(input)
 
-        d = Dense(10, kernel_initializer='random_uniform', activation='relu')(masking)
+        d = Dense(50, kernel_initializer='random_uniform', activation='linear')(masking)
 #        a = LSTM(64, kernel_initializer='random_uniform')(d)
-        middle = Dense(10, kernel_initializer='random_uniform', activation='relu')(d)
+        middle = Dense(50, kernel_initializer='random_uniform', activation='relu')(d)
         output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 
         model = Model(inputs=[input], outputs=output)
@@ -90,7 +90,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         model = model if model else self.current_model
         loss = self.loss_ctor if isinstance(self.loss_ctor, str) else self.loss_ctor(self)
         model.compile(loss=loss,
-                      optimizer=Adam(lr=0.001, decay=0.001),
+                      optimizer=Adam(),
                       metrics=['accuracy'])
 
     def set_params(self, **params):

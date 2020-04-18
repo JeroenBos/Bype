@@ -14,13 +14,13 @@ data: SwipeEmbeddingDataFrame = SwipeEmbeddingDataFrame.__as__(single_letter_swi
 print(f'generating data took {time() - starttime} seconds')
 
 starttime = time()
-convolved_data = data.convolve(fraction=len(data) - 1, verify=verify)
+convolved_data = data.convolve(fraction=1, verify=verify)
 print(f'convolving took {time() - starttime} seconds')
 
 preprocessor = Preprocessor(max_timesteps=1)
 
 metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data))
 
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=100)  \
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=200)  \
                                           .with_callback(metric)              \
                                           .fit(convolved_data)
