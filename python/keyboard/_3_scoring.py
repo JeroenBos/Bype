@@ -1,10 +1,10 @@
+import math
 import pandas as pd
 import numpy as np
 from tensorflow.keras.callbacks import Callback  # noqa
 from sklearn.metrics import roc_auc_score
 from keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame, SwipeConvolutionDataFrame
-from keyboard._4_model import KeyboardEstimator
-from typing import List
+from typing import List, Callable
 from collections import namedtuple
 from itertools import count, takewhile
 from tensorflow.keras.losses import Loss  # noqa
@@ -18,20 +18,51 @@ from tensorflow.python.keras import backend as K  # noqa
 
 
 class Metrics(Callback):
-    def __init__(self, model):
+    def __init__(self, preprocessed_convolved_validation_data, decode: Callable):
         super().__init__()
-        self.model = model
+        self.test_data = preprocessed_convolved_validation_data
+        self.decode = decode
+        assert self._L ** 2 == len(self.test_data), "How come the convolved data isn't square?"
+
+    @property
+    def _L(self):
+        return (int)(math.sqrt(len(self.test_data)))
 
     def on_train_begin(self, logs={}):
         self._data = []
 
     def on_epoch_end(self, batch, logs={}):
+        L = self._L
+        # assuming correct ones are on diagonal
+        y = self.model.predict(self.test_data)
+        y_predict = np.asarray(y)
+        # place indicates howmaniest place the word would be suggested
+        place = np.zeros(len(y_predict) // L, int)
+        for i in range(len(y_predict)):
+            correct_index = (i % L) * (L + 1)
+            correct_word = self.decode(self.test_data[correct_index])
+            input_word = self.decode(self.test_data[i])
+            assert correct_word != input_word or correct_index == i
+            if y_predict[i] >= y_predict[correct_index]:
+                place[i // L] += 1
+        print('\n' + str(place))
+
+        # # create_swipe_embedding_df
+        # word, correctSwipe = X
+        # swipes = self.trainings_data.swipes
+        # # for swipe in swipes:
+        # #     assert SwipeDataFrame.is_instance(swipe)
+        # intermediate = [Convolution(self._predict(estimator, swipe, word), swipe == correctSwipe) for swipe in swipes]
+        # sortedIntermediate = sorted(intermediate, key=lambda t: t.convolution)
+        # result = count(takewhile(lambda t: not t.correct, sortedIntermediate))
+        # return result
+
         # X_val, y_val = self.validation_data[0], self.validation_data[1]
         # y_predict = np.asarray(self.model.predict(X_val))
 
         # y_val = np.argmax(y_val, axis=1)
         # y_predict = np.argmax(y_predict, axis=1)
-        print(' - metric: 0 %')
+        # print(' - metric: 0 %')
         self._data.append({
             'val_rocauc': 1,
         })
@@ -58,7 +89,7 @@ class Scorer():
             f"Arg error: expected SwipeEmbeddingDataFrame; got '{str(type(trainings_data))}'"
         self.trainings_data = trainings_data
 
-    def __call__(self, estimator: KeyboardEstimator, X: Input, y: None) -> float:
+    def __call__(self, estimator: "KeyboardEstimator", X: Input, y: None) -> float:
         """
         :param X: Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
                   So this X should be (timesteps, features)?
@@ -66,56 +97,7 @@ class Scorer():
 
         prediction_matrix = estimator.predict(self.trainings_data)
 
-        # create_swipe_embedding_df
-        word, correctSwipe = X
-        swipes = self.trainings_data.swipes
-        for swipe in swipes:
-            assert SwipeDataFrame.is_instance(swipe)
-        intermediate = [Convolution(self._predict(estimator, swipe, word), swipe == correctSwipe) for swipe in swipes]
-        sortedIntermediate = sorted(intermediate, key=lambda t: t.convolution)
-        result = count(takewhile(lambda t: not t.correct, sortedIntermediate))
-        return result
+
 
     def _predict(self, estimator, swipe, word) -> float:
         return estimator.predict(estimator.preprocessor.encode(swipe, word))
-
-def _get_shape(tensor) -> List:
-    """ Gets the shape in a list form instead of tensorshape object"""
-    return [dim.value for dim in tensor.shape.dims]
-
-
-
-class MyLoss(Loss):
-    def __init__(self,
-                 trainings_data: SwipeEmbeddingDataFrame,
-                 name='myError'):
-        super().__init__()
-        self.trainings_data = trainings_data
-
-    def _get_batch_X(self, y_true):
-        return self.trainings_data
-
-    def __call__(self, estimator: KeyboardEstimator) -> float:
-        assert isinstance(estimator.preprocessor, Preprocessor)
-        scorer = Scorer(self.trainings_data)
-
-        class Score:
-            def __init__(self, _get_batch_X):
-                self.score_called_count = 0
-                self._get_batch_X = _get_batch_X        
-
-            @tf.function
-            def __call__(self, y_true, y_pred, **kwargs):
-                y_pred = ops.convert_to_tensor_v2(y_pred)
-                y_true = math_ops.cast(y_true, y_pred.dtype)
-                return K.mean(math_ops.abs(y_pred - y_true), axis=-1)
-
-                # return tf.keras.backend.zeros(
-
-                assert _get_shape(y_pred) == [None, estimator.preprocessor.swipe_timesteps_count, 1]  # is the output count
-                self.score_called_count += 1
-                if self.score_called_count == 1:
-                    return 0
-                current_batch = self._get_batch_X(y_true) 
-                losses = scorer.__call__(estimator, current_batch, y_pred)
-        return Score(self._get_batch_X)
