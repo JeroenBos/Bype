@@ -1,11 +1,12 @@
 from MyBaseEstimator import MyBaseEstimator
 from typing import List, Union, Optional, Callable, Type
 import tensorflow as tf
-from tensorflow.keras.callbacks import Callback # noqa
+from tensorflow.keras.callbacks import Callback  # noqa
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
 from tensorflow.keras.optimizers import Adam  # noqa
+from tensorflow.keras.callbacks import History  # noqa
 from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
 from keyboard._4a_word_input_model import CappedWordStrategy, WordStrategy
@@ -103,7 +104,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     def max_timesteps(self):
         return self.preprocessor.max_timesteps
 
-    def fit(self, X, y=None) -> "Historie":
+    def fit(self, X, y=None) -> History:
         if y is None and isinstance(X, DataSource):
             X, y = X.get_train(), X.get_target()
         assert y.name == 'correct'
