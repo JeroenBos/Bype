@@ -14,8 +14,10 @@ from tensorflow.python.framework.ops import disable_eager_execution  # noqa
 from tensorflow.python.framework import ops  # noqa
 from tensorflow.python.ops import math_ops  # noqa
 from tensorflow.python.keras import backend as K  # noqa
+from MyBaseEstimator import get_log_dir
 
 
+metrics_writer = tf.summary.create_file_writer(get_log_dir('logs/') + '/metrics')
 
 class Metrics(Callback):
     def __init__(self, preprocessed_convolved_validation_data, decode: Callable, get_original_swipe_index, L):
@@ -76,9 +78,11 @@ class Metrics(Callback):
         # y_val = np.argmax(y_val, axis=1)
         # y_predict = np.argmax(y_predict, axis=1)
         # print(' - metric: 0 %')
-        self._data.append({
-            'val_rocauc': 1,
-        })
+
+        with metrics_writer.as_default():
+            tf.summary.scalar('pred/min', data=float(y_predict.min()), step=batch)
+            tf.summary.scalar('pred/max', data=float(y_predict.max()), step=batch)
+            metrics_writer.flush()
         return
 
     def get_data(self):
