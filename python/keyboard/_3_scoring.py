@@ -22,6 +22,7 @@ class Metrics(Callback):
         super().__init__()
         self.test_data = preprocessed_convolved_validation_data
         self.decode = decode
+        self.decoded_test_data = [decode(t) for t in self.test_data]
         assert self._L ** 2 == len(self.test_data), "How come the convolved data isn't square?"
 
     @property
@@ -39,13 +40,14 @@ class Metrics(Callback):
         # place indicates howmaniest place the word would be suggested
         place = np.zeros(len(y_predict) // L, int)
         for i in range(len(y_predict)):
-            correct_index = (i % L) * (L + 1)
+            correct_index = (i // L) * (L + 1)
             correct_word = self.decode(self.test_data[correct_index])
             input_word = self.decode(self.test_data[i])
             assert correct_word != input_word or correct_index == i
             if y_predict[i] >= y_predict[correct_index]:
                 place[i // L] += 1
-        print('\n' + str(place))
+        
+        print('\n - average: ' + str(place.mean()))
 
         # # create_swipe_embedding_df
         # word, correctSwipe = X
