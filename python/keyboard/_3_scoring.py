@@ -39,17 +39,18 @@ class Metrics(Callback):
         occurrences = np.zeros(self._L, int)
         place = np.zeros(self._L, int)
         for i in range(len(y_predict)):
-            # note that the correct_swipe and correct_word index are 
-            correct_swipe_index, swiped_word, correct_word_index = self.get_original_swipe_index.__func__(i)
-            occurrences[correct_swipe_index] += 1
-            if y_predict[i] >= y_predict[correct_swipe_index]:
-                place[correct_swipe_index] += 1
+            # note that swiped_id and word_id are in the original data set
+            # and swiped_index is in the convoluted data set 
+            swiped_id, word_id, swiped_index = self.get_original_swipe_index.__func__(i)
+            occurrences[swiped_id] += 1
+            if y_predict[i] >= y_predict[swiped_index]:
+                place[swiped_id] += 1
 
             # whether it's one of the correct indices:
-            is_correct = (correct_swipe_index == correct_word_index)
+            is_correct = (swiped_id == word_id)
 
             # the word that was swiped is:
-            # swiped_word = self.decode(self.test_data[correct_word_index])
+            swiped_word = self.decode(self.test_data[swiped_index])
             # the word it was convolved with:
             input_word = self.decode(self.test_data[i])
 

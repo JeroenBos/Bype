@@ -273,8 +273,10 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
         words = [self.words[i] for i in indices]
 
         def get_original_swipe_index(i):
-            # index_of_swipe_in_non_convolved, index_of_word_in_non_convolved, word that was swiped
-            return (i * L // N), self.words[i * L // N], indices[i]
+            # index_of_swipe_in_non_convolved, word that was swiped, index_of_word_in_non_convolved
+            return (i * L // N), indices[i], (i * L // N) * L
+        # index in convolution of the correct combination of 
+
 
         data = SwipeConvolutionDataFrame.create(words, lambda word, i: self.swipes[get_original_swipe_index(i)[0]])
         data.correct = [is_correct(i) for i in range(N)]
