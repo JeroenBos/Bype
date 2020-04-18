@@ -50,15 +50,14 @@ class MyBaseEstimator(BaseEstimator):
 
         log_dir = get_log_dir(self._log_dir)
         callbacks = [
-            EarlyStopping(monitor='val_loss', patience=5),
             TensorBoard(log_dir=log_dir, histogram_freq=1),
-            self.TModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False)
+            self.TModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False, monitor='loss')
         ] + extra_callbacks
 
         params_repr = self._get_params_repr()
 
         weights = class_weight.compute_class_weight('balanced', np.unique(y), y)
-        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, validation_split=0.2, class_weight=weights)
+        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, class_weight=weights)
         self.history.setdefault(params_repr, []).append(result)
         return result
 
