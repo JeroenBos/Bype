@@ -101,10 +101,10 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     def max_timesteps(self):
         return self.preprocessor.max_timesteps
 
-    def fit(self, X, y=None) -> None:
+    def fit(self, X, y=None) -> "Historie":
         if y is None and isinstance(X, DataSource):
             X, y = X.get_train(), X.get_target()
         assert y.name == 'correct'
         assert len(X) == len(y)
         assert all(isinstance(target, float) for target in y)
-        super(self.__class__, self).fit(X, y, extra_callbacks=self.extra_callbacks)
+        return super(self.__class__, self).fit(X, y, extra_callbacks=self.extra_callbacks)
