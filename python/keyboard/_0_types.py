@@ -1,3 +1,4 @@
+from math import floor
 from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional, Union
 import pandas as pd
 from abc import ABC
@@ -40,6 +41,14 @@ class Keyboard(Dict[int, "Key"]):
     def normalize_y(self, y: Union[int, float]) -> float:
         return (y - self.top) / self.height
 
+    def denormalize_x(self, normalized_x: float) -> int:
+        """ Returns the x in pixels that would have resulted in the specified normalized x. """
+        return floor(normalized_x * self.width + self.left)
+
+    def denormalize_y(self, normalized_y: float) -> int:
+        """ Returns the y in pixels that would have resulted in the specified normalized y. """
+        return floor(normalized_y * self.height + self.top)
+
     def get_key(self, char: Union[str, int]) -> "Key":
         assert isinstance(char, str) or isinstance(char, int)
         assert len(char) == 1
@@ -63,6 +72,10 @@ class Key:
         self.toggleable = toggleable
         self.keyboard = keyboard
 
+    @property
+    def char(self):
+        return chr(self.code)
+        
     NO_KEY: "Key"
 
 
@@ -147,7 +160,7 @@ class SwipeDataFrame(MyDataFrame):
                 if key not in result.columns.values:
                     raise ValueError(f"Unknown column '{str(key)}' for input {str(word)} at index '{str(i)}'")
                 result[key][i] = value
-        
+
         if verify and hasattr(result, 'validate'):
             result.validate()
 

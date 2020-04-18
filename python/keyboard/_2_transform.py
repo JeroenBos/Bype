@@ -1,3 +1,4 @@
+from math import floor
 from time import time
 from DataSource import InMemoryDataSource
 import pandas as pd
@@ -13,13 +14,28 @@ import json as JSON
 from myjson import json
 from sklearn.base import BaseEstimator
 
-
+VariadicFloatKeyboardToAnyDelegate = Union[
+    Callable[[Keyboard], Any], 
+    Callable[[float, Keyboard], Any], 
+    Callable[[float, float, Keyboard], Any], 
+    Callable[[float, float, float, Keyboard], Any], 
+    Callable[[float, float, float, float, Keyboard], Any],
+]
 
 class Feature:
     """Represents the signature of a feature (per timestep). """
+
     def __call__(self, touchevent: RawTouchEvent, word: str) -> float:
         raise ValueError('abstract')
 
+class InverseFeature:
+    def __init__(self, f: VariadicFloatKeyboardToAnyDelegate, *feature_indices: int):
+        self.f = f
+        self.feature_indices = feature_indices
+
+    def __call__(self, timestep: ProcessedInput, keyboard: Keyboard):
+        features = [timestep[i] for i in self.feature_indices]
+        return self.f(keyboard=keyboard, *features)
 
 def get_code(char: str) -> int:
     assert isinstance(char, str)
@@ -77,11 +93,13 @@ class Preprocessor:
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
         self._features_per_time_step = None
+        self._inverse_features = None
 
     def set_params(self, **params):
         assert all(key in self.__dict__ for key in params.keys())
         self.__dict__.update(params)
         self._features_per_time_step = None  # invalidates feature delegate functions
+        self._inverse_features = None  # and inverses
 
     def get_params(self):
         return self.__dict__
@@ -89,9 +107,16 @@ class Preprocessor:
     @property
     def features_per_time_step(self):
         if self._features_per_time_step is None:
-            self._features_per_time_step = self._compute_features()
+            self._features_per_time_step, self._inverse_features = self._compute_features()
             assert self.swipe_feature_count == len(self.features_per_time_step)
         return self._features_per_time_step
+
+
+    @property
+    def inverse_features(self):
+        if self._inverse_features is None:
+            self._features_per_time_step, self._inverse_features = self._compute_features()
+        return self._inverse_features
 
     def _get_keyboard(self, touchevent: RawTouchEvent) -> Keyboard:
         assert hasattr(touchevent, "KeyboardLayout")
@@ -105,7 +130,6 @@ class Preprocessor:
     def _get_normalized_x(self, touchevent: RawTouchEvent, word: str) -> float:
         return self._get_keyboard(touchevent).normalize_x(touchevent.X)
 
-
     def _get_normalized_y(self, touchevent: RawTouchEvent, word: str) -> float:
         return self._get_keyboard(touchevent).normalize_y(touchevent.Y)
 
@@ -113,6 +137,11 @@ class Preprocessor:
     def _get_normalized_word_length(self, touchevent: RawTouchEvent, word: str) -> float:
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             return len(word) / self.word_input_strategy.n
+        raise ValueError(f"Not implemented for word strategy + '{type(self.word_input_strategy)}'")
+
+    def _get_denormalized_word_length(self, word_length_feature: float, keyboard=None) -> int:
+        if isinstance(self.word_input_strategy, CappedWordStrategy):
+            return floor(self.word_input_strategy.n * word_length_feature)
         raise ValueError(f"Not implemented for word strategy + '{type(self.word_input_strategy)}'")
 
 
@@ -142,6 +171,38 @@ class Preprocessor:
             key: Key = self._get_key(word[index], touchevent)
             return key.keyboard.normalize_y(key.y + key.height / 2)
         return feature
+
+    def _get_denormalized_button(self, x_feature: float, y_feature: float, keyboard: Keyboard) -> str:
+        """
+        This represents the inverse function of _get_normalized_button_x/y.
+        Given the normalized x and y features of the button, gets the button on the specified keyboard from which the features originated.
+        """
+        if x_feature == -1:
+            return -1
+
+        x_button_middle = keyboard.denormalize_x(x_feature)
+        y_button_middle = keyboard.denormalize_y(y_feature)
+
+        def is_key(key: Key) -> bool:
+            """
+            Determines whether the specified x and y feature originate from the specified key 
+            by whether the top-left button position in pixels is off by at most 1 in either direction
+            """
+            predicted_x = x_button_middle - key.width // 2
+            predicted_y = y_button_middle - key.height // 2
+
+            return abs(predicted_x - key.x) <= 1 and abs(predicted_y - key.y) <= 1
+
+        keys = keyboard.values()  # keyboard is a dict of Keys, so yeah, this looks wrong but isnt'
+
+        correctly_positioned_keys = [key for key in keys if is_key(key)]
+        if len(correctly_positioned_keys) == 0:
+            raise ValueError("Couldn't find key")
+        elif len(correctly_positioned_keys) != 1:
+            raise ValueError("Found multiple keys on keyboard at same location")
+
+        return correctly_positioned_keys[0].char
+
 
     def preprocess(self, X: SwipeEmbeddingDataFrame) -> np.ndarray:
         # X[word][touchevent][toucheventprop]
@@ -192,14 +253,19 @@ class Preprocessor:
             self._get_normalized_y,
             self._get_normalized_word_length,
         ]
+        inverses: List[InverseFeature] = [
+            InverseFeature(self._get_denormalized_word_length, features_per_time_step.index(self._get_normalized_word_length)),
+        ]
+
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             for i in range(self.word_input_strategy.n):
                 features_per_time_step.append(self._get_normalized_button_x(i))
                 features_per_time_step.append(self._get_normalized_button_y(i))
+                inverses.append(InverseFeature(self._get_denormalized_button, len(features_per_time_step) - 2, len(features_per_time_step) - 1))
         else:
             raise ValueError('Not implemented')
 
-        return features_per_time_step
+        return features_per_time_step, inverses
 
 
     def encode_padded(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
@@ -231,9 +297,17 @@ class Preprocessor:
         assert self.max_timesteps >= len(result)
         return result
 
-    def decode(self, x: ProcessedInput) -> Input:
-        """Converts the specified list of features into a word and swipe."""
-        return Input('', '')
+    def decode(self, x: ProcessedInput) -> str:
+        """
+        Converts the specified list of features into (some of) its original input features.
+        For now only returns the first 5 letters of the word.
+        """
+        features = [inverseFeature(x[0], keyboards[0]) for inverseFeature in self.inverse_features]
+        assert isinstance(features[0], int)
+        for i in range(1, len(features)): 
+            assert (features[i] == -1) == (i > features[0])
+        result = "".join(features[1:(features[0] + 1)])
+        return result
 
     @json
     def __repr__(self):

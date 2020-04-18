@@ -11,6 +11,7 @@ from keyboard._2_transform import Preprocessor
 from keyboard._4_model import KeyboardEstimator
 from utilities import print_fully
 import math
+from keyboard._1a_generate import generate_taps_for
 
 
 class IntOrHalfInt:
@@ -302,6 +303,12 @@ class Testkeyboard(unittest.TestCase):
                  if features[i][j] != expected_features[i][j]]
         assert features == expected_features
 
+    def test_inverse(self):
+        word = 'word'
+        encoded = Preprocessor(max_timesteps=len(word)).encode(generate_taps_for(word), word)
+        decoded = Preprocessor().decode(encoded)
+        assert decoded == word
+
 
 if __name__ == '__main__':
-    Testkeyboard().test_encode_double_letters()
+    Testkeyboard().test_inverse()
