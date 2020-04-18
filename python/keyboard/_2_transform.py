@@ -6,12 +6,20 @@ from keyboard._0_types import myNaN, Key, Keyboard, SwipeDataFrame, Input, RawTo
 from keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
 from keyboard._4a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
-from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any
+from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any, Optional
 from utilities import print_fully
 from more_itertools.more import first
 import json as JSON
 from myjson import json
 from sklearn.base import BaseEstimator
+
+
+
+class Feature:
+    """Represents the signature of a feature (per timestep). """
+    def __call__(self, touchevent: RawTouchEvent, word: str) -> float:
+        raise ValueError('abstract')
+
 
 def get_code(char: str) -> int:
     assert isinstance(char, str)
@@ -58,6 +66,7 @@ keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in rang
 
 
 class Preprocessor:
+
     def __init__(self, 
                  max_timesteps=1,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
@@ -67,14 +76,22 @@ class Preprocessor:
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
+        self._features_per_time_step = None
 
     def set_params(self, **params):
         assert all(key in self.__dict__ for key in params.keys())
         self.__dict__.update(params)
+        self._features_per_time_step = None  # invalidates feature delegate functions
 
     def get_params(self):
         return self.__dict__
 
+    @property
+    def features_per_time_step(self):
+        if self._features_per_time_step is None:
+            self._features_per_time_step = self._compute_features()
+            assert self.swipe_feature_count == len(self.features_per_time_step)
+        return self._features_per_time_step
 
     def _get_keyboard(self, touchevent: RawTouchEvent) -> Keyboard:
         assert hasattr(touchevent, "KeyboardLayout")
@@ -85,17 +102,17 @@ class Preprocessor:
         return keyboard
 
 
-    def _get_normalized_x(self, touchevent: RawTouchEvent) -> float:
+    def _get_normalized_x(self, touchevent: RawTouchEvent, word: str) -> float:
         return self._get_keyboard(touchevent).normalize_x(touchevent.X)
 
 
-    def _get_normalized_y(self, touchevent: RawTouchEvent) -> float:
+    def _get_normalized_y(self, touchevent: RawTouchEvent, word: str) -> float:
         return self._get_keyboard(touchevent).normalize_y(touchevent.Y)
 
 
-    def _get_normalized_word_length(self, word: str) -> Callable[[RawTouchEvent], float]:
+    def _get_normalized_word_length(self, touchevent: RawTouchEvent, word: str) -> float:
         if isinstance(self.word_input_strategy, CappedWordStrategy):
-            return lambda ev: len(word) / self.word_input_strategy.n
+            return len(word) / self.word_input_strategy.n
         raise ValueError(f"Not implemented for word strategy + '{type(self.word_input_strategy)}'")
 
 
@@ -109,25 +126,22 @@ class Preprocessor:
             assert isinstance(key, Key), "Maybe later a list of keys can be implemented?"
             return key
 
-    def _get_normalized_button_x(self, word: str, index: int) -> Callable[[RawTouchEvent], float]:
-        def impl(touchevent: RawTouchEvent) -> float:
+    def _get_normalized_button_x(self, index: int) -> Feature:
+        def feature(touchevent, word):
             if index >= len(word):
                 return -1
-
             key: Key = self._get_key(word[index], touchevent)
             return key.keyboard.normalize_x(key.x + key.width / 2)
-        return impl
+        return feature
 
-    def _get_normalized_button_y(self, word: str, index: int) -> Callable[[RawTouchEvent], float]:
-        def impl(touchevent: RawTouchEvent) -> float:
+    def _get_normalized_button_y(self, index: int) -> Feature:
+        def feature(touchevent, word):
             if index >= len(word):
                 return -1
 
             key: Key = self._get_key(word[index], touchevent)
             return key.keyboard.normalize_y(key.y + key.height / 2)
-        return impl
-
-
+        return feature
 
     def preprocess(self, X: SwipeEmbeddingDataFrame) -> np.ndarray:
         # X[word][touchevent][toucheventprop]
@@ -171,6 +185,23 @@ class Preprocessor:
         else:
             raise ValueError()
 
+    def _compute_features(self):
+
+        features_per_time_step: List[Feature] = [
+            self._get_normalized_x,
+            self._get_normalized_y,
+            self._get_normalized_word_length,
+        ]
+        if isinstance(self.word_input_strategy, CappedWordStrategy):
+            for i in range(self.word_input_strategy.n):
+                features_per_time_step.append(self._get_normalized_button_x(i))
+                features_per_time_step.append(self._get_normalized_button_y(i))
+        else:
+            raise ValueError('Not implemented')
+
+        return features_per_time_step
+
+
     def encode_padded(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
         """ Pads the encoding with nanned-out timesteps until self.max_timesteps. """
         encoded = self.encode(swipe, word)
@@ -189,25 +220,14 @@ class Preprocessor:
         assert 'X' in swipe
         assert 'Y' in swipe
 
-
-        features_per_time_step: List[Callable[[Dict[str, Any]], float]] = [
-            self._get_normalized_x,
-            self._get_normalized_y,
-            self._get_normalized_word_length(word),
-        ]
-        if isinstance(self.word_input_strategy, CappedWordStrategy):
-            for i in range(self.word_input_strategy.n):
-                features_per_time_step.append(self._get_normalized_button_x(word, i))
-                features_per_time_step.append(self._get_normalized_button_y(word, i))
-
         result: List[List[float]] = []
         for touchevent in swipe.rows():
             time_step = []
-            for feature_per_time_step in features_per_time_step:
-                time_step.append(feature_per_time_step(touchevent))
+            for feature_per_time_step in self.features_per_time_step:
+                time_step.append(feature_per_time_step(touchevent, word))
             result.append(time_step)
 
-        assert self.swipe_feature_count == len(features_per_time_step)
+        assert self.swipe_feature_count == len(self.features_per_time_step)
         assert self.max_timesteps >= len(result)
         return result
 
