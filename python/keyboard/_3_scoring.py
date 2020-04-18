@@ -1,5 +1,5 @@
 import math
-import itertools
+from itertools import islice
 import pandas as pd
 import numpy as np
 from tensorflow.keras.callbacks import Callback  # noqa
@@ -33,20 +33,39 @@ class Metrics(Callback):
         self._data = []
 
     def on_train_end(self, logs={}):
-        pass
+        places, occurrences, y_predict = self._get_places()
+
+        failed_indices = [i for place, occurrence, i in zip(places, occurrences, range(len(places))) 
+                          if len(place) != 1 and occurrence != 1]
+
+        print(f"\nTotal misinterpreted words: {len(failed_indices)}{'. Examples:' if len(failed_indices) != 0 else ''}")
+
+        for failed_index in islice(failed_indices, 10):
+            place = places[failed_index]
+            assert len(place) != 0, 'bug'
+
+            swiped_word_index = failed_index
+            interpreted_as_index = place[0]
+            swiped_word = self.decode(self.test_data[swiped_word_index])
+            interpreted_as = self.decode(self.test_data[interpreted_as_index])
+
+            print(f"Swiping '{swiped_word}' was interpreted as '{interpreted_as}'")
+
+        super().on_train_end()
+
 
     def _get_places(self):
         y_predict = np.asarray(self.model.predict(self.test_data))
 
         occurrences = np.zeros(self._L, int)
-        place = np.zeros(self._L, int)
+        places = [[] for _ in range(self._L)]
         for i in range(len(y_predict)):
             # note that swiped_id and word_id are in the original data set
             # and swiped_index is in the convoluted data set 
             swiped_id, word_id, swiped_index = self.get_original_swipe_index.__func__(i)
             occurrences[swiped_id] += 1
             if y_predict[i] >= y_predict[swiped_index]:
-                place[swiped_id] += 1
+                places[swiped_id].append(i)
 
             # whether it's one of the correct indices:
             is_correct = (swiped_id == word_id)
@@ -59,14 +78,14 @@ class Metrics(Callback):
             # they cannot be the same unless the i is one of the correct indices (indicated by correct_swipe_index == correct_word_index)
             assert swiped_word != input_word or is_correct
 
-        return place, occurrences, y_predict
+        return places, occurrences, y_predict
 
     def on_epoch_end(self, batch, logs={}):
 
-        place, occurrences, y_predict = self._get_places()
+        places, occurrences, y_predict = self._get_places()
 
-        s = ', '.join(itertools.islice((f"{_place}/{_count}" for _place, _count in zip(place, occurrences)), 20))
-        test_loss = (sum(place) - self._L) / len(self.test_data)
+        s = ', '.join(islice((f"{len(place)}/{_count}" for place, _count in zip(places, occurrences)), 20))
+        test_loss = (sum(len(p) for p in places) - self._L) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
         print(f" - test_loss: {test_loss:.3g}")
         print('\n - places: [' + s + ']')

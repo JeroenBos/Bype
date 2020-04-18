@@ -34,7 +34,10 @@ class InverseFeature:
         self.feature_indices = feature_indices
 
     def __call__(self, timestep: ProcessedInput, keyboard: Keyboard):
-        features = [timestep[i] for i in self.feature_indices]
+        if len(timestep.shape) == 1:
+            features = [timestep[i] for i in self.feature_indices]
+        else:
+            features = [timestep[0, i] for i in self.feature_indices]
         return self.f(keyboard=keyboard, *features)
 
 def get_code(char: str) -> int:
