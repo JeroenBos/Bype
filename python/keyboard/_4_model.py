@@ -27,8 +27,9 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     preprocessor: Preprocessor
     extra_callbacks: List[Callback] = []
 
-    def with_callback(self, callback: Callback) -> "KeyboardEstimator":
-        self.extra_callbacks.append(callback)
+    def with_callback(self, *callbacks: Callback) -> "KeyboardEstimator":
+        for callback in callbacks:
+            self.extra_callbacks.append(callback)
         return self
 
     def __new__(cls, *args, **kwargs):
