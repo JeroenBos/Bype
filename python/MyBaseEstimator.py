@@ -81,7 +81,7 @@ class MyBaseEstimator(BaseEstimator):
 
     def _compile(self, model: Optional[Model] = None) -> None:
         model = model if model else self.current_model
-        model.compile(loss='binary_crossentropy',
+        model.compile(loss='mean_squared_error',
                       optimizer='adam',
                       metrics=['accuracy'])
 
