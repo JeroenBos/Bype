@@ -45,11 +45,13 @@ class Metrics(Callback):
             assert len(place) != 0, 'bug'
 
             swiped_word_index = failed_index
-            interpreted_as_index = place[0]
+            interpreted_as_index = place[0][0]
+            interpreted_as_index_option2 = place[0][1]
             swiped_word = self.decode(self.test_data[swiped_word_index])
             interpreted_as = self.decode(self.test_data[interpreted_as_index])
+            interpreted_op2 = self.decode(self.test_data[interpreted_as_index_option2])
 
-            print(f"Swiping '{swiped_word}' was interpreted as '{interpreted_as}'")
+            print(f"Swiping '{swiped_word}' was interpreted as '{interpreted_as}' or '{interpreted_op2}'")
 
         super().on_train_end()
 
@@ -65,7 +67,7 @@ class Metrics(Callback):
             swiped_id, word_id, swiped_index = self.get_original_swipe_index.__func__(i)
             occurrences[swiped_id] += 1
             if y_predict[i] >= y_predict[swiped_index]:
-                places[swiped_id].append(i)
+                places[swiped_id].append((i, swiped_index))
 
             # whether it's one of the correct indices:
             is_correct = (swiped_id == word_id)
