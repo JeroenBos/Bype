@@ -84,9 +84,12 @@ keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in rang
 class Preprocessor:
 
     def __init__(self, 
-                 max_timesteps=1,
+                 max_timesteps=None,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor='binary_crossentropy'):
+        """
+        :param max_timesteps: The maximum number of allowed timesteps. None for infinity. 
+        """
         self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
         self.max_timesteps = max_timesteps
         self.batch_count = 1
@@ -206,7 +209,9 @@ class Preprocessor:
 
     def preprocess(self, X: SwipeEmbeddingDataFrame) -> np.ndarray:
         # X[word][touchevent][toucheventprop]
-        timesteps = set(len(swipe) for swipe in X.swipes)
+        max_timestep = max(len(swipe) for swipe in X.swipes)
+        if self.max_timesteps is not None and max_timestep > self.max_timesteps:
+            raise ValueError('Too many timesteps')
 
         processed = self._preprocess(X)
         # processed[word, timestep][feature]
@@ -215,11 +220,11 @@ class Preprocessor:
         # intermediate has shape ndarray[word, timestep]List[feature] which isn't much better than processed tbh
 
 
-        shape = [len(processed), max(timesteps), self.swipe_feature_count]
+        shape = [len(processed), max_timestep, self.swipe_feature_count]
         result = np.empty(shape, dtype=np.float)
         val = result[0, 0, 0]  # noqa
         for w in range(len(processed)):
-            for t in range(self.max_timesteps):
+            for t in range(max_timestep):
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
@@ -232,13 +237,15 @@ class Preprocessor:
         assert isinstance(X.swipes, pd.Series)
         assert isinstance(X.words, pd.Series)
 
+        max_timestep = max(len(swipe) for swipe in X.swipes)
+
         if isinstance(self.word_input_strategy, CappedWordStrategy):
             # this means the word input is appended to every timestep in the swipe data
             starttime = time()
             this = self
 
-            def f(x):
-                return this.encode_padded(x.swipes, x.words)
+            def f(x: SwipeEmbeddingDataFrame):
+                return this.encode_padded(x.swipes, x.words, max_timestep)
 
             result = X.apply(axis=1, func=f, result_type='expand')
             print(f'applying encoding took {time() - starttime} seconds')
@@ -268,10 +275,11 @@ class Preprocessor:
         return features_per_time_step, inverses
 
 
-    def encode_padded(self, swipe: SwipeDataFrame, word: str) -> ProcessedInput:
-        """ Pads the encoding with nanned-out timesteps until self.max_timesteps. """
+    def encode_padded(self, swipe: SwipeDataFrame, word: str, max_timestep: int) -> ProcessedInput:
+        """ Pads the encoding with nanned-out timesteps until max_timestep. """
+        assert self.max_timesteps is None or self.max_timesteps >= max_timestep
         encoded = self.encode(swipe, word)
-        while(len(encoded)) < self.max_timesteps:
+        while(len(encoded)) < max_timestep:
             encoded.append([myNaN] * len(encoded[0]))
         return encoded
 
@@ -294,7 +302,7 @@ class Preprocessor:
             result.append(time_step)
 
         assert self.swipe_feature_count == len(self.features_per_time_step)
-        assert self.max_timesteps >= len(result)
+        assert self.max_timesteps is None or self.max_timesteps >= len(result)
         return result
 
     def decode(self, x: ProcessedInput) -> str:
