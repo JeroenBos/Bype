@@ -11,6 +11,7 @@ from generic import generic
 import numpy as np
 import os
 from time import time
+from sklearn.utils import class_weight
 
 def get_log_dir(log_base_dir: str):
     return log_base_dir + datetime.datetime.now().strftime("%Y_%m_%d")
@@ -24,7 +25,7 @@ class MyBaseEstimator(BaseEstimator):
 
     # The type of ModelCheckpoint to use. Can be overridden in subclasses
     TModelCheckpoint: Type[ModelCheckpoint] = ModelCheckpoint
-    
+
     def __init__(self):
         # you cannot add any args here like log_dir: str = 'logs', verbose=False
         # because they will be considered to be hyperparameters by sklearn
@@ -55,7 +56,9 @@ class MyBaseEstimator(BaseEstimator):
         ] + extra_callbacks
 
         params_repr = self._get_params_repr()
-        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, validation_split=0.2)
+
+        weights = class_weight.compute_class_weight('balanced', np.unique(y), y)
+        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, validation_split=0.2, class_weight=weights)
         self.history.setdefault(params_repr, []).append(result)
         return result
 
