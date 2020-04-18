@@ -87,34 +87,3 @@ class Metrics(Callback):
 
     def get_data(self):
         return self._data
-
-
-# disable_eager_execution()
-
-Convolution = namedtuple('Convolution', 'swipe correct')
-
-
-
-class Scorer():
-    """
-    It returns a floating point number that quantifies the estimator prediction quality on X, with reference to y.
-    Again, by convention higher numbers are better, so if your scorer returns loss, that value should be negated.
-    """
-
-    def __init__(self, trainings_data: SwipeConvolutionDataFrame):
-        assert SwipeEmbeddingDataFrame.is_instance(trainings_data), \
-            f"Arg error: expected SwipeEmbeddingDataFrame; got '{str(type(trainings_data))}'"
-        self.trainings_data = trainings_data
-
-    def __call__(self, estimator: "KeyboardEstimator", X: Input, y: None) -> float:
-        """
-        :param X: Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
-                  So this X should be (timesteps, features)?
-        """
-
-        prediction_matrix = estimator.predict(self.trainings_data)
-
-
-
-    def _predict(self, estimator, swipe, word) -> float:
-        return estimator.predict(estimator.preprocessor.encode(swipe, word))
