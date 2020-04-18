@@ -60,9 +60,9 @@ class Metrics(Callback):
             assert swiped_word != input_word or is_correct
 
         s = ', '.join(f"{_place}/{_count}" for _place, _count in zip(place, occurrences))
-        score = (sum(place) - self._L) / len(y_predict)
+        test_loss = (sum(place) - self._L) / len(y_predict)
         # score = sum(a / b for a, b in zip(place, occurrences))
-        print(f" - score: {score:.3g}")
+        print(f" - test_loss: {test_loss:.3g}")
         print('\n - places: [' + s + ']')
 
         # # create_swipe_embedding_df
@@ -85,7 +85,7 @@ class Metrics(Callback):
         with metrics_writer.as_default():
             tf.summary.scalar('pred/min', data=float(y_predict.min()), step=batch)
             tf.summary.scalar('pred/max', data=float(y_predict.max()), step=batch)
-            tf.summary.scalar('pred/score', data=score, step=batch)
+            tf.summary.scalar('pred/test_loss', data=test_loss, step=batch)
             metrics_writer.flush()
         return
 
