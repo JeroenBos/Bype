@@ -27,7 +27,8 @@ class Metrics(Callback):
         self.decode = decode
         self.decoded_test_data = [decode(t) for t in self.test_data]
         self.get_original_swipe_index = get_original_swipe_index
-        self._L = L 
+        self._L = L
+            self.model = model
 
     def on_train_begin(self, logs={}):
         self._data = []
@@ -70,11 +71,12 @@ class Metrics(Callback):
             # and swiped_index is in the convoluted data set 
             swiped_id, word_id, swiped_index = self.get_original_swipe_index.__func__(i)
             occurrences[swiped_id] += 1
-            if y_predict[i] >= y_predict[swiped_index]:
-                places[swiped_id].append((i, swiped_index))
 
             # whether it's one of the correct indices:
             is_correct = (swiped_id == word_id)
+
+            if not is_correct and y_predict[i] >= y_predict[swiped_index]:
+                places[swiped_id].append((i, swiped_index))
 
             # the word that was swiped is:
             swiped_word = self.decode(self.test_data[swiped_index])
@@ -91,7 +93,7 @@ class Metrics(Callback):
         places, occurrences, y_predict = self._get_places()
 
         s = ', '.join(islice((f"{len(place)}/{_count}" for place, _count in zip(places, occurrences)), 20))
-        test_loss = (sum(len(p) for p in places) - self._L) / len(self.test_data)
+        test_loss = sum(len(p) for p in places) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
         print(f" - test_loss: {test_loss:.3g}")
         print('\n - places: [' + s + ']')
