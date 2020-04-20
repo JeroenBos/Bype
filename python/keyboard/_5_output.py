@@ -14,7 +14,12 @@ most_recent_modelpath = get_log_dir('logs') + path.sep + 'model.h5'
 
 
 def load_model_with_preprocessor(model_path: str = most_recent_modelpath) -> "LoadedKeyboardModel":
-    preprocessor_json = json.loads(get_processor_path(model_path))
+    if not os.path.exists(model_path):
+        raise ValueError(f"Path '{model_path}' doesn't exist")
+    
+
+    with open(get_processor_path(model_path)) as file:    
+        preprocessor_json = json.load(file)
     preprocessor = json_decoders[Preprocessor.__name__](preprocessor_json)
 
     model = load_model(model_path)
