@@ -37,16 +37,11 @@ class Metrics(Callback):
     def on_train_end(self, logs={}):
         self.print_misinterpreted_words()
 
-        super().on_train_end()
-
     def on_epoch_end(self, batch, logs={}):
-        places, occurrences, y_predict = self._get_places()
+        if (batch % 10) == 0:
+            places, occurrences, y_predict = self._get_places()
         
-        self._write_and_print_summaries(places, occurrences, y_predict)
-
-        super().on_epoch_end()
-
-
+            self._write_and_print_summaries(places, occurrences, y_predict)
 
     def print_misinterpreted_words(self):
         places, occurrences, y_predict = self._get_places()
@@ -94,7 +89,6 @@ class Metrics(Callback):
             assert swiped_word != input_word or is_correct
 
         return places, occurrences, y_predict
-
 
 
     def _write_and_print_summaries(self, places, occurrences, y_predict):
