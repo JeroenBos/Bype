@@ -34,7 +34,7 @@ class Metrics(Callback):
 
     def on_train_begin(self, logs={}):
         self._data = []
-        self.losses = []
+        self.losses.clear()
 
     def on_train_end(self, logs={}):
         self.print_misinterpreted_words()
