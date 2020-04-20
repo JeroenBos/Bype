@@ -30,9 +30,11 @@ class Metrics(Callback):
         self._L = L
         if model is not None:
             self.model = model
+        self.losses: List[float] = []
 
     def on_train_begin(self, logs={}):
         self._data = []
+        self.losses = []
 
     def on_train_end(self, logs={}):
         self.print_misinterpreted_words()
@@ -103,6 +105,9 @@ class Metrics(Callback):
         logs['pred/min'] = pred_min
         logs['pred/max'] = pred_max
         logs['pred/test_loss'] = test_loss
+
+
+        self.losses.append(test_loss)
 
         with metrics_writer.as_default():
             tf.summary.scalar('pred/min', data=pred_min, step=batch)

@@ -8,15 +8,13 @@ from keyboard._4_model import KeyboardEstimator
 from typing import List, Union
 from time import time
 from tensorflow.keras.callbacks import LearningRateScheduler  # noqa
-from losshistory import LossHistory
 import pandas as pd
 
 preprocessor = Preprocessor(max_timesteps=3)
 
 metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data))
 
-loss_history_callback = LossHistory('pred/test_loss')
-loss_history = loss_history_callback.losses
+loss_history = metric.losses
 def adapt_learning_rate(epoch: int) -> float:
     def is_significantly_different(f: float) -> bool:
         return math.abs(f - 0.5) > 0.05 
@@ -60,5 +58,5 @@ lr_scheduler = LearningRateScheduler(adapt_learning_rate)
 
 
 training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=100)    \
-                                          .with_callback(metric, loss_history_callback, lr_scheduler)   \
+                                          .with_callback(metric, lr_scheduler)   \
                                           .fit(convolved_data)
