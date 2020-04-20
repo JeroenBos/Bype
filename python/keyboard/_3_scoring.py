@@ -33,10 +33,16 @@ class Metrics(Callback):
         self._data = []
 
     def on_train_end(self, logs={}):
+        self.print_misinterpreted_words()
+
+        super().on_train_end()
+
+
+    def print_misinterpreted_words(self):
         places, occurrences, y_predict = self._get_places()
 
         failed_indices = [i for place, occurrence, i in zip(places, occurrences, range(len(places))) 
-                          if len(place) != 1 and occurrence != 1]
+                          if len(place) != 0 and occurrence != 1]
 
         print(f"\nTotal misinterpreted words: {len(failed_indices)}{'. Examples:' if len(failed_indices) != 0 else ''}")
 
@@ -52,8 +58,6 @@ class Metrics(Callback):
             interpreted_op2 = self.decode(self.test_data[interpreted_as_index_option2])
 
             print(f"Swiping '{swiped_word}' was interpreted as '{interpreted_as}' or '{interpreted_op2}'")
-
-        super().on_train_end()
 
 
     def _get_places(self):
