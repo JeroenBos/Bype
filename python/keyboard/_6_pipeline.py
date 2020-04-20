@@ -7,10 +7,10 @@ from keyboard._4_model import KeyboardEstimator
 from typing import List, Union
 from time import time
 
-preprocessor = Preprocessor(max_timesteps=2)
+preprocessor = Preprocessor(max_timesteps=3)
 
 metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data))
 
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=300)  \
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=1000)  \
                                           .with_callback(metric)               \
                                           .fit(convolved_data)
