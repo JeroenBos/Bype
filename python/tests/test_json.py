@@ -43,6 +43,13 @@ class TestEncoder(unittest.TestCase):
         assert isinstance(preprocessor, Preprocessor)
 
 
+    def test_real_life_decode_error(self):
+        json_contents = "\"Preprocessor(loss_ctor='binary_crossentropy',max_timesteps=2,word_input_strategy=CappedWordStrategy(n=5))\""
+
+        preprocessor = json_decoders['Preprocessor'](json_contents)
+
+        assert isinstance(preprocessor, Preprocessor)
+        
 
 if __name__ == '__main__':
-    TestEncoder().test_preprocessor_repr()
+    TestEncoder().test_real_life_decode_error()
