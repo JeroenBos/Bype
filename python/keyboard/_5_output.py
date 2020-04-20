@@ -54,8 +54,7 @@ def most_recent_model():
     return load_model_with_preprocessor(most_recent_modelpath)
 
 
-model = load_model_with_preprocessor(os.getcwd() + '/logs/2020_04_18/model.h5')
-model.preprocessor.save(os.getcwd() + '/logs/2020_04_18/model_copy.json')
+model = load_model_with_preprocessor(os.getcwd() + '/logs/2020_04_20/model.h5')
 
 preprocessor = Preprocessor(max_timesteps=2)
 

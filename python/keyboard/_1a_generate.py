@@ -80,6 +80,8 @@ def single_double_and_triple_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_single_letters + _double_letters + _triple_letters, generate_taps_for)
 
 
+particular_letters = SwipeEmbeddingDataFrame.create(['ag', 'vb'], generate_taps_for)
+
 verify = False
-generated_data = SwipeEmbeddingDataFrame.__as__(double_letter_swipes(), verify=verify) 
+generated_data = SwipeEmbeddingDataFrame.__as__(particular_letters, verify=verify) 
 generated_convolved_data = generated_data.convolve(fraction=1, verify=verify)

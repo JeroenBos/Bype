@@ -69,7 +69,8 @@ class Metrics(Callback):
         places = [[] for _ in range(self._L)]
         for i in range(len(y_predict)):
             # note that swiped_id and word_id are in the original data set
-            # and swiped_index is in the convoluted data set 
+            # and swiped_index is in the convolved data set 
+            # is is already the word_index, i.e. in the index in the convolved data set of the word that it was convolved with (i.e. the one it wants a prediction on, not the swiped word)
             swiped_id, word_id, swiped_index = self.get_original_swipe_index.__func__(i)
             occurrences[swiped_id] += 1
 
@@ -77,7 +78,7 @@ class Metrics(Callback):
             is_correct = (swiped_id == word_id)
 
             if not is_correct and y_predict[i] >= y_predict[swiped_index]:
-                places[swiped_id].append((i, swiped_index))
+                places[swiped_id].append((i, swiped_index))  # this should be i only
 
             # the word that was swiped is:
             swiped_word = self.decode(self.test_data[swiped_index])

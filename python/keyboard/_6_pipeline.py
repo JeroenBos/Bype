@@ -11,6 +11,6 @@ preprocessor = Preprocessor(max_timesteps=2)
 
 metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data))
 
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=200)  \
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=300)  \
                                           .with_callback(metric)               \
                                           .fit(convolved_data)
