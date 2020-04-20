@@ -39,6 +39,14 @@ class Metrics(Callback):
 
         super().on_train_end()
 
+    def on_epoch_end(self, batch, logs={}):
+        places, occurrences, y_predict = self._get_places()
+        
+        self._write_and_print_summaries(places, occurrences, y_predict)
+
+        super().on_epoch_end()
+
+
 
     def print_misinterpreted_words(self):
         places, occurrences, y_predict = self._get_places()
@@ -87,10 +95,9 @@ class Metrics(Callback):
 
         return places, occurrences, y_predict
 
-    def on_epoch_end(self, batch, logs={}):
 
-        places, occurrences, y_predict = self._get_places()
 
+    def _write_and_print_summaries(self, places, occurrences, y_predict):
         s = ', '.join(islice((f"{len(place)}/{_count}" for place, _count in zip(places, occurrences)), 20))
         test_loss = sum(len(p) for p in places) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
@@ -102,7 +109,7 @@ class Metrics(Callback):
             tf.summary.scalar('pred/max', data=float(y_predict.max()), step=batch)
             tf.summary.scalar('pred/test_loss', data=test_loss, step=batch)
             metrics_writer.flush()
-        return
+
 
     def get_data(self):
         return self._data
