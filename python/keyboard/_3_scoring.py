@@ -52,14 +52,11 @@ class Metrics(Callback):
             place = places[failed_index]
             assert len(place) != 0, 'bug'
 
-            swiped_word_index = failed_index
-            interpreted_as_index = place[0][0]
-            interpreted_as_index_option2 = place[0][1]
-            swiped_word = self.decode(self.test_data[swiped_word_index])
-            interpreted_as = self.decode(self.test_data[interpreted_as_index])
-            interpreted_op2 = self.decode(self.test_data[interpreted_as_index_option2])
+            swiped_word = self.decode(self.test_data[failed_index])
+            interpreted_as = ", ".join("'" + self.decode(self.test_data[interpreted_as_index]) + "'" 
+                                       for interpreted_as_index in place)
 
-            print(f"Swiping '{swiped_word}' was interpreted as '{interpreted_as}' or '{interpreted_op2}'")
+            print(f"Swiping '{swiped_word}' was interpreted as {interpreted_as}")
 
 
     def _get_places(self):
@@ -78,7 +75,7 @@ class Metrics(Callback):
             is_correct = (swiped_id == word_id)
 
             if not is_correct and y_predict[i] >= y_predict[swiped_index]:
-                places[swiped_id].append((i, swiped_index))  # this should be i only
+                places[swiped_id].append(i)
 
             # the word that was swiped is:
             swiped_word = self.decode(self.test_data[swiped_index])
