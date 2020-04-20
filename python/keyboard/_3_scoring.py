@@ -40,7 +40,7 @@ class Metrics(Callback):
     def on_epoch_end(self, batch, logs={}):
         if (batch % 10) == 0:
             places, occurrences, y_predict = self._get_places()
-        
+
             self._write_and_print_summaries(places, occurrences, y_predict, batch)
 
     def print_misinterpreted_words(self):
@@ -91,18 +91,25 @@ class Metrics(Callback):
         return places, occurrences, y_predict
 
 
-    def _write_and_print_summaries(self, places, occurrences, y_predict, batch):
+    def _write_and_print_summaries(self, places, occurrences, y_predict, batch, logs={}) -> float:
         s = ', '.join(islice((f"{len(place)}/{_count}" for place, _count in zip(places, occurrences)), 20))
         test_loss = sum(len(p) for p in places) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
         print(f" - test_loss: {test_loss:.3g}")
         print('\n - places: [' + s + ']')
 
+        pred_min, pred_max = float(y_predict.min()), float(y_predict.max())
+
+        logs['pred/min'] = pred_min
+        logs['pred/max'] = pred_max
+        logs['pred/test_loss'] = test_loss
+
         with metrics_writer.as_default():
-            tf.summary.scalar('pred/min', data=float(y_predict.min()), step=batch)
-            tf.summary.scalar('pred/max', data=float(y_predict.max()), step=batch)
+            tf.summary.scalar('pred/min', data=pred_min, step=batch)
+            tf.summary.scalar('pred/max', data=pred_max, step=batch)
             tf.summary.scalar('pred/test_loss', data=test_loss, step=batch)
             metrics_writer.flush()
+        return test_loss
 
 
     def get_data(self):
