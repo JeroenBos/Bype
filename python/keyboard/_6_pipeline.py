@@ -7,7 +7,7 @@ from keyboard._4_model import KeyboardEstimator
 from typing import List, Union
 from time import time
 
-preprocessor = Preprocessor(max_timesteps=3)
+preprocessor = Preprocessor(max_timesteps=2)
 
 metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data))
 
