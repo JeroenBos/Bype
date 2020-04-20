@@ -21,13 +21,14 @@ from MyBaseEstimator import get_log_dir
 metrics_writer = tf.summary.create_file_writer(get_log_dir('logs/') + '/metrics')
 
 class Metrics(Callback):
-    def __init__(self, preprocessed_convolved_validation_data, decode: Callable, get_original_swipe_index, L):
+    def __init__(self, preprocessed_convolved_validation_data, decode: Callable, get_original_swipe_index, L, model=None):
         super().__init__()
         self.test_data = preprocessed_convolved_validation_data
         self.decode = decode
         self.decoded_test_data = [decode(t) for t in self.test_data]
         self.get_original_swipe_index = get_original_swipe_index
         self._L = L
+        if model is not None:
             self.model = model
 
     def on_train_begin(self, logs={}):
