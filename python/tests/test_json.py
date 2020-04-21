@@ -27,6 +27,7 @@ class TestEncoder(unittest.TestCase):
 
     def test_preprocessor_repr(self):
         expected = """Preprocessor(
+                convolution_fraction=1.0,
                 loss_ctor='binary_crossentropy',
                 max_timesteps=None,
                 word_input_strategy=CappedWordStrategy(n=5)
