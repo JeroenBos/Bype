@@ -14,51 +14,6 @@ preprocessor = Preprocessor(max_timesteps=3)
 
 metric = Metrics(ValidationData(data, preprocessor))
 
-loss_history = metric.losses
-def adapt_learning_rate(epoch: int) -> float:
-    def is_significantly_different(f: float) -> bool:
-        return abs(f - 0.5) > 0.05 
-    WINDOW_LENGTH = 3
-    if(len(loss_history) < WINDOW_LENGTH):
-        return 0.05
-
-    numbers_series = pd.Series(loss_history).rolling(WINDOW_LENGTH).mean()
-    latest = numbers_series[len(numbers_series) - 1]
-    if not is_significantly_different(latest):
-        epochs_since_last_significant_difference = len(numbers_series)
-        for i in range(len(numbers_series) - 1):
-            if is_significantly_different(numbers_series[len(numbers_series) - 2 - i]):
-                epochs_since_last_significant_difference = i - 2
-                break
-
-        if epochs_since_last_significant_difference < 1:  # 0
-            return 0.05
-        elif epochs_since_last_significant_difference < 5:  # 0
-            return 0.1
-        elif epochs_since_last_significant_difference < 10:  # 0
-            return 0.25
-        else:
-            return 0.5
-
-    epochs_since_last_insignificat_difference = len(numbers_series)
-    for i in range(len(numbers_series) - 1):
-        if not is_significantly_different(numbers_series[len(numbers_series) - 2 - i]):
-            epochs_since_last_insignificat_difference = i - 2
-            break
-
-    if epochs_since_last_insignificat_difference < 1:  # 0
-        return 0.01
-    elif epochs_since_last_insignificat_difference < 2:  # 0
-        return 0.001
-    elif epochs_since_last_insignificat_difference < 8:  # 0
-        return 0.0001
-    else:
-        return 0.00001
-
-
-lr_scheduler = LearningRateScheduler(adapt_learning_rate)
-
-
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=1000)    \
-                                          .with_callback(metric, lr_scheduler)   \
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=1000)  \
+                                          .with_callback(metric)                \
                                           .fit(convolved_data)
