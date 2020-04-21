@@ -34,7 +34,7 @@ class ValidationData:
         return self._data[i]
 
     def get_decoded(self, i_in_convolved: int):
-        return self._unencoded_convolved_data.words[i]
+        return self._unencoded_convolved_data.words[i_in_convolved]
 
     def decode(self, t):
         raise ValueError('not implemented')

@@ -12,6 +12,7 @@ from keyboard._4_model import KeyboardEstimator
 from utilities import print_fully
 import math
 from keyboard._1a_generate import generate_taps_for
+import numpy as np
 
 
 class IntOrHalfInt:
@@ -305,7 +306,7 @@ class Testkeyboard(unittest.TestCase):
 
     def test_inverse(self):
         word = 'word'
-        encoded = Preprocessor(max_timesteps=len(word)).encode(generate_taps_for(word), word)
+        encoded = np.asarray(Preprocessor(max_timesteps=len(word)).encode(generate_taps_for(word), word))
         decoded = Preprocessor().decode(encoded)
         assert decoded == word
 
