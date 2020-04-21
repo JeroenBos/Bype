@@ -25,25 +25,25 @@ def adapt_learning_rate(epoch: int) -> float:
     numbers_series = pd.Series(loss_history).rolling(WINDOW_LENGTH).mean()
     latest = numbers_series[len(numbers_series) - 1]
     if not is_significantly_different(latest):
-        epochs_since_last_significat_difference = len(numbers_series)
-        for i in range(len(numbers_series)):
-            if not is_significantly_different(numbers_series[len(numbers_series) - 1 - i]):
-                epochs_since_last_significat_difference = i
+        epochs_since_last_significant_difference = len(numbers_series)
+        for i in range(len(numbers_series) - 1):
+            if is_significantly_different(numbers_series[len(numbers_series) - 2 - i]):
+                epochs_since_last_significant_difference = i - 2
                 break
 
-        if epochs_since_last_significat_difference < 1:  # 0
+        if epochs_since_last_significant_difference < 1:  # 0
             return 0.05
-        elif epochs_since_last_significat_difference < 5:  # 0
+        elif epochs_since_last_significant_difference < 5:  # 0
             return 0.1
-        elif epochs_since_last_significat_difference < 10:  # 0
+        elif epochs_since_last_significant_difference < 10:  # 0
             return 0.25
         else:
             return 0.5
 
     epochs_since_last_insignificat_difference = len(numbers_series)
-    for i in range(len(numbers_series)):
-        if is_significantly_different(numbers_series[len(numbers_series) - 1 - i]):
-            epochs_since_last_insignificat_difference = i
+    for i in range(len(numbers_series) - 1):
+        if not is_significantly_different(numbers_series[len(numbers_series) - 2 - i]):
+            epochs_since_last_insignificat_difference = i - 2
             break
 
     if epochs_since_last_insignificat_difference < 1:  # 0
