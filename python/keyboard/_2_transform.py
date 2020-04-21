@@ -88,6 +88,7 @@ class Preprocessor:
 
     def __init__(self, 
                  max_timesteps=None,
+                 convolution_fraction=1.0,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor='binary_crossentropy'):
         """
@@ -100,6 +101,7 @@ class Preprocessor:
         self.loss_ctor = loss_ctor
         self._features_per_time_step = None
         self._inverse_features = None
+        self.convolution_fraction = convolution_fraction
 
     def set_params(self, **params):
         assert all(key in self.__dict__ for key in params.keys())
