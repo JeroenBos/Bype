@@ -31,8 +31,8 @@ def _copy_weights(_from: Layer, _to: Layer) -> None:
     if len(old_bias_shape) != len(new_bias_shape):
         raise ValueError("The layers have unequal bias ranks")
 
-    copy_shape = tuple(min(old, new) for old, new in zip(old_shape, new_shape))
-    copy_bias_shape = tuple(min(old, new) for old, new in zip(old_bias_shape, new_bias_shape))
+    copy_shape = min_dim(old_shape, new_shape)
+    copy_bias_shape = min_dim(old_bias_shape, new_bias_shape)
 
     new_weights = _copy(_from.weights[0], _to.weights[0].numpy(), copy_shape)
     new_bias_Ws = _copy(_from.weights[1], _to.weights[1].numpy(), copy_bias_shape)
@@ -41,6 +41,17 @@ def _copy_weights(_from: Layer, _to: Layer) -> None:
     _to.weights[1].assign(new_bias_Ws)
 
 
+def min_dim(*shapes: tuple) -> tuple:  # tuples of integers
+    """ Returns the largest shape fitting in all the specified shapes. """
+    assert len(shapes) != 0
+    assert len(set(len(shape) for shape in shapes)) == 1, 'All specified shapes must have the same rank'
+
+    if len(shapes) == 1:
+        return shapes[0]
+    if len(shapes) == 2:
+        return tuple(min(old, new) for old, new in zip(*shapes))
+    else:
+        return min_dim(min_dim(shapes[0], shapes[1]), *shapes[2:])
 
 def _copy(_from: np.array, _to: np.array, shape: tuple) -> np.array:
     assert len(_from.shape) == len(_to.shape) == len(shape)
