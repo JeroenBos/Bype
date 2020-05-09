@@ -2,18 +2,27 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import List, Union, Dict
-from keyboard._0_types import RawTouchEvent, Key, Keyboard, SwipeDataFrame
-from utilities import incremental_paths
+from keyboard._0_types import RawTouchEvent, Key, Keyboard, SwipeDataFrame, RawTouchEventActions
+from utilities import get_resource, incremental_paths, memoize, windowed_2
 
-raw_data: SwipeDataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
-                                       names=RawTouchEvent.SPEC.keys(),
-                                       dtype=RawTouchEvent.SPEC)
+@memoize
+def read_raw_data(path: str):
+    return pd.read_csv(path, names=RawTouchEvent.SPEC.keys(), dtype=RawTouchEvent.SPEC)
 
+def split_words(df: SwipeDataFrame) -> List[SwipeDataFrame]:
+    """ Splits a swipe dataframe into a dataframe per swipe. """
+    existing_actions = list(sorted(set(df.Action)))
+    if existing_actions != [RawTouchEventActions.Down, RawTouchEventActions.Up, RawTouchEventActions.Move]:
+        raise ValueError('Unsupported action deteted')
+
+    start_indices = df.index[df.Action == RawTouchEventActions.Down].tolist()
+    return [df.loc[a:b, :] for a, b in windowed_2(start_indices, 0, len(df))]
+
+
+raw_data = split_words(read_raw_data(get_resource('2020-03-20_0.csv')))
 
 
 # ########### KEYBOARDS ############
-
-
 KEYBOARD_LAYOUT_SPEC = {
     "codes": np.int32,  # this is technically not correct because it's an array of int32s. But pd accepts it... ???
     "x": np.int32,

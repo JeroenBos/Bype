@@ -4,6 +4,7 @@ from typing import Any, Callable, List, Union, Dict, Type, Iterable, Tuple
 from functools import lru_cache
 import inspect 
 from pathlib import Path
+import os
 
 def print_fully(df: pd.DataFrame) -> None:
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
@@ -153,12 +154,23 @@ def split_by(s: str, *separators: str) -> List[str]:
         result.extend(split_by(segment, *separators[1:]))
     return result
 
-def windowed_2(seq, start_pad=None, end_pad=None) -> Iterable[Tuple[Any, Any]]:
+class Sentinel:
+    def __init__(self, repr):
+        self.repr = repr
+
+    def __repr__(self):
+        return f"<sentinel object '{self.repr}'>"
+
+
+SKIP = Sentinel('SKIP')
+def windowed_2(seq, start_pad=SKIP, end_pad=SKIP) -> Iterable[Tuple[Any, Any]]:
     prev = start_pad
     for elem in seq:
-        yield prev, elem
+        if prev is not SKIP:
+            yield prev, elem
         prev = elem
-    yield prev, end_pad
+    if prev is not SKIP and end_pad is not SKIP:
+        yield prev, end_pad
 
 def is_list_of(list, element_type) -> bool:
     return isinstance(list, (List, Tuple)) and all(isinstance(elem, element_type) for elem in list)
@@ -170,3 +182,14 @@ def split_at(s: str, *indices: int) -> List[str]:
 def concat(list_of_lists: Iterable) -> list:
     from itertools import chain
     return list(chain.from_iterable(list_of_lists))
+
+
+
+def get_resource(file_name):
+    return os.path.join('/home/jeroen/git/bype/data', file_name)
+
+def skip(iterable, n):
+    iterator = iter(iterable)
+    for i in range(n):
+        next(iterator)
+    return iterator

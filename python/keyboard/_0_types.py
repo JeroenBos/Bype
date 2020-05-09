@@ -369,3 +369,11 @@ class RawTouchEvent(pd.Series):
 
 np_dtype_map = {np.int32: int, np.float32: float, np.int64: int, np.bool: bool}
 RawTouchEvent.SPEC = {key: np_dtype_map[value] for key, value in RawTouchEvent.SPEC_np.items()}
+
+
+class RawTouchEventActions:
+    # see https://developer.android.com/reference/android/view/MotionEvent
+    Down = 0
+    Up = 1
+    Move = 2
+    Cancel = 3
