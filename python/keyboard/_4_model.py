@@ -10,6 +10,7 @@ from tensorflow.keras.callbacks import History  # noqa
 from keyboard._0_types import myNaN, SwipeEmbeddingDataFrame, SwipeDataFrame, Input as EmbeddingInput
 from keyboard._2_transform import Preprocessor
 from keyboard._4a_word_input_model import CappedWordStrategy, WordStrategy
+from keyboard._4b_initial_weights import WeightInitStrategy
 from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa
@@ -59,6 +60,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
     def __init__(self, 
                  num_epochs=5,
                  activation='relu',
+                 weight_init_strategy: WeightInitStrategy = WeightInitStrategy.no_init,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor: Union[str, Callable[["KeyboardEstimator"], Loss]] = 'binary_crossentropy'):
         super(self.__class__, self).__init__()
@@ -66,6 +68,7 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         self.activation = activation
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor
+        self.weight_init_strategy = weight_init_strategy
 
     def _create_model(self) -> Model:
         # None here means variable over batches (but not within a batch)
@@ -78,6 +81,9 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
         output = Dense(1, kernel_initializer='random_uniform', activation='sigmoid')(middle)
 
         model = Model(inputs=[input], outputs=output)
+
+        self.params['weight_init_strategy'].init_weights(model)
+
         return model
 
     # called by super
