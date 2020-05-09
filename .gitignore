@@ -9,7 +9,6 @@
 .cxx
 /__pycache__/
 __pycache__/
-exploration/
 .idea/
 venv/
 venv3.7/

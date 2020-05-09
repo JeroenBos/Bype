@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from typing import Any, Callable, List, Union, Dict, Type
+from typing import Any, Callable, List, Union, Dict, Type, Iterable, Tuple
 from functools import lru_cache
 import inspect 
 from pathlib import Path
@@ -132,3 +132,41 @@ def incremental_paths(path_format: str):
             break
         yield path
         i = i + 1
+
+def read_all(path: str) -> str:
+    with open(path) as file:
+        return file.read()
+
+def split_by(s: str, *separators: str) -> List[str]:
+    """ Splits a string by many separators. """
+    assert isinstance(separators, (List, Tuple))
+    assert all(isinstance(sep, str) for sep in separators)
+
+    if len(separators) == 0:
+        return [s]
+    if len(separators) == 1:
+        return s.split(separators[0])
+
+    segments = s.split(separators[0])
+    result = []
+    for segment in segments:
+        result.extend(split_by(segment, *separators[1:]))
+    return result
+
+def windowed_2(seq, start_pad=None, end_pad=None) -> Iterable[Tuple[Any, Any]]:
+    prev = start_pad
+    for elem in seq:
+        yield prev, elem
+        prev = elem
+    yield prev, end_pad
+
+def is_list_of(list, element_type) -> bool:
+    return isinstance(list, (List, Tuple)) and all(isinstance(elem, element_type) for elem in list)
+
+def split_at(s: str, *indices: int) -> List[str]:
+    assert is_list_of(indices, int)
+    return [s[a:b] for a, b in windowed_2(sorted(indices), 0, len(s))]
+
+def concat(list_of_lists: Iterable) -> list:
+    from itertools import chain
+    return list(chain.from_iterable(list_of_lists))

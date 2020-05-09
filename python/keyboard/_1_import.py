@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import List, Union, Dict
-from keyboard._0_types import RawTouchEvent, Key, Keyboard
+from keyboard._0_types import RawTouchEvent, Key, Keyboard, SwipeDataFrame
 from utilities import incremental_paths
 
-raw_data: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
-                                     names=RawTouchEvent.SPEC.keys(),
-                                     dtype=RawTouchEvent.SPEC)
+raw_data: SwipeDataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
+                                       names=RawTouchEvent.SPEC.keys(),
+                                       dtype=RawTouchEvent.SPEC)
 
 
 
