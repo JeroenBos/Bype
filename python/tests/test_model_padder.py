@@ -37,6 +37,12 @@ def set_weights_to_zero(layer_or_model: Union[Layer, Model]) -> None:
         weight1_new = np.zeros(weights_set.shape)
         weights_set.assign(weight1_new)
 
+def print_layer_shapes(model: Model) -> None:
+    for i, layer in enumerate(model.layers):
+        if len(layer.weights) == 0:
+            print(f'{i}: None, bias: None')
+        else:
+            print(f'{i}: {layer.weights[0].shape}, bias: {layer.weights[1].shape}')
 
 def get_weight_value(model: Model, layer_index: int, *indices: int) -> float:
     """ Gets the value of a particular weight in the model """
@@ -98,14 +104,14 @@ class TestPadder(unittest.TestCase):
         assert get_weight_value(model, 1, 99, 0) == 0
 
     def test_grow_lstm(self):
-        model = create_model(1, input_shape=(7, 7), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
+        model = create_model(1, input_shape=(1, 7), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
         path = os.getcwd() + '/.pytest_cache/test_grow_lstm.h5'
 
         set_weights_to_zero(model.layers[1])
         assert get_weight_value(model, 1, 6, 39) == 0
         model.save(path)
 
-        model = create_model(1, input_shape=(7, 7), middle_layer=LSTM(20, kernel_initializer='random_uniform'))
+        model = create_model(1, input_shape=(1, 7), middle_layer=LSTM(20, kernel_initializer='random_uniform'))
         assert get_weight_value(model, 1, 6, 39) != 0
         assert get_weight_value(model, 1, 6, 79) != 0
 
@@ -114,7 +120,7 @@ class TestPadder(unittest.TestCase):
         assert get_weight_value(model, 1, 6, 79) != 0
 
     def test_truncate_lstm(self):
-        model = create_model(1, input_shape=(7, 7), middle_layer=LSTM(20, kernel_initializer='random_uniform'))
+        model = create_model(1, input_shape=(1, 7), middle_layer=LSTM(20, kernel_initializer='random_uniform'))
         path = os.getcwd() + '/.pytest_cache/test_truncate_lstm.h5'
 
         set_weights_to_zero(model.layers[1])
@@ -122,7 +128,7 @@ class TestPadder(unittest.TestCase):
         assert get_weight_value(model, 1, 6, 39) == 0
         model.save(path)
 
-        model = create_model(1, input_shape=(7, 7), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
+        model = create_model(1, input_shape=(1, 7), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
         assert get_weight_value(model, 1, 6, 39) != 0
 
         copy_weights(model, path)
@@ -140,6 +146,32 @@ class TestPadder(unittest.TestCase):
         original_model.save(path)
 
         reload_model = create_model(2)
+        set_weights_to_zero(reload_model)
+
+        copy_weights(reload_model, path)
+
+        compare_predictions(original_model, reload_model)
+
+    def test_lstm_grown_to_dense_with_zeroes_predicts_same(self):
+        path = os.getcwd() + '/.pytest_cache/test_lstm_grown_to_dense_with_zeroes_predicts_same.h5'
+
+        original_model = create_model(1, input_shape=(1, 7), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
+        original_model.save(path)
+        print_layer_shapes(original_model)
+        reload_model = create_model(2, input_shape=(1, 7), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
+        set_weights_to_zero(reload_model)
+
+        copy_weights(reload_model, path)
+
+        compare_predictions(original_model, reload_model)
+
+    def test_lstm_grown_with_zeroes_predicts_same(self):
+        path = os.getcwd() + '/.pytest_cache/test_lstm_grown_with_zeroes_predicts_same.h5'
+
+        original_model = create_model(1, input_shape=(1, 5), middle_layer=LSTM(10, kernel_initializer='random_uniform'))
+        original_model.save(path)
+
+        reload_model = create_model(1, input_shape=(1, 5), middle_layer=LSTM(20, kernel_initializer='random_uniform'))
         set_weights_to_zero(reload_model)
 
         copy_weights(reload_model, path)
