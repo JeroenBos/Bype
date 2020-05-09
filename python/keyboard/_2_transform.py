@@ -4,7 +4,7 @@ from DataSource import InMemoryDataSource
 import pandas as pd
 import numpy as np
 from keyboard._0_types import myNaN, Key, Keyboard, SwipeDataFrame, Input, RawTouchEvent, ProcessedInput, ProcessedInputSeries, SwipeEmbeddingDataFrame
-from keyboard._1_import import raw_data, keyboard_layouts, KEYBOARD_LAYOUT_SPEC
+from keyboard._1_import import raw_data, keyboards
 from keyboard._4a_word_input_model import WordStrategy, CappedWordStrategy
 from collections import namedtuple
 from typing import Dict, List, Union, TypeVar, Callable, Tuple, Any, Optional
@@ -13,73 +13,8 @@ from more_itertools.more import first
 import json as JSON
 from myjson import json
 from sklearn.base import BaseEstimator
+from keyboard._2a_feature import Feature, InverseFeature
 
-VariadicFloatKeyboardToAnyDelegate = Union[
-    Callable[[Keyboard], Any], 
-    Callable[[float, Keyboard], Any], 
-    Callable[[float, float, Keyboard], Any], 
-    Callable[[float, float, float, Keyboard], Any], 
-    Callable[[float, float, float, float, Keyboard], Any],
-]
-
-class Feature:
-    """Represents the signature of a feature (per timestep). """
-
-    def __call__(self, touchevent: RawTouchEvent, word: str) -> float:
-        raise ValueError('abstract')
-
-class InverseFeature:
-    def __init__(self, f: VariadicFloatKeyboardToAnyDelegate, *feature_indices: int):
-        self.f = f
-        self.feature_indices = feature_indices
-
-    def __call__(self, timestep: ProcessedInput, keyboard: Keyboard):
-        if len(timestep.shape) == 1:
-            features = [timestep[i] for i in self.feature_indices]
-        else:
-            features = [timestep[0, i] for i in self.feature_indices]
-        return self.f(keyboard=keyboard, *features)
-
-def get_code(char: str) -> int:
-    assert isinstance(char, str)
-    assert len(char) == 1
-
-    return ord(char[0])
-
-
-def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
-    result = List[Key]
-    keyboard = keyboard_layouts[keyboard_layout] if isinstance(keyboard_layout, int) else keyboard_layout
-
-    def key_from_row(row, code, code_index):
-        return Key(code, code_index, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
-
-    # allcodes = list(code for _index, row in keyboard.iterrows() for code in row['codes'])
-    # if len(allcodes) != len(set(allcodes)):
-    #     raise KeyError("The same code at multiple places isn't supported yet")
-
-    result: Dict[int, Key] = {code: key_from_row(row, code, code_index)
-                              for _index, row in keyboard.iterrows()
-                              for code_index, code in enumerate(row['codes'])}
-
-    layout_id = keyboard_layout if isinstance(keyboard_layout, int) else '?'
-
-    # infer keyboard width and height:
-    lefts = (key.x for key in result.values())
-    rights = (key.x + key.width for key in result.values())
-    tops = (key.y for key in result.values())
-    bottoms = (key.y + key.height for key in result.values())
-    left = min(lefts)
-    right = max(rights)
-    top = min(tops)
-    bottom = max(bottoms)
-    width = right - left
-    height = bottom - top
-
-    return Keyboard(layout_id, width, height, left, top, iterable=result)
-
-
-keyboards: List[Keyboard] = [get_keyboard(layout_index) for layout_index in range(len(keyboard_layouts))]
 
 
 
@@ -154,7 +89,10 @@ class Preprocessor:
 
 
     def _get_key(self, char: str, touchevent: RawTouchEvent) -> Key:
-        code = get_code(char)  # noqa
+        assert isinstance(char, str)
+        assert len(char) == 1
+
+        code = ord(char[0])
         keyboard = self._get_keyboard(touchevent)
         if code not in keyboard:
             return Key.NO_KEY

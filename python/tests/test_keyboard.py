@@ -186,12 +186,11 @@ class Testkeyboard(unittest.TestCase):
         estimator._create_model()
 
     def test_load_keyboard_layout(self):
-        from keyboard._1_import import keyboard_layouts
-        assert len(keyboard_layouts) > 0
+        from keyboard._1_import import _keyboard_layouts
+        assert len(_keyboard_layouts) > 0
 
     def test_interpreting_keyboard_layout(self):
-        from keyboard._1_import import KEYBOARD_LAYOUT_SPEC
-        from keyboard._2_transform import get_keyboard
+        from keyboard._1_import import KEYBOARD_LAYOUT_SPEC, get_keyboard
 
         test_data = {
             "codes": [1, 3],

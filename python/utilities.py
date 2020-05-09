@@ -3,6 +3,7 @@ import numpy as np
 from typing import Any, Callable, List, Union, Dict, Type
 from functools import lru_cache
 import inspect 
+from pathlib import Path
 
 def print_fully(df: pd.DataFrame) -> None:
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
@@ -115,3 +116,19 @@ def first_non_whitespace_char_is_any_of(s: str, *chars: str) -> bool:
 
     # in thise case 's' is whitespace only
     return False
+
+
+def incremental_paths(path_format: str):
+    """ Yields all paths incrementally until one doesn't exist 
+    :param format: must contain %d
+    """
+    assert isinstance(path_format, str)
+    assert '%d' in path_format
+
+    i = 0
+    while True:
+        path = path_format % i
+        if(not Path(path).exists()):
+            break
+        yield path
+        i = i + 1

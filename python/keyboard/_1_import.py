@@ -1,12 +1,17 @@
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import List
-from keyboard._0_types import RawTouchEvent
+from typing import List, Union, Dict
+from keyboard._0_types import RawTouchEvent, Key, Keyboard
+from utilities import incremental_paths
 
 raw_data: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/2020-03-20_0.csv',
                                      names=RawTouchEvent.SPEC.keys(),
                                      dtype=RawTouchEvent.SPEC)
+
+
+
+# ########### KEYBOARDS ############
 
 
 KEYBOARD_LAYOUT_SPEC = {
@@ -21,10 +26,8 @@ KEYBOARD_LAYOUT_SPEC = {
 }
 
 
-keyboard_layouts: List[pd.DataFrame] = []
 
-
-def _loadLayoutFile(path: str) -> None:
+def _loadLayoutFile(path: str) -> pd.DataFrame:
     df: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/empty.csv',
                                    names=KEYBOARD_LAYOUT_SPEC.keys(),
                                    dtype=KEYBOARD_LAYOUT_SPEC)
@@ -33,14 +36,41 @@ def _loadLayoutFile(path: str) -> None:
     df = df.append(layout)
     assert len(df.columns) == len(KEYBOARD_LAYOUT_SPEC)
 
-    keyboard_layouts.append(df)
+    return df
 
 
-# Load all keyboard layout files
-i = 0
-while True:
-    path = f'/home/jeroen/git/bype/data/keyboardlayout_{i}.json'
-    if(not Path(path).exists()):
-        break
-    _loadLayoutFile(path)
-    i = i + 1
+
+def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
+    result = List[Key]
+    keyboard = _keyboard_layouts[keyboard_layout] if isinstance(keyboard_layout, int) else keyboard_layout
+
+    def key_from_row(row, code, code_index):
+        return Key(code, code_index, **{f'{col}': row[col] for col in keyboard.columns.values if col != 'codes'})
+
+    result: Dict[int, Key] = {code: key_from_row(row, code, code_index)
+                              for _index, row in keyboard.iterrows()
+                              for code_index, code in enumerate(row['codes'])}
+
+    layout_id = keyboard_layout if isinstance(keyboard_layout, int) else '?'
+
+    # infer keyboard width and height:
+    lefts = (key.x for key in result.values())
+    rights = (key.x + key.width for key in result.values())
+    tops = (key.y for key in result.values())
+    bottoms = (key.y + key.height for key in result.values())
+    left = min(lefts)
+    right = max(rights)
+    top = min(tops)
+    bottom = max(bottoms)
+    width = right - left
+    height = bottom - top
+
+    return Keyboard(layout_id, width, height, left, top, iterable=result)
+
+
+# loads all json layouts of the specified format
+_json_layout_format = '/home/jeroen/git/bype/data/keyboardlayout_%d.json'
+_keyboard_layouts: List[pd.DataFrame] = [_loadLayoutFile(path) for path in incremental_paths(_json_layout_format)]
+
+# interpret all json layouts
+keyboards: List[Keyboard] = [get_keyboard(keyboard_index) for keyboard_index in range(len(_keyboard_layouts))]  # by index for ids
