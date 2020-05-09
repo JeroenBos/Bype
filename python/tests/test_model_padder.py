@@ -1,10 +1,11 @@
 import unittest
 from myjson import json_decoders
-from tensorflow.keras.layers import Input, Dense, LSTM, concatenate, Masking  # noqa
+from tensorflow.keras.layers import Layer, Input, Dense, LSTM, concatenate, Masking  # noqa
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import load_model, Model  # noqa
 import numpy as np
 from KerasModelPadder import copy_weights
+import os
 
 
 def create_model(n):
@@ -17,32 +18,50 @@ def create_model(n):
 
     return model
 
+def set_weights_to_zero(layer: Layer) -> None:
+    """ Sets the weights of the specified layer to zero """
+    weight1_old = layer.weights[0]
+    weight1_old_shape = weight1_old.shape
+    weight1_new = np.zeros(weight1_old_shape)
+    layer.weights[0].assign(weight1_new)
+
+def get_weight_value(model: Model, layer_index: int, *indices: int) -> float:
+    """ Gets the value of a particular weight in the model """
+    weights = model.layers[layer_index].weights[0].numpy()
+
+    if len(indices) != len(weights.shape):
+        raise ValueError(f'Incorrect number of indices specified. Got {str(len(indices))}; expected {str(len(weights.shape))} (shape={str(weights.shape)})')
+    return weights[indices]
+
 
 class TestPadder(unittest.TestCase):
-    def test_resize(self):
+    def test_grow_dense(self):
         model = create_model(1)
-        serialized = model.to_json()
-        print(serialized)
-        path = '/home/jeroen/git/bype/python/tests/testweights.h5'
+        path = os.getcwd() + '/.pytest_cache/test_resize.h5'
 
-        # set to zeroes:
-        layer1 = model.layers[1]
-        weight1_old = model.layers[1].weights[0]
-        weight1_old_shape = weight1_old.shape
-        weight1_new = np.zeros(weight1_old_shape)
-        layer1.weights[0].assign(weight1_new)
-
+        set_weights_to_zero(model.layers[1])
+        assert get_weight_value(model, 1, 99, 0) == 0
         model.save(path)
 
         model = create_model(2)
+        assert get_weight_value(model, 1, 99, 0) != 0
+        assert get_weight_value(model, 1, 99, 1) != 0
+        
         copy_weights(model, path)
+        assert get_weight_value(model, 1, 99, 0) == 0
+        assert get_weight_value(model, 1, 99, 1) != 0
 
-        # layer1 = reloaded.layers[1]
-        # weight1_old = reloaded.layers[1].weights[0]
-#
-        # weights: list of Numpy arrays to set as initial weights. The list should have 2 elements, of 
-        # shape (input_dim, output_dim) and (output_dim,) for weights and biases respectively.
-#
-        # weights = [np.zeros([692, 50]), np.zeros(50)]
+    def test_truncate_dense(self):
+        model = create_model(2)
+        path = os.getcwd() + '/.pytest_cache/test_resize.h5'
 
-        print(model.layers[1].weights[0].numpy())
+        set_weights_to_zero(model.layers[1])
+        assert get_weight_value(model, 1, 99, 0) == 0
+        assert get_weight_value(model, 1, 99, 1) == 0
+        model.save(path)
+
+        model = create_model(1)
+        assert get_weight_value(model, 1, 99, 0) != 0
+        
+        copy_weights(model, path)
+        assert get_weight_value(model, 1, 99, 0) == 0
