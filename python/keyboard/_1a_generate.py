@@ -52,9 +52,9 @@ def _get_random_str(length: int):
     return "".join(random.sample(_letters, length))
 
 
-_single_letters = list(sorted(set(_get_random_str(1) for _ in range(200))))
-_double_letters = list(sorted(set(_get_random_str(2) for _ in range(200))))
-_triple_letters = list(sorted(set(_get_random_str(3) for _ in range(1000))))
+_single_letters = list(sorted(set(_get_random_str(1) for _ in range(2))))
+_double_letters = list(sorted(set(_get_random_str(2) for _ in range(2))))
+_triple_letters = list(sorted(set(_get_random_str(3) for _ in range(10))))
 
 
 @memoize
