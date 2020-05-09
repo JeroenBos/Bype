@@ -56,7 +56,6 @@ def min_dim(*shapes: tuple) -> tuple:  # tuples of integers
 def _copy(_from: np.array, _to: np.array, shape: tuple) -> np.array:
     assert len(_from.shape) == len(_to.shape) == len(shape)
 
-    print(type(_to))
     if len(shape) == 1:
         _to[:shape[0]] = _from[:shape[0]]
     elif len(shape) == 2:

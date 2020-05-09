@@ -51,7 +51,7 @@ class MyBaseEstimator(BaseEstimator):
         log_dir = get_log_dir(self._log_dir)
         callbacks = [
             TensorBoard(log_dir=log_dir, histogram_freq=1),
-            self.TModelCheckpoint(log_dir + os.path.sep + 'model.h5', save_best_only=True, save_weights_only=False, monitor='loss')
+            self.TModelCheckpoint(self._best_model_path, save_best_only=True, save_weights_only=False, monitor='loss')
         ] + extra_callbacks
 
         params_repr = self._get_params_repr()
@@ -60,6 +60,10 @@ class MyBaseEstimator(BaseEstimator):
         result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, class_weight=weights)
         self.history.setdefault(params_repr, []).append(result)
         return result
+
+    @property
+    def _best_model_path(self):
+        return get_log_dir(self._log_dir) + os.path.sep + 'model.h5'
 
     def predict(self, X):
         preprocessedX = self._preprocess(X)
