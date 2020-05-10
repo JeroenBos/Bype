@@ -48,15 +48,12 @@ def correct(words, swipes, frames_to_skip: List[int], extra_swipes: List[int], w
             del words[r]
 
     words_iter = iter(words)
-    word_index = -1
 
     def next_word():
-        nonlocal word_index
-        word_index += 1
         try:
-            return str(word_index) + ': ' + next(words_iter)
+            return next(words_iter)
         except StopIteration:
-            return str(word_index) + ': <no word>'
+            return '<no word>'
 
 
     for i, frame in enumerate(swipes):

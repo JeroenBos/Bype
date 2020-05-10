@@ -9,6 +9,7 @@ from typing import Callable, List, TypeVar, Any, Union
 import random
 from time import time
 from utilities import memoize, print_name
+import string
 
 def generate_taps_for(word: str, i=None) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
@@ -75,6 +76,18 @@ def single_and_double_letter_swipes():
 @print_name
 def single_double_and_triple_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_single_letters + _double_letters + _triple_letters, generate_taps_for)
+
+
+def generate_random_word(n_chars) -> str:
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(n_chars))
+
+def generate_perfect_lines(n_words: int, n_chars: Union[int, Callable[[int], int]]) -> SwipeEmbeddingDataFrame:
+    n_chars = (lambda i: n_chars) if isinstance(n_chars, int) else n_chars
+    words = [generate_random_word(n_chars(i)) for i in range(n_words)]
+    SwipeEmbeddingDataFrame.create(words, lambda s, i: generate_perfect_line(s))
+
+def generate_perfect_line(words: str) -> SwipeDataFrame:
+
 
 
 verify = False

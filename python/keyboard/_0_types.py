@@ -80,6 +80,12 @@ class Key:
     def char(self):
         return chr(self.code)
 
+    def center_x(self):
+        return self.x + self.width // 2
+
+    def center_y(self):
+        return self.y + self.height // 2
+
     NO_KEY: "Key"
 
 
