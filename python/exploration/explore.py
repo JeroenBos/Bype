@@ -89,8 +89,8 @@ def average_n_datapoints_per_char(data: SwipeEmbeddingDataFrame):
 
 
 if __name__ == "__main__":
-    from keyboard._1a_generate import df
-    svg = to_frames(df)
+    from keyboard._1a_generate import perfect_3_letter_swipes
+    svg = to_frames(perfect_3_letter_swipes())
     svg.saveSvg(get_resource('generated_random_word.svg'))
     # svg = to_frames(*_2020_03_20_0()[1:3])
     # svg.saveSvg(get_resource('2020-03-20_0 all words.svg'))

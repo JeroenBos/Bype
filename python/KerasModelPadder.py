@@ -6,7 +6,12 @@ import numpy as np
 
 def copy_weights(model_to_init: Model, model_to_copy_from: Union[str, Model]) -> None:
     if isinstance(model_to_copy_from, str):
-        model_to_copy_from = load_model(model_to_copy_from)
+        try:
+            model_to_copy_from = load_model(model_to_copy_from)
+        except Exception as e:  # noqa
+            print("ERROR: couldn't load weights file")
+            return
+
 
     if len(model_to_copy_from.layers) != len(model_to_init.layers):
         raise ValueError('Incompatible models')
