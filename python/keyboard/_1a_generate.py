@@ -1,7 +1,6 @@
 # this file generates training data
 import numpy as np
 from keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame, RawTouchEvent
-from keyboard._1_import import KEYBOARD_LAYOUT_SPEC
 from keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
@@ -32,8 +31,6 @@ def generate_taps_for(word: str, i=None) -> SwipeDataFrame:
             "X": key.x + key.width / 2,
             "Y": key.y + key.height / 2,
             "KeyboardLayout": keyboard.layout_id,
-            "KeyboardWidth": keyboard.width,
-            "KeyboardHeight": keyboard.height,
         }
 
         assert isinstance(keyboard.layout_id, int)

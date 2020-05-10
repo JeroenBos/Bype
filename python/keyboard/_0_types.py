@@ -56,6 +56,9 @@ class Keyboard(Dict[int, "Key"]):
         code = ord(char) if isinstance(char, str) else char
         return self.get(code)
 
+    def values(self) -> List["Key"]:
+        return super().values()
+
 
 
 
@@ -125,8 +128,6 @@ class SwipeDataFrame(MyDataFrame):
     YPrecision: pd.Series
     EdgeFlags: pd.Series
     KeyboardLayout: pd.Series
-    KeyboardWidth: pd.Series
-    KeyboardHeight: pd.Series
 
 
     # TODO: implement like https://stackoverflow.com/q/13135712/308451
@@ -332,8 +333,6 @@ class RawTouchEvent(pd.Series):
     YPrecision: float
     EdgeFlags: float
     KeyboardLayout: int
-    KeyboardWidth: int
-    KeyboardHeight: int
 
     SPEC_np: Dict[str, Type] = {
                "PointerIndex": np.int32,
@@ -352,8 +351,6 @@ class RawTouchEvent(pd.Series):
                "YPrecision": np.float32,
                "EdgeFlags": np.float32,
                "KeyboardLayout": np.int32,
-               "KeyboardWidth": np.int32,
-               "KeyboardHeight": np.int32,
             }
     SPEC: Dict[str, Type]
 

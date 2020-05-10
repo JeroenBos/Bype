@@ -2,6 +2,7 @@ from keyboard._0_types import Input, SwipeDataFrame
 from keyboard._1_import import keyboards, raw_data
 from utilities import concat, get_resource, is_list_of, read_all, skip, split_at, split_by, windowed_2
 from typing import List, Union
+from exploration.draw_keyboard import draw_keyboard
 import drawSvg as draw
 
 
@@ -44,8 +45,6 @@ def text_to_swipes(raw_data_text: str) -> List[str]:
 
 
 def to_frame(swipe: SwipeDataFrame):
-
-
     if len(swipe.X) == 0:
         raise ValueError('empty swipe')
 
@@ -57,9 +56,12 @@ def to_frame(swipe: SwipeDataFrame):
 
 
 def to_svg(elements):
-    width, height = 1000, 1000
+    keyboard_index = 0
+    keyboard = keyboards[keyboard_index]
+    width, height = keyboard.left + keyboard.width, keyboard.top + keyboard.height
 
     root = draw.Group(transform=f'scale(1,-1)')
+    root.append(draw_keyboard(keyboard_index))
     root.extend(elements)
     svg = draw.Drawing(width, height, origin=(0, -height))
     svg.append(root)

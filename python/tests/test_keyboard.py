@@ -190,7 +190,7 @@ class Testkeyboard(unittest.TestCase):
         assert len(_keyboard_layouts) > 0
 
     def test_interpreting_keyboard_layout(self):
-        from keyboard._1_import import KEYBOARD_LAYOUT_SPEC, get_keyboard
+        from keyboard._1_import import KEY_SPEC, get_keyboard
 
         test_data = {
             "codes": [1, 3],
@@ -203,7 +203,10 @@ class Testkeyboard(unittest.TestCase):
             "toggleable": True,
         }
 
-        df = pd.DataFrame([[None for _ in test_data]], columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        df = pd.DataFrame([[None for _ in test_data]], columns=list(KEY_SPEC.keys()))
+        for attr in ['keyboard_width', 'keyboard_height', 'keyboard_top', 'keyboard_left']:
+            setattr(df, attr, 'test')
+
         for key, value in test_data.items():
             df[key][0] = value
         assert len(df.columns) == len(test_data)

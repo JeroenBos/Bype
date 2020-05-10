@@ -186,10 +186,21 @@ def concat(list_of_lists: Iterable) -> list:
 
 
 def get_resource(file_name):
-    return os.path.join('/home/jeroen/git/bype/data', file_name)
+    return os.path.join('/home/jeroen/git/bype/python/data', file_name)
 
 def skip(iterable, n):
     iterator = iter(iterable)
     for i in range(n):
         next(iterator)
     return iterator
+
+def read_json(path) -> Any:
+    import json
+    with open(path, 'r') as f:
+        return json.loads(f.read())
+
+
+def read_json_to_string(path) -> Any:
+    import json
+    with open(path, 'r') as f:
+        return json.loads(f.read())

@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
+import json
 from pathlib import Path
 from typing import List, Union, Dict
 from keyboard._0_types import RawTouchEvent, Key, Keyboard, SwipeDataFrame, RawTouchEventActions
-from utilities import get_resource, incremental_paths, memoize, windowed_2
+from utilities import get_resource, incremental_paths, memoize, windowed_2, read_json
 
 @memoize
 def read_raw_data(path: str):
@@ -23,7 +24,8 @@ raw_data = split_words(read_raw_data(get_resource('2020-03-20_0.csv')))
 
 
 # ########### KEYBOARDS ############
-KEYBOARD_LAYOUT_SPEC = {
+
+KEY_SPEC = {
     "codes": np.int32,  # this is technically not correct because it's an array of int32s. But pd accepts it... ???
     "x": np.int32,
     "y": np.int32,
@@ -34,17 +36,26 @@ KEYBOARD_LAYOUT_SPEC = {
     "toggleable": np.bool,
 }
 
-
+# KEYBOARD_LAYOUT_SPEC = {
+#     "width": np.int32,
+#     "height": np.int32,
+#     "keys": List[KEY_SPEC],
+# }
 
 def _loadLayoutFile(path: str) -> pd.DataFrame:
-    df: pd.DataFrame = pd.read_csv('/home/jeroen/git/bype/data/empty.csv',
-                                   names=KEYBOARD_LAYOUT_SPEC.keys(),
-                                   dtype=KEYBOARD_LAYOUT_SPEC)
-    assert len(df.columns) == len(KEYBOARD_LAYOUT_SPEC)
-    layout = pd.read_json(path)
+    df: pd.DataFrame = pd.read_csv(get_resource('empty.csv'),
+                                   names=KEY_SPEC.keys(),
+                                   dtype=KEY_SPEC)
+    assert len(df.columns) == len(KEY_SPEC)
+    keyboard_json = read_json(path)
+    layout = pd.read_json(json.dumps(keyboard_json['keys']))
     df = df.append(layout)
-    assert len(df.columns) == len(KEYBOARD_LAYOUT_SPEC)
+    assert len(df.columns) == len(KEY_SPEC)
 
+    setattr(df, 'keyboard_left', keyboard_json['left'])
+    setattr(df, 'keyboard_top', keyboard_json['top'])
+    setattr(df, 'keyboard_width', keyboard_json['width'])
+    setattr(df, 'keyboard_height', keyboard_json['height'])
     return df
 
 
@@ -62,24 +73,20 @@ def get_keyboard(keyboard_layout: Union[int, pd.DataFrame]) -> Dict[int, Key]:
 
     layout_id = keyboard_layout if isinstance(keyboard_layout, int) else '?'
 
-    # infer keyboard width and height:
-    lefts = (key.x for key in result.values())
-    rights = (key.x + key.width for key in result.values())
-    tops = (key.y for key in result.values())
-    bottoms = (key.y + key.height for key in result.values())
-    left = min(lefts)
-    right = max(rights)
-    top = min(tops)
-    bottom = max(bottoms)
-    width = right - left
-    height = bottom - top
-
-    return Keyboard(layout_id, width, height, left, top, iterable=result)
+    return Keyboard(layout_id, 
+                    keyboard.keyboard_width,
+                    keyboard.keyboard_height,
+                    keyboard.keyboard_left,
+                    keyboard.keyboard_top,
+                    iterable=result)
 
 
 # loads all json layouts of the specified format
-_json_layout_format = '/home/jeroen/git/bype/data/keyboardlayout_%d.json'
+_json_layout_format = get_resource('keyboardlayout_%d.json')
 _keyboard_layouts: List[pd.DataFrame] = [_loadLayoutFile(path) for path in incremental_paths(_json_layout_format)]
+
+# HACK:
+_keyboard_layouts[0].keyboard_top = 100  # TODO: find out why this offset exists relative to motion data
 
 # interpret all json layouts
 keyboards: List[Keyboard] = [get_keyboard(keyboard_index) for keyboard_index in range(len(_keyboard_layouts))]  # by index for ids
