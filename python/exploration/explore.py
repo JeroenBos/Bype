@@ -1,7 +1,7 @@
 from keyboard._0_types import Input, SwipeDataFrame
-from keyboard._1_import import keyboards, raw_data
+from keyboard._1_import import keyboards, _2020_03_20_0
 from utilities import concat, get_resource, is_list_of, read_all, skip, split_at, split_by, windowed_2
-from typing import List, Union
+from typing import List, Union, Optional  # noqa
 from exploration.draw_keyboard import draw_keyboard
 import drawSvg as draw
 
@@ -20,28 +20,6 @@ def animate_from_frames(frames, dt: float):
 
         frame.appendAnim(draw.Animate(**animation))
     return frames
-
-
-def text_file_to_swipes(path: str) -> List[str]:
-    raw_data_text = read_all(path)
-    return text_to_swipes(raw_data_text)
-
-def text_to_swipes(raw_data_text: str) -> List[str]:
-
-    def split_punctuation(s: str):
-        assert isinstance(s, str)
-        s = s.replace(' ', '').replace('\r', '')
-        split_indices = concat((i, i + 1) for i, c in enumerate(s) if not c.isalpha())
-
-        return split_at(s, *split_indices)
-
-    def is_valid(s: str):
-        return len(s) != 0 and not s.isspace()
-
-    words = split_by(raw_data_text, '\n', ' ')  # word here means more generic than string of characters: it's more of a string of values (values represented on keys)
-    words = concat(split_punctuation(word) for word in words)
-    words = [word for word in words if is_valid(word)]
-    return words
 
 
 def to_frame(swipe: SwipeDataFrame):
@@ -68,15 +46,61 @@ def to_svg(elements):
     return svg
 
 
-def to_frames(swipes: List[SwipeDataFrame]):
+def to_frames(swipes: List[SwipeDataFrame], words: Optional[List[str]] = None):
 
     frames = [to_frame(swipe) for swipe in swipes]
-    animate_from_frames(frames, .1)
+
+    if words is not None:
+        def group_with_word(frame, word):
+            group = draw.Group()
+            group.append(frame)
+            group.append(draw.Text(word, fontSize=40, x=10, y=-40, transform='scale(1, -1)'))
+            return group
+
+        frames = [group_with_word(*t) for t in zip(frames, words)]
+
+    animate_from_frames(frames, 0.2)
+
 
     return to_svg(frames)
 
+def save_as_individual_frames(swipes: List[SwipeDataFrame], path_format):
+    assert '%s' in path_format
 
-svg = to_frames(raw_data)
+
+empty_frame = draw.Group()
+# words = text_file_to_swipes(raw_data
+def correct(frames, words, frames_to_skip: List[int], extra_frames: List[int], words_to_merge: List[List[int]]):
+    for combi in words_to_merge:
+        words[combi[0]] = "".join(words[c] for c in combi)
+        for r in sorted(combi[1:], reverse=True):
+            del words[r]
+
+    words_iter = iter(words)
+    word_index = -1
+
+    def next_word():
+        nonlocal word_index
+        word_index += 1
+        try:
+            return str(word_index) + ': ' + next(words_iter)
+        except StopIteration:
+            return str(word_index) + ': <no word>'
+
+
+    for i, frame in enumerate(frames):
+        if i in frames_to_skip:
+            continue
+        if i in extra_frames:
+            yield empty_frame, next_word()
+
+        yield frame, next_word()
+
+def correct_and_skip(skip_count, *args):
+    return skip(correct(*args), skip_count)
+
+
+svg = to_frames(*_2020_03_20_0()[1:3])
 svg.saveSvg(get_resource('2020-03-20_0 all words.svg'))
 
 

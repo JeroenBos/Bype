@@ -3,14 +3,14 @@ import numpy as np
 import json
 from pathlib import Path
 from typing import List, Union, Dict
-from keyboard._0_types import RawTouchEvent, Key, Keyboard, SwipeDataFrame, RawTouchEventActions
-from utilities import get_resource, incremental_paths, memoize, windowed_2, read_json
+from keyboard._0_types import RawTouchEvent, Key, Keyboard, SwipeDataFrame, RawTouchEventActions, SwipeEmbeddingDataFrame
+from utilities import get_resource, incremental_paths, memoize, windowed_2, read_json, concat, is_list_of, read_all, skip, split_at, split_by
 
 @memoize
 def read_raw_data(path: str):
     return pd.read_csv(path, names=RawTouchEvent.SPEC.keys(), dtype=RawTouchEvent.SPEC)
 
-def split_words(df: SwipeDataFrame) -> List[SwipeDataFrame]:
+def split_on_down_action(df: SwipeDataFrame) -> List[SwipeDataFrame]:
     """ Splits a swipe dataframe into a dataframe per swipe. """
     existing_actions = list(sorted(set(df.Action)))
     if existing_actions != [RawTouchEventActions.Down, RawTouchEventActions.Up, RawTouchEventActions.Move]:
@@ -19,11 +19,75 @@ def split_words(df: SwipeDataFrame) -> List[SwipeDataFrame]:
     start_indices = df.index[df.Action == RawTouchEventActions.Down].tolist()
     return [df.loc[a:b, :] for a, b in windowed_2(start_indices, 0, len(df))]
 
+def text_file_to_words(path: str) -> List[str]:
+    raw_data_text = read_all(path)
+    return text_to_words(raw_data_text)
 
-raw_data = split_words(read_raw_data(get_resource('2020-03-20_0.csv')))
+def text_to_words(raw_data_text: str) -> List[str]:
 
+    def split_punctuation(s: str):
+        assert isinstance(s, str)
+        s = s.replace(' ', '').replace('\r', '')
+        split_indices = concat((i, i + 1) for i, c in enumerate(s) if not c.isalpha())
+
+        return split_at(s, *split_indices)
+
+    def is_valid(s: str):
+        return len(s) != 0 and not s.isspace()
+
+    words = split_by(raw_data_text, '\n', ' ')  # word here means more generic than string of characters: it's more of a string of values (values represented on keys)
+    words = concat(split_punctuation(word) for word in words)
+    words = [word for word in words if is_valid(word)]
+    return words
+
+
+def correct(words, swipes, frames_to_skip: List[int], extra_swipes: List[int], words_to_merge: List[List[int]], empty_swipe=None):
+    for combi in words_to_merge:
+        words[combi[0]] = "".join(words[c] for c in combi)
+        for r in sorted(combi[1:], reverse=True):
+            del words[r]
+
+    words_iter = iter(words)
+    word_index = -1
+
+    def next_word():
+        nonlocal word_index
+        word_index += 1
+        try:
+            return str(word_index) + ': ' + next(words_iter)
+        except StopIteration:
+            return str(word_index) + ': <no word>'
+
+
+    for i, frame in enumerate(swipes):
+        if i in frames_to_skip:
+            continue
+        if i in extra_swipes:
+            yield empty_swipe, next_word()
+
+        yield frame, next_word()
+
+def correct_and_skip(skip_count, *args):
+    return skip(correct(*args), skip_count)
+
+
+def wrap(file_name, swipes_to_skip, extra_frames, words_to_merge):
+    raw_data = split_on_down_action(read_raw_data(get_resource(file_name + '.csv')))
+    raw_data_text = text_file_to_words(get_resource(file_name + '.txt'))
+
+    swipes, words = tuple(zip(*list(correct(raw_data_text, raw_data, swipes_to_skip, extra_frames, words_to_merge))))
+
+    return SwipeEmbeddingDataFrame.create(words, lambda word, i: swipes[i], verify=True), swipes, words
+
+@memoize
+def _2020_03_20_0():
+    return wrap('2020-03-20_0', [0, 1, 2, 3], [], [[11, 12, 13]])
+
+
+_2020_03_20_0_computed = _2020_03_20_0()
 
 # ########### KEYBOARDS ############
+
 
 KEY_SPEC = {
     "codes": np.int32,  # this is technically not correct because it's an array of int32s. But pd accepts it... ???
