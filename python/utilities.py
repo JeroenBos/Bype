@@ -204,3 +204,13 @@ def read_json_to_string(path) -> Any:
     import json
     with open(path, 'r') as f:
         return json.loads(f.read())
+
+
+def interpolate(a, b, f): 
+    def _impl(_a, _b, _f):
+        return _a + (_b - _a) * _f
+
+    if isinstance(a, (int, float)):
+        return _impl(a, b, f)
+
+    return tuple(interpolate(*t, f) for t in zip(a, b))
