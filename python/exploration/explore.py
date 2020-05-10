@@ -89,12 +89,11 @@ def get_average_duration_per_char(data) -> List[int]:
     durations = duration_per_char(data)
     return sum(durations) / len(durations)
 
-def average_datapoints_per_word(data: SwipeEmbeddingDataFrame):
-    n_data_points_per_word = [len(row.swipes) for row in data.rows()]
-    return sum(n_data_points_per_word) / len(n_data_points_per_word)
+def average_n_datapoints_per_char(data: SwipeEmbeddingDataFrame):
+    return sum(len(row.swipes) for row in data.rows()) / sum(len(row.words) for row in data.rows())
 
 
 if __name__ == "__main__":
     # svg = to_frames(*_2020_03_20_0()[1:3])
     # svg.saveSvg(get_resource('2020-03-20_0 all words.svg'))
-    print(average_datapoints_per_word(_2020_03_20_0()[0]))  # = 55
+    print(average_n_datapoints_per_char(_2020_03_20_0()[0]))  # = 12
