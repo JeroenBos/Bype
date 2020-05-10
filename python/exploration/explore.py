@@ -26,7 +26,7 @@ def to_frame(swipe: SwipeDataFrame):
     if len(swipe.X) == 0:
         raise ValueError('empty swipe')
 
-    path = draw.Path(stroke_width=20, stroke='green', fill='transparent')
+    path = draw.Path(stroke_width=5, stroke='green', fill='transparent')
     path.M(swipe.X.iloc[0], swipe.Y.iloc[0])
     for x, y in skip(zip(swipe.X, swipe.Y), 1):
         path.L(x, y)
@@ -45,8 +45,10 @@ def to_svg(elements):
     svg.append(root)
     return svg
 
+def to_frames(data: SwipeEmbeddingDataFrame) -> draw.Drawing:
+    return to_frames2(data.swipes, data.words)
 
-def to_frames(swipes: List[SwipeDataFrame], words: Optional[List[str]] = None):
+def to_frames2(swipes: List[SwipeDataFrame], words: Optional[List[str]] = None) -> draw.Drawing:
 
     frames = [to_frame(swipe) for swipe in swipes]
 
@@ -66,13 +68,6 @@ def to_frames(swipes: List[SwipeDataFrame], words: Optional[List[str]] = None):
 
 def save_as_individual_frames(swipes: List[SwipeDataFrame], path_format):
     assert '%s' in path_format
-
-
-def to_coordinates(word: str, keyboard_or_index: Union[int, Keyboard]) -> List[Tuple[float, float]]:
-    keyboard = keyboards[keyboard_or_index] if isinstance(keyboard_or_index, int) else keyboard_or_index
-
-    coords = [(key.center_x, key.center_y) for key in (keyboard.get_key(c) for c in word)]
-    return coords
 
 def duration_per_word(data: SwipeEmbeddingDataFrame) -> List[int]:
     def duration_of_word(swipe: SwipeDataFrame) -> int:
@@ -94,6 +89,8 @@ def average_n_datapoints_per_char(data: SwipeEmbeddingDataFrame):
 
 
 if __name__ == "__main__":
+    from keyboard._1a_generate import df
+    svg = to_frames(df)
+    svg.saveSvg(get_resource('generated_random_word.svg'))
     # svg = to_frames(*_2020_03_20_0()[1:3])
     # svg.saveSvg(get_resource('2020-03-20_0 all words.svg'))
-    print(average_n_datapoints_per_char(_2020_03_20_0()[0]))  # = 12

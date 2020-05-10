@@ -80,11 +80,26 @@ class Key:
     def char(self):
         return chr(self.code)
 
-    def center_x(self):
-        return self.x + self.width // 2
 
-    def center_y(self):
-        return self.y + self.height // 2
+    @property
+    def abs_x(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.x + self.keyboard.left
+
+    @property
+    def abs_y(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.y + self.keyboard.top
+
+    @property
+    def abs_center_x(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.abs_x + self.width // 2
+
+    @property
+    def abs_center_y(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.abs_y + self.height // 2
 
     NO_KEY: "Key"
 
