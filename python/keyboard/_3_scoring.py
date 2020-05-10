@@ -18,7 +18,7 @@ from tensorflow.python.keras import backend as K  # noqa
 from MyBaseEstimator import get_log_dir
 
 
-metrics_writer = tf.summary.create_file_writer(get_log_dir('logs/') + '/metrics')
+metrics_writer = tf.summary.create_file_writer(get_log_dir() + '/metrics')
 
 class ValidationData:
     def __init__(self, unconvolved_data: SwipeEmbeddingDataFrame, preprocessor: Preprocessor):

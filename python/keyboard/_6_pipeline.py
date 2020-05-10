@@ -10,16 +10,23 @@ from typing import List, Union
 from time import time
 from tensorflow.keras.callbacks import LearningRateScheduler  # noqa
 import pandas as pd
-from MyBaseEstimator import get_log_dir
+import MyBaseEstimator
+from MyBaseEstimator import best_model_path
 from os import path
+
+MyBaseEstimator.global_phase = 1
+MyBaseEstimator.global_run = 0
+
 
 assert len(max_timesteps) == 1, 'not implemented'
 preprocessor = Preprocessor(max_timesteps=list(max_timesteps)[0])
 
-metric = Metrics(ValidationData(data, preprocessor))
-weight_init_strategy = ReloadWeights(get_log_dir('logs/') + path.sep + 'model.h5')
 
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=1000,
+metric = Metrics(ValidationData(data, preprocessor))
+
+weight_init_strategy = ReloadWeights(best_model_path)
+
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=200,
                                                               weight_init_strategy=weight_init_strategy,
                                                               )   \
                                           .with_callback(metric)  \

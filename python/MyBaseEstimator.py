@@ -13,11 +13,21 @@ import os
 from time import time
 from sklearn.utils import class_weight
 
-def get_log_dir(log_base_dir: str):
-    return log_base_dir + datetime.datetime.now().strftime("%Y_%m_%d")
+global_phase = 0
+global_run = 0
+_log_base_dir = 'logs/'
 
+def get_log_dir():
+    return _log_base_dir + datetime.datetime.now().strftime("%Y_%m_%d")
+
+def best_model_path(phase=global_phase):
+    return get_log_dir() + os.path.sep + f'best_model({global_run}:{phase}).h5'
+
+def last_model_path(phase=global_phase):
+    return get_log_dir() + os.path.sep + f'last_model({global_run}:{phase}).h5'
 
 class MyBaseEstimator(BaseEstimator):
+
     models: Dict[str, Model]
     history: Dict[str, List[Any]]
     verbose: bool
@@ -34,24 +44,23 @@ class MyBaseEstimator(BaseEstimator):
         self.models = {}
         self.history = {}
         self.verbose = False
-        self._log_dir = 'logs/'
 
     def fit_data_source(self, source: DataSource):
         self.fit(source.get_train(), source.get_target())
 
     # gets called by sklearn, without y
-    def fit(self, X, y=None, extra_callbacks=[]):  # yes Okay I relaize MyBaseEstimator should have been merged with keyboardEstimator all along....
-        assert hasattr(self, 'num_epochs'), """num_epochs must be present. Set self.num_epochs in __init__"""
+    def fit(self, X, y=None, extra_callbacks=[]):  # yes Okay I realize MyBaseEstimator should have been merged with keyboardEstimator all along....
+        assert hasattr(self, 'num_epochs'), "num_epochs must be present. Set self.num_epochs in __init__"
         old_X = X  # noqa
 
         X: np.ndarray = self._preprocess(X)
         model = self.current_model
         self._compile(model)
 
-        log_dir = get_log_dir(self._log_dir)
+        log_dir = get_log_dir()
         callbacks = [
             TensorBoard(log_dir=log_dir, histogram_freq=1),
-            self.TModelCheckpoint(self._best_model_path, save_best_only=True, save_weights_only=False, monitor='loss')
+            self.TModelCheckpoint(best_model_path(), monitor='loss', save_best_only=True),
         ] + extra_callbacks
 
         params_repr = self._get_params_repr()
@@ -61,9 +70,6 @@ class MyBaseEstimator(BaseEstimator):
         self.history.setdefault(params_repr, []).append(result)
         return result
 
-    @property
-    def _best_model_path(self):
-        return get_log_dir(self._log_dir) + os.path.sep + 'model.h5'
 
     def predict(self, X):
         preprocessedX = self._preprocess(X)
@@ -101,7 +107,7 @@ class MyBaseEstimator(BaseEstimator):
     @property
     def params(self) -> dict:
         result = {**self.__dict__}
-        for key in ['models', 'verbose', 'history', '_log_dir', 'preprocessor']:
+        for key in ['models', 'verbose', 'history', 'preprocessor']:
             if key in result:
                 del result[key]
         return result
