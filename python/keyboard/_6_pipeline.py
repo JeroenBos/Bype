@@ -16,11 +16,12 @@ from os import path
 
 MyBaseEstimator.global_phase = 0
 MyBaseEstimator.global_run = 0
-verify = True
+initial_epoch = 1000
 n_words = 100
 n_chars = 10
+n_epochs = 100
 
-
+verify = True
 data = SwipeEmbeddingDataFrame.__as__(perfect_swipes(n_words=n_words, n_chars=n_chars), verify=verify) 
 convolved_data = data.convolve(fraction=1, verify=verify)
 
@@ -34,7 +35,8 @@ metric = Metrics(ValidationData(data, preprocessor))
 
 weight_init_strategy = ReloadWeights(best_model_path)
 
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=1000,
+training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=initial_epoch + n_epochs,
+                                                              initial_epoch=initial_epoch,
                                                               weight_init_strategy=weight_init_strategy,
                                                               )   \
                                           .with_callback(metric)  \

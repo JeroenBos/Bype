@@ -59,12 +59,14 @@ class KeyboardEstimator(MyBaseEstimator, metaclass=generic('preprocessor')):
 
     def __init__(self, 
                  num_epochs=5,
+                 initial_epoch=0,
                  activation='relu',
                  weight_init_strategy: WeightInitStrategy = WeightInitStrategy.no_init,
                  word_input_strategy: WordStrategy = CappedWordStrategy(5),
                  loss_ctor: Union[str, Callable[["KeyboardEstimator"], Loss]] = 'binary_crossentropy'):
         super(self.__class__, self).__init__()
         self.num_epochs = num_epochs
+        self.initial_epoch = initial_epoch
         self.activation = activation
         self.word_input_strategy = word_input_strategy
         self.loss_ctor = loss_ctor

@@ -66,10 +66,14 @@ class MyBaseEstimator(BaseEstimator):
         params_repr = self._get_params_repr()
 
         weights = class_weight.compute_class_weight('balanced', np.unique(y), y)
-        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, class_weight=weights)
+        result = model.fit(X, y, epochs=self.num_epochs, callbacks=callbacks, class_weight=weights, initial_epoch=self.get_initial_epoch())
         self.history.setdefault(params_repr, []).append(result)
         return result
 
+    def get_initial_epoch(self) -> int:
+        if 'initial_epoch' in self.params:
+            return self.params['initial_epoch']
+        return 0
 
     def predict(self, X):
         preprocessedX = self._preprocess(X)
