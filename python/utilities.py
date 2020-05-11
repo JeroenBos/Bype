@@ -82,12 +82,14 @@ def memoize(decorate_function: Callable):
     """
     return lru_cache(maxsize=None)(decorate_function)
 
-def print_name(decorate_function: Callable):
+
+def print_repr_on_call(decorate_function: Callable):
     """ 
     This decorator prints the name of the function upon its call. 
     """
     def decorating_function(*args, **kwargs):
-        print('---------:' + decorate_function.__name__)
+        arg_reprs = [repr(arg) for arg in args] + [k + '=' + repr(v) for k, v in kwargs.items()]
+        print(f'---------:{decorate_function.__name__}({", ".join(arg_reprs)})')
         return decorate_function(*args, **kwargs)
     return decorating_function
 

@@ -8,7 +8,7 @@ from DataSource import InMemoryDataSource, TrivialDataSource
 from typing import Callable, List, TypeVar, Any, Union, Tuple
 import random
 from time import time
-from utilities import interpolate, memoize, print_name, windowed_2
+from utilities import interpolate, memoize, print_repr_on_call, windowed_2
 import string
 
 def generate_taps_for(word: str, i=None) -> SwipeDataFrame:
@@ -56,31 +56,31 @@ _triple_letters = list(sorted(set(_get_random_str(3) for _ in range(10))))
 
 
 @memoize
-@print_name
+@print_repr_on_call
 def single_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_single_letters, generate_taps_for)
 @memoize
-@print_name
+@print_repr_on_call
 def double_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_double_letters, generate_taps_for)
 @memoize
-@print_name
+@print_repr_on_call
 def triple_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_triple_letters, generate_taps_for)
 
 @memoize
-@print_name
+@print_repr_on_call
 def single_and_double_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_single_letters + _double_letters, generate_taps_for)
 @memoize
-@print_name
+@print_repr_on_call
 def single_double_and_triple_letter_swipes():
     return SwipeEmbeddingDataFrame.create(_single_letters + _double_letters + _triple_letters, generate_taps_for)
 
 @memoize
-@print_name
-def perfect_3_letter_swipes():
-    return generate_perfect_lines(n_words=1000, n_chars=3, keyboard_index=0)
+@print_repr_on_call
+def perfect_swipes(n_words, n_chars):
+    return generate_perfect_lines(n_words=n_words, n_chars=n_chars, keyboard_index=0)
 
 
 def generate_random_word(n_chars) -> str:
@@ -132,9 +132,3 @@ def generate_perfect_line(word: str, keyboard_index: int) -> SwipeDataFrame:
 
 def get_timesteps(data: SwipeEmbeddingDataFrame) -> set:
     return set(len(swipe) for swipe in data.swipes)
-
-
-verify = True
-generated_data = SwipeEmbeddingDataFrame.__as__(perfect_3_letter_swipes(), verify=verify) 
-generated_convolved_data = generated_data.convolve(fraction=1, verify=verify)
-generated_data_max_timestep = get_timesteps(generated_convolved_data)

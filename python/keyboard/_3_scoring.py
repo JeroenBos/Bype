@@ -80,7 +80,7 @@ class Metrics(Callback):
         failed_indices = [i for place, occurrence, i in zip(places, occurrences, range(len(places))) 
                           if len(place) != 0 and occurrence != 1]
 
-        print(f"\nTotal misinterpreted words: {len(failed_indices)}{'. Examples:' if len(failed_indices) != 0 else ''}")
+        print(f"\nTotal misinterpreted words: {len(failed_indices)}/{len(places)}{'. Examples:' if len(failed_indices) != 0 else ''}")
 
         for failed_index in islice(failed_indices, 10):
             place = places[failed_index]
