@@ -12,7 +12,6 @@ from time import time
 from utilities import interpolate, memoize, print_repr_on_call, windowed_2
 import string
 from trainer.types import TrainerExtension
-from typeguard import check_argument_types, check_return_value
 from keyboard._3_scoring import ValidationData
 
 

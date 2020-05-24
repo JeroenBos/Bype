@@ -1,4 +1,3 @@
-from typeguard import check_argument_types
 from dataclasses import dataclass
 from typing import Optional
 from trainer._trainer import TrainerExtension
@@ -18,7 +17,6 @@ class Params:
 
 class GenerateDataTrainerExtension(TrainerExtension):
     def __init__(self, params: Params):
-        assert check_argument_types()
         self.params = params
         self.params.data = lambda: GenerateDataTrainerExtension_compute_data(n_words=params.n_words, n_chars=params.n_chars, verify=self.verify)
         self.params.validation_data = lambda: GenerateDataTrainerExtension_compute_validation_data(data=self.params.data, preprocessor=self.params.preprocessor)

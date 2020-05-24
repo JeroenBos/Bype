@@ -5,7 +5,6 @@ from keyboard._3_scoring import Metrics, ValidationData
 from trainer._trainer import TrainerExtension
 from keyboard._0_types import SwipeEmbeddingDataFrame
 from trainer.ModelAdapter import FitArgs
-from typeguard import check_argument_types
 
 
 class Params:
@@ -17,7 +16,6 @@ class Params:
 class ContinuousEpochCountExtensions(TrainerExtension):
 
     def __init__(self, params: Params, initial_initial_epoch=0):
-        assert check_argument_types()
         super().__init__()
         self.params = params
         self._initial_initial_epoch = initial_initial_epoch

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from trainer._trainer import TrainerExtension, Trainer
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa
 from utilities import override
-from typeguard import check_argument_types  # noqa
 
 
 @dataclass
@@ -14,7 +13,6 @@ class Params:
 
 class SaveBestModelTrainerExtension(TrainerExtension):
     def __init__(self, params: Params):
-        assert check_argument_types()
         assert isinstance(params.file_path, str) and params.file_path.endswith('.h5')
 
         self._log_dir = params.file_path

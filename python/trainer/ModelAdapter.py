@@ -6,7 +6,6 @@ from tensorflow.keras import Model  # noqa
 from functools import reduce
 from utilities import memoize, override, virtual, sealed, abstract
 from trainer.types import IModel, History, X, Y, TrainerExtension
-from typeguard import check_argument_types, check_return_value  # noqa
 
 
 class IModelAdapter(ABC):
@@ -73,7 +72,6 @@ class ParameterizedModelAdapter(ModelAdapter):
     """
 
     def __init__(self, params: Params):
-        assert check_argument_types()
         self._fit_args = params.fit_args.to_dict()
         self._compile_args = params.compile_args.to_dict()
 
@@ -93,7 +91,6 @@ class ParameterizeModelExtension(TrainerExtension):
     """ Ensures that `params.fit_args` and `params.compile_args` are passed to the `model.fit` and `model.compile` calls. """
 
     def __init__(self, params: Params):
-        check_argument_types()
         self._params = params
 
     @sealed

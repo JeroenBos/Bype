@@ -14,7 +14,6 @@ from generic import generic
 from tensorflow.keras.losses import Loss  # noqa
 from tensorflow.python.keras import layers, models  # noqa
 from DataSource import DataSource
-from typeguard import check_argument_types, check_return_value  # noqa
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
 from trainer.ModelAdapter import ParameterizedCreateModelBase, Params as ParameterizeModelParams
@@ -32,7 +31,6 @@ class ModelFactory(ParameterizedCreateModelBase):
         return self._params
 
     def __init__(self, params: Params):
-        assert check_argument_types()
         # for param in required_params:
         #    assert param in params, f"Required param '{param}' missing"
 

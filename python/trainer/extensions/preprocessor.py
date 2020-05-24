@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typeguard import check_argument_types, check_return_value  # noqa
 from typing import Any, Tuple, Union
 
 from trainer._trainer import TrainerExtension, Trainer, X, Y
