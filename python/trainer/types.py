@@ -9,15 +9,18 @@ from tensorflow.keras.callbacks import History  # noqa
 
 X, Y = TypeVar('X'), TypeVar('Y')
 
-class IModel(ABC):
-    # most notably a tensorflow.keras.Model is also considered to be an IModel
-    # maybe I should write IModel = Union[tensorflow.keras.Model, ModelAdapter]
-    def compile(self) -> None:
+
+class IModelAdapter(ABC):
+    @abstractmethod
+    def fit(self, model: "IModel", x: X, y: Y) -> History:
         raise ABC
 
-    def fit(self, x: X, y: Y) -> History:
+    @abstractmethod
+    def compile(self, model: "IModel") -> None:
         raise ABC
 
+
+IModel = Union[Model, IModelAdapter]
 
 class TrainerExtension:
     def create_model(self, model: Optional[IModel]) -> Optional[IModel]:

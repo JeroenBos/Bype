@@ -5,30 +5,7 @@ import numpy as np
 from tensorflow.keras import Model  # noqa
 from functools import reduce
 from utilities import memoize, override, virtual, sealed, abstract
-from trainer.types import IModel, History, X, Y, TrainerExtension
-
-
-class IModelAdapter(ABC):
-    @abstractmethod
-    def fit(self, model: IModel, x: X, y: Y) -> History:
-        raise ABC
-
-    @abstractmethod
-    def compile(self, model: IModel) -> None:
-        raise ABC
-
-    @sealed
-    def concretify(self, model: IModel) -> IModel:
-        adapter = self
-
-        class AdapterModel(IModel):
-            def compile(self):
-                return adapter.compile(model)
-
-            def fit(self, x, y):
-                return adapter.fit(model, x, y)
-        return AdapterModel()
-
+from trainer.types import IModel, History, X, Y, TrainerExtension, IModelAdapter
 
 
 class ModelAdapter(IModelAdapter, ABC):
@@ -51,6 +28,19 @@ class ModelAdapter(IModelAdapter, ABC):
     def compile(self, model: Model) -> None:
         compile_args = self.get_compile_args()
         return model.compile(**compile_args)
+
+    @sealed
+    def concretify(self, model: IModel) -> IModel:
+        adapter = self
+
+        class ConcreteModelAdapter(IModelAdapter):
+            def compile(self):
+                return adapter.compile(model)
+
+            def fit(self, x, y):
+                return adapter.fit(model, x, y)
+        return ConcreteModelAdapter()
+
 
 
 class ArgsAdapter:
