@@ -124,6 +124,9 @@ class MyDataFrame(pd.DataFrame):
             for column in self.columns:
                 value.__dict__[column] = self[column][i]
             yield value
+    
+    def __hash__(self):
+        return id(self)
 
 
 class SwipeDataFrame(MyDataFrame):

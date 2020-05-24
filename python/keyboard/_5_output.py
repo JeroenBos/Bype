@@ -1,6 +1,5 @@
 import os
 from tensorflow.keras.models import load_model, Model  # noqa
-from MyBaseEstimator import get_log_dir
 from os import path
 import numpy as np
 from keyboard._0_types import SwipeEmbeddingDataFrame, ProcessedInputSeries

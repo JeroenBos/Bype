@@ -3,7 +3,6 @@ from itertools import islice
 import pandas as pd
 import numpy as np
 from tensorflow.keras.callbacks import Callback  # noqa
-from sklearn.metrics import roc_auc_score
 from keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame, SwipeConvolutionDataFrame
 from typing import List, Callable, Tuple
 from collections import namedtuple
@@ -15,13 +14,11 @@ from tensorflow.python.framework.ops import disable_eager_execution  # noqa
 from tensorflow.python.framework import ops  # noqa
 from tensorflow.python.ops import math_ops  # noqa
 from tensorflow.python.keras import backend as K  # noqa
-from MyBaseEstimator import get_log_dir
 
-
-metrics_writer = tf.summary.create_file_writer(get_log_dir() + '/metrics')
 
 class ValidationData:
     def __init__(self, unconvolved_data: SwipeEmbeddingDataFrame, preprocessor: Preprocessor):
+        assert isinstance(unconvolved_data, SwipeEmbeddingDataFrame)
         self.original_length = len(unconvolved_data)
         self._inverse_indices = []
         self._unencoded_convolved_data = unconvolved_data.convolve(preprocessor.convolution_fraction,
@@ -54,8 +51,10 @@ class ValidationData:
 
 
 class Metrics(Callback):
-    def __init__(self, validation_data: ValidationData, model=None):
+    def __init__(self, validation_data: ValidationData, log_dir: str, model=None):
+        assert isinstance(validation_data, ValidationData)
         super().__init__()
+        self.metrics_writer = tf.summary.create_file_writer(log_dir + '/metrics')
         self.test_data = validation_data
         if model is not None or not hasattr(self, 'model'):
             self.model = model
@@ -138,11 +137,11 @@ class Metrics(Callback):
 
         self.losses.append(test_loss)
 
-        with metrics_writer.as_default():
+        with self.metrics_writer.as_default():
             tf.summary.scalar('pred/min', data=pred_min, step=batch)
             tf.summary.scalar('pred/max', data=pred_max, step=batch)
             tf.summary.scalar('pred/test_loss', data=test_loss, step=batch)
-            metrics_writer.flush()
+            self.metrics_writer.flush()
         return test_loss
 
 

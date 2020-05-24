@@ -1,43 +1,93 @@
+from dataclasses import dataclass
 import math
 import init_seed
 from keyboard._0_types import SwipeEmbeddingDataFrame
 from keyboard._1a_generate import perfect_swipes, get_timesteps
 from keyboard._2_transform import Preprocessor
 from keyboard._3_scoring import Metrics, ValidationData
-from keyboard._4_model import KeyboardEstimator
+from keyboard._4_model import ModelFactory
+from keyboard._4a_word_input_model import WordStrategy, CappedWordStrategy
 from keyboard._4b_initial_weights import ReloadWeights
-from typing import List, Union
+from typing import List, Union, Any, Optional, Iterable, Callable
 from time import time
 from tensorflow.keras.callbacks import LearningRateScheduler  # noqa
 import pandas as pd
-import MyBaseEstimator
-from MyBaseEstimator import best_model_path
 from os import path
+from trainer._trainer import TrainingsPlanBase
+from trainer.types import TrainerExtension
+from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting
+from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
+from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
+from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension
+from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
+from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData
+from trainer.extensions.tensorboard import TensorBoardExtension
+from trainer.ModelAdapter import FitArgs, CompileArgs
+from trainer.extensions.fit_datasource import AllowDataSources
 
-MyBaseEstimator.global_phase = 0
-MyBaseEstimator.global_run = 0
-initial_epoch = 1000
-n_words = 100
-n_chars = 10
-n_epochs = 100
+class Params:   
+    tag: Optional[str] = None 
+    # required by GenerateData:
+    n_words: int
+    n_chars: int
+    verify: Optional[bool] = False
+    # required by PreprocessorExtension:
+    word_input_strategy: WordStrategy
+    n_epochs: int
+    fit_args = FitArgs(epochs=100)
+    compile_args = CompileArgs()
+    #
+    log_dir: str = 'logs/'
+    convolution_fraction: float = 1.0
 
-verify = True
-data = SwipeEmbeddingDataFrame.__as__(perfect_swipes(n_words=n_words, n_chars=n_chars), verify=verify) 
-convolved_data = data.convolve(fraction=1, verify=verify)
+    def __init__(self, **kw):
+        mandatory = ['n_words', 'n_chars', 'word_input_strategy']
+        for m in mandatory:
+            assert m in kw, f"Missing mandatory argument '{m}'"
+
+        self.__dict__.update(kw)
+
+    def __getattribute__(self, name: str):
+        value = super().__getattribute__(name)
+        if not name.startswith('__') and isinstance(value, Callable):
+            return value()
+        return value
+
+# best_model_path ?
 
 
+params = Params(
+    n_words=10,
+    n_chars=10,
+    word_input_strategy=CappedWordStrategy(5),
+    fit_args=FitArgs(
+        epochs=100,
+    ),
+    compile_args=CompileArgs(
+    ),
+    max_timesteps=108,  # HACK
+)
 
-assert len(get_timesteps(convolved_data)) == 1, 'not implemented'
-preprocessor = Preprocessor(max_timesteps=list(get_timesteps(convolved_data))[0])
+
+class TrainingsPlan(TrainingsPlanBase):
+    @property
+    def params(self) -> Iterable[Params]:
+        yield params
+
+    def get_extensions(self, params: Params, prev_params: Optional[Params]) -> Iterable[TrainerExtension]:
+        yield TagWithTimestamp(params)
+        yield LogDirPerData(params)
+        yield TensorBoardExtension(params)
+        yield EpochsKeepCounting(params, prev_params)
+        yield GenerateData(params)
+        yield SetMaxTimestep(params)
+        yield ComputeSwipeFeatureCount(params)
+        yield AllowDataSources()
+        yield PreprocessorExtension(params)
+        yield AllowDataSources()
+        yield ModelFactory(params)
+        yield LoadInitialWeights(params)
+        yield AddValidationDataScoresToTensorboard(params)
 
 
-metric = Metrics(ValidationData(data, preprocessor))
-
-weight_init_strategy = ReloadWeights(best_model_path)
-
-training = KeyboardEstimator[preprocessor].create_initialized(num_epochs=initial_epoch + n_epochs,
-                                                              initial_epoch=initial_epoch,
-                                                              weight_init_strategy=weight_init_strategy,
-                                                              )   \
-                                          .with_callback(metric)  \
-                                          .fit(convolved_data)
+TrainingsPlan().execute()

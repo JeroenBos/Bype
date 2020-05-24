@@ -216,3 +216,21 @@ def interpolate(a, b, f):
         return _impl(a, b, f)
 
     return tuple(interpolate(*t, f) for t in zip(a, b))
+
+
+
+def override(f):
+    """ Indicates that the function overrides. """
+    return f
+
+def sealed(f):
+    """ Indicates that the function is sealed. """
+    return f
+
+def virtual(f):
+    """ Indicates that the function is virtual. """
+    return f
+
+def abstract(f):
+    """ Indicates that the function is abstract. A default implementation can be provided though. """
+    return f

@@ -24,8 +24,8 @@ class Preprocessor:
     def __init__(self, 
                  max_timesteps=None,
                  convolution_fraction=1.0,
-                 word_input_strategy: WordStrategy = CappedWordStrategy(5),
-                 loss_ctor='binary_crossentropy'):
+                 word_input_strategy: WordStrategy = CappedWordStrategy(5)
+                 ):
         """
         :param max_timesteps: The maximum number of allowed timesteps. None for infinity. 
         """
@@ -33,19 +33,9 @@ class Preprocessor:
         self.max_timesteps = max_timesteps
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
-        self.loss_ctor = loss_ctor
         self._features_per_time_step = None
         self._inverse_features = None
         self.convolution_fraction = convolution_fraction
-
-    def set_params(self, **params):
-        assert all(key in self.__dict__ for key in params.keys())
-        self.__dict__.update(params)
-        self._features_per_time_step = None  # invalidates feature delegate functions
-        self._inverse_features = None  # and inverses
-
-    def get_params(self):
-        return self.__dict__
 
     @property
     def features_per_time_step(self):
@@ -150,13 +140,13 @@ class Preprocessor:
         return correctly_positioned_keys[0].char
 
 
-    def preprocess(self, X: SwipeEmbeddingDataFrame) -> np.ndarray:
+    def preprocess(self, x: SwipeEmbeddingDataFrame) -> np.ndarray:
         # X[word][touchevent][toucheventprop]
-        max_timestep = max(len(swipe) for swipe in X.swipes)
+        max_timestep = max(len(swipe) for swipe in x.swipes)
         if self.max_timesteps is not None and max_timestep > self.max_timesteps:
             raise ValueError('Too many timesteps')
 
-        processed = self._preprocess(X)
+        processed = self._preprocess(x)
         # processed[word, timestep][feature]
 
         intermediate = processed.to_numpy()

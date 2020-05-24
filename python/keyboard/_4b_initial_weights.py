@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from tensorflow.keras.models import load_model, Model  # noqa
 from KerasModelPadder import copy_weights
-from MyBaseEstimator import global_phase
 import os
 
 class WeightInitStrategy(ABC):

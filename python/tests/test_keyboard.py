@@ -1,5 +1,4 @@
 import unittest
-from MyBaseEstimator import MyBaseEstimator
 from typing import List, Union
 from generic import generic
 from DataSource import InMemoryDataSource
@@ -170,7 +169,7 @@ class HpParamsTests(unittest.TestCase):
         assert b == 'int'
 
     def test_get_id(self):
-        class UglyEstimator(MyBaseEstimator):
+        class UglyEstimator:  # (MyBaseEstimator):
             def __init__(self, num_epochs=5, activation='relu'):
                 super().__init__()
                 self.num_epochs = num_epochs

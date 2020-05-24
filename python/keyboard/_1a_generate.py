@@ -1,15 +1,20 @@
 # this file generates training data
+from dataclasses import dataclass
 import numpy as np
 from keyboard._0_types import T, SwipeDataFrame, SwipeEmbeddingDataFrame, RawTouchEvent, Keyboard
 from keyboard._2_transform import keyboards, Key
 import pandas as pd
 from pandas import DataFrame
 from DataSource import InMemoryDataSource, TrivialDataSource
-from typing import Callable, List, TypeVar, Any, Union, Tuple
+from typing import Callable, List, TypeVar, Any, Union, Tuple, Optional
 import random
 from time import time
 from utilities import interpolate, memoize, print_repr_on_call, windowed_2
 import string
+from trainer.types import TrainerExtension
+from typeguard import check_argument_types, check_return_value
+from keyboard._3_scoring import ValidationData
+
 
 def generate_taps_for(word: str, i=None) -> SwipeDataFrame:
     """ Creates a 'swipe' as a sequence of perfect taps. """
@@ -81,7 +86,6 @@ def single_double_and_triple_letter_swipes():
 @print_repr_on_call
 def perfect_swipes(n_words, n_chars):
     return generate_perfect_lines(n_words=n_words, n_chars=n_chars, keyboard_index=0)
-
 
 def generate_random_word(n_chars) -> str:
     return ''.join(random.choice(string.ascii_lowercase) for i in range(n_chars))
