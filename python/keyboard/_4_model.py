@@ -16,8 +16,10 @@ from tensorflow.python.keras import layers, models  # noqa
 from DataSource import DataSource
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
-from trainer.ModelAdapter import ParameterizedCreateModelBase, Params as ParameterizeModelParams
+from trainer.ModelAdapter import Params as ParameterizeModelParams
 from utilities import override
+from trainer.types import IModel
+from trainer.trainer import TrainerExtension
 
 
 class Params(ParameterizeModelParams):
@@ -25,19 +27,13 @@ class Params(ParameterizeModelParams):
     swipe_feature_count: int
 
 
-class ModelFactory(ParameterizedCreateModelBase):
-    @property
-    def params(self) -> Params:
-        return self._params
-
-    def __init__(self, params: Params):
-        # for param in required_params:
-        #    assert param in params, f"Required param '{param}' missing"
-
-        super().__init__(params)
+class ModelFactory(TrainerExtension):
+    def __init__(self, params):
+        self.params = params
 
     @override
-    def _create_model(self) -> Model:
+    def create_model(self, model: Optional[IModel]) -> IModel:
+        assert model is None
         # None here means variable over batches (but not within a batch)
         input = Input(shape=(self.params.max_timesteps, self.params.swipe_feature_count))
         masking = Masking(mask_value=myNaN)(input)

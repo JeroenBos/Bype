@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from trainer._trainer import TrainerExtension
+from trainer.trainer import TrainerExtension
 from keyboard._0_types import SwipeEmbeddingDataFrame, SwipeConvolutionDataFrame
 from keyboard._1a_generate import perfect_swipes
 from keyboard._2_transform import Preprocessor

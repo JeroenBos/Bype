@@ -2,7 +2,7 @@ from typing import Any, Optional
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.callbacks import Callback  # noqa
 from keyboard._3_scoring import Metrics, ValidationData
-from trainer._trainer import TrainerExtension
+from trainer.trainer import TrainerExtension
 from keyboard._0_types import SwipeEmbeddingDataFrame
 from trainer.ModelAdapter import FitArgs
 from trainer.extensions.ComputeValueExtension import ComputeValueTrainerExtension

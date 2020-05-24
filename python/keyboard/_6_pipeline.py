@@ -13,7 +13,7 @@ from time import time
 from tensorflow.keras.callbacks import LearningRateScheduler  # noqa
 import pandas as pd
 from os import path
-from trainer._trainer import TrainingsPlanBase
+from trainer.trainer import TrainingsPlanBase
 from trainer.types import TrainerExtension
 from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
@@ -22,7 +22,7 @@ from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as Se
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData
 from trainer.extensions.tensorboard import TensorBoardExtension
-from trainer.ModelAdapter import FitArgs, CompileArgs
+from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 
 class Params:   
@@ -67,7 +67,7 @@ params = Params(
     ),
     max_timesteps=108,  # HACK
     filebased_continued_epoch_counting=True,
-    
+
 )
 
 
@@ -95,6 +95,7 @@ class TrainingsPlan(TrainingsPlanBase):
 
         # model generation:
         yield ModelFactory(params)
+        yield ParameterizeModel(params)
         yield LoadInitialWeights(params)
 
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Tuple, Union
 
-from trainer._trainer import TrainerExtension, Trainer, X, Y
+from trainer.trainer import TrainerExtension, Trainer, X, Y
 from trainer.extensions.ComputeValueExtension import ComputeValueTrainerExtension
 from utilities import override
 from keyboard._0_types import SwipeEmbeddingDataFrame
@@ -26,7 +26,7 @@ class PreprocessorTrainerExtension(TrainerExtension):
                             convolution_fraction=self.params.convolution_fraction,
                             word_input_strategy=self.params.word_input_strategy,
                             )
-                            
+
     @override
     def before_fit(self, x: SwipeEmbeddingDataFrame, y: Y) -> Tuple[X, Y]:
         assert isinstance(x, SwipeEmbeddingDataFrame), "GenerateData should have created a SwipeEmbeddingDataFrame"

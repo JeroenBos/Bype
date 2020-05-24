@@ -1,4 +1,4 @@
-from trainer._trainer import TrainerExtension, Trainer
+from trainer.trainer import TrainerExtension, Trainer
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping  # noqa
 from utilities import override
 

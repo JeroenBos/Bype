@@ -10,6 +10,8 @@ from tensorflow.keras.callbacks import History  # noqa
 X, Y = TypeVar('X'), TypeVar('Y')
 
 class IModel(ABC):
+    # most notably a tensorflow.keras.Model is also considered to be an IModel
+    # maybe I should write IModel = Union[tensorflow.keras.Model, ModelAdapter]
     def compile(self) -> None:
         raise ABC
 

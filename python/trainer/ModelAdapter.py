@@ -90,32 +90,15 @@ class ParameterizeModelExtension(TrainerExtension):
     """ Ensures that `params.fit_args` and `params.compile_args` are passed to the `model.fit` and `model.compile` calls. """
 
     def __init__(self, params: Params):
-        self._params = params
+        self.params = params
 
     @sealed
     def create_model(self, model: IModel) -> IModel:
         assert model is not None, "An extension creating a model must be provide before this one"
 
-        adapter = ParameterizedModelAdapter(self._params)
+        adapter = ParameterizedModelAdapter(self.params)
         return adapter.concretify(model)
 
-
-class ParameterizedCreateModelBase(ParameterizeModelExtension, ABC):
-    """ Ensures that `params.fit_args` and `params.compile_args` are passed to the `model.fit` and `model.compile` calls. 
-    Assumes the extension creating the model inherits from this extension. 
-    """
-
-    def __init__(self, params):
-        self._params = params
-
-    def create_model(self, model: Optional[IModel]) -> IModel:
-        assert model is None, "Another extension already created a model"
-        model = self._create_model()
-        return super().create_model(model)
-
-    @abstractmethod
-    def _create_model(self) -> IModel:
-        raise ABC
 
 @dataclass
 class FitArgs(ArgsAdapter):

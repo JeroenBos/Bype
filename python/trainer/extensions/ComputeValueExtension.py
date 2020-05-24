@@ -1,5 +1,5 @@
 from abc import ABC, abstractproperty, abstractmethod
-from trainer._trainer import TrainerExtension
+from trainer.trainer import TrainerExtension
 from trainer.types import IModel, History, X, Y, Tuple
 from typing import Any, Optional
 from utilities import virtual, sealed

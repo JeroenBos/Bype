@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from trainer._trainer import TrainerExtension, Trainer, X, Y
+from trainer.trainer import TrainerExtension, Trainer, X, Y
 from DataSource import DataSource
 
 

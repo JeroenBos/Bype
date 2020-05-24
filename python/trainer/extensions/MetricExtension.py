@@ -1,6 +1,6 @@
 from tensorflow.keras.models import Model  # noqa
 from keyboard._3_scoring import Metrics, ValidationData
-from trainer._trainer import TrainerExtension
+from trainer.trainer import TrainerExtension
 
 
 class ValidationDataScoringExtensions(TrainerExtension): 
