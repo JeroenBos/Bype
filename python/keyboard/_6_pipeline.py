@@ -15,7 +15,7 @@ import pandas as pd
 from os import path
 from trainer._trainer import TrainingsPlanBase
 from trainer.types import TrainerExtension
-from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting
+from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
 from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
 from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension
@@ -34,7 +34,7 @@ class Params:
     # required by PreprocessorExtension:
     word_input_strategy: WordStrategy
     n_epochs: int
-    fit_args = FitArgs(epochs=100)
+    fit_args = FitArgs()
     compile_args = CompileArgs()
     #
     log_dir: str = 'logs/'
@@ -57,15 +57,17 @@ class Params:
 
 
 params = Params(
+    n_epochs=100,
     n_words=10,
     n_chars=10,
     word_input_strategy=CappedWordStrategy(5),
     fit_args=FitArgs(
-        epochs=100,
     ),
     compile_args=CompileArgs(
     ),
     max_timesteps=108,  # HACK
+    filebased_continued_epoch_counting=True,
+    
 )
 
 
@@ -75,19 +77,25 @@ class TrainingsPlan(TrainingsPlanBase):
         yield params
 
     def get_extensions(self, params: Params, prev_params: Optional[Params]) -> Iterable[TrainerExtension]:
+        # initialization and callback registration:
         yield TagWithTimestamp(params)
         yield LogDirPerData(params)
         yield TensorBoardExtension(params)
         yield EpochsKeepCounting(params, prev_params)
+        yield ApplyInitialEpochAndNumEpochToFitArgs(params)
+        yield AddValidationDataScoresToTensorboard(params)
+
+        # data generation:
         yield GenerateData(params)
-        yield SetMaxTimestep(params)
-        yield ComputeSwipeFeatureCount(params)
+        yield SetMaxTimestep(params, prev_params)
+        yield ComputeSwipeFeatureCount(params, prev_params)
         yield AllowDataSources()
         yield PreprocessorExtension(params)
         yield AllowDataSources()
+
+        # model generation:
         yield ModelFactory(params)
         yield LoadInitialWeights(params)
-        yield AddValidationDataScoresToTensorboard(params)
 
 
 TrainingsPlan().execute()

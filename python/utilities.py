@@ -140,6 +140,19 @@ def read_all(path: str) -> str:
     with open(path) as file:
         return file.read()
 
+
+def overwrite_all(path: str, contents: str) -> str:
+    """ Writes the specified contents to the specified file, overwriting if the file exists already. """
+    with open(path, 'w') as file:
+        return file.write(contents)
+
+
+def write_all(path: str, contents: str) -> str:
+    """ Writes the specified contents to the specified file, appending if the file exists already. """
+    with open(path, 'a') as file:
+        return file.write(contents)
+
+
 def split_by(s: str, *separators: str) -> List[str]:
     """ Splits a string by many separators. """
     assert isinstance(separators, (List, Tuple))

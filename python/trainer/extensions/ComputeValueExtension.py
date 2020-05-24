@@ -6,8 +6,9 @@ from utilities import virtual, sealed
 
 
 class ComputeValueTrainerExtension(TrainerExtension, ABC):
-    def __init__(self, params: Any):
+    def __init__(self, params: Any, prev_params: Any):
         self.params = params
+        self.prev_params = prev_params
 
         if self.compute_on_init:
             self._invoke()
@@ -17,7 +18,7 @@ class ComputeValueTrainerExtension(TrainerExtension, ABC):
         assert isinstance(_param_name, str), "param_name must return a string"
         if not hasattr(self.params, _param_name) or getattr(self.params, _param_name) is None:
             value = self.compute()
-            setattr(self.params, self.param_name, value)
+            setattr(self.params, _param_name, value)
 
     @abstractproperty
     def param_name(self) -> str:
@@ -52,3 +53,19 @@ class ComputeValueTrainerExtension(TrainerExtension, ABC):
         if self.compute_on_before_fit:
             self._invoke(x, y)
         return x, y
+
+    @property
+    def current_value(self):
+        _param_name = self.param_name
+        assert isinstance(_param_name, str), "param_name must return a string"
+
+        return getattr(self.params, _param_name, None)
+
+    @property
+    def prev_value(self):
+        _param_name = self.param_name
+        assert isinstance(_param_name, str), "param_name must return a string"
+
+        if self.prev_params is None:
+            return None
+        return getattr(self.prev_params, _param_name, None)

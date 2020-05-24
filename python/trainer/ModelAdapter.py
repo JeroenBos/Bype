@@ -72,19 +72,18 @@ class ParameterizedModelAdapter(ModelAdapter):
     """
 
     def __init__(self, params: Params):
-        self._fit_args = params.fit_args.to_dict()
-        self._compile_args = params.compile_args.to_dict()
+        self.params = params
 
     @sealed
     @override
     def get_fit_args(self) -> Dict:
-        result = {**super().get_fit_args(), **self._fit_args}
+        result = {**super().get_fit_args(), **self.params.fit_args.to_dict()}
         return result
 
     @sealed
     @override
     def get_compile_args(self) -> Dict:
-        return {**super().get_compile_args(), **self._compile_args}
+        return {**super().get_compile_args(), **self.params.compile_args.to_dict()}
 
 
 class ParameterizeModelExtension(TrainerExtension):
@@ -120,7 +119,7 @@ class ParameterizedCreateModelBase(ParameterizeModelExtension, ABC):
 
 @dataclass
 class FitArgs(ArgsAdapter):
-    epochs: int
+    epochs: Optional[int] = None  # at some point this is mandatory though
     callbacks: List = field(default_factory=list)
 
 @dataclass

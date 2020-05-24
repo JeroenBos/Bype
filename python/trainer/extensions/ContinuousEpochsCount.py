@@ -1,48 +1,57 @@
-from typing import Optional
+from typing import Any, Optional
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.callbacks import Callback  # noqa
 from keyboard._3_scoring import Metrics, ValidationData
 from trainer._trainer import TrainerExtension
 from keyboard._0_types import SwipeEmbeddingDataFrame
 from trainer.ModelAdapter import FitArgs
+from trainer.extensions.ComputeValueExtension import ComputeValueTrainerExtension
+from utilities import read_all, overwrite_all, override
 
+continued_epoch_file_name = 'epoch_count.txt'
 
 class Params:
-    validation_data: SwipeEmbeddingDataFrame
     fit_args: FitArgs
+    filebased_continued_epoch_counting: Optional[bool]
+    log_dir: str
 
 
 
-class ContinuousEpochCountExtensions(TrainerExtension):
+class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
 
-    def __init__(self, params: Params, initial_initial_epoch=0):
-        super().__init__()
-        self.params = params
-        self._initial_initial_epoch = initial_initial_epoch
+    def __init__(self, params: Params, prev_params: Optional[Params]):
+        super().__init__(params, prev_params)
+        self.params.fit_args.callbacks.append(SetEpochIndexCallback(params))
 
+        # totally optional:
+        self.params.initial_epoch_count = self.prev_value or 0   # prev_value is prev_epoch_count
 
-    def _state_name(self): 
-        return 'initial_epoch_count'
-
-
-    def initialize(self, prev_params: Optional[Params]):
-        self.params.fit_args.callbacks.append(SetEpochIndexCallback(self.params))
-
-        if prev_params is None:
-            initial_epoch = self._initial_initial_epoch
-        else:
-            last_epoch = getattr(prev_params, self._state_name)
-            initial_epoch = last_epoch + prev_params.i_epoch
-
-        setattr(self.params, self._state_name, initial_epoch)
-        self.params.fit_args.initial_epoch = initial_epoch
+    @property
+    def path(self) -> str:
+        return self.params.log_dir + continued_epoch_file_name
 
 
-    def after_compile(self, model: Model) -> None:
-        self.params.fit_args.callbacks.append(Metrics(
-            validation_data=self.params.validation_data,
-            log_dir=self.params.log_dir,
-        ))
+    @property
+    def param_name(self) -> str:
+        return 'epoch_count'
+
+    def compute(self) -> Any:
+        # Does not get called when epoch_count is already set
+        if self.prev_params is None:
+            if getattr(self.params, 'filebased_continued_epoch_counting', False):
+                try:
+                    return int(read_all(self.path))
+                except:  # noqa
+                    pass
+            return 0
+
+        return self.prev_value + 1
+
+    def after_fit(self, history, x, y):
+        overwrite_all(self.path, str(self.current_value))
+        return super().after_fit(history, x, y)
+
+
 
 
 class SetEpochIndexCallback(Callback):
@@ -50,4 +59,20 @@ class SetEpochIndexCallback(Callback):
         self._params = params
 
     def on_epoch_end(self, batch, logs={}):
-        self._params.i_epoch += 1
+        self._params.epoch_count += 1
+
+
+class ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension(TrainerExtension):
+
+    def __init__(self, params):
+        self.params = params
+
+    def before_fit(self, x, y):
+        initial_epoch = getattr(self.params, 'epoch_count', 0)
+        n_epochs = getattr(self.params, 'n_epochs')
+        assert n_epochs is not None, "'n_epochs' is mandatory"
+
+        self.params.fit_args.initial_epoch = initial_epoch
+        self.params.fit_args.epochs = initial_epoch + n_epochs
+
+        return x, y
