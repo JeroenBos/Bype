@@ -103,7 +103,6 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ComputeSwipeFeatureCount(params, prev_params)
         yield AllowDataSources()
         yield PreprocessorExtension(params)
-        yield AllowDataSources()
         yield BalanceWeights(params)
 
         # model generation:
