@@ -1,3 +1,4 @@
+from unordereddataclass import mydataclass
 from typing import Any, Optional
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.callbacks import Callback  # noqa
@@ -10,9 +11,10 @@ from utilities import read_all, overwrite_all, override
 
 continued_epoch_file_name = 'epoch_count.txt'
 
+@mydataclass
 class Params:
     fit_args: FitArgs
-    filebased_continued_epoch_counting: Optional[bool]
+    filebased_continued_epoch_counting: Optional[bool] = None
     log_dir: str
 
 

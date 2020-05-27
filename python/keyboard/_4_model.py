@@ -1,3 +1,4 @@
+from unordereddataclass import mydataclass
 from typing import List, Union, Optional, Callable, Type
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback  # noqa
@@ -21,7 +22,8 @@ from trainer.types import IModel
 from trainer.trainer import TrainerExtension
 
 
-class Params(ParameterizeModelParams):
+@mydataclass
+class Params:
     max_timesteps: int
     swipe_feature_count: int
 

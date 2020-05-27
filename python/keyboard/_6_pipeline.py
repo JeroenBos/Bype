@@ -1,11 +1,11 @@
-from dataclasses import dataclass
+from unordereddataclass import mydataclass
 import math
 import init_seed
 from keyboard._0_types import SwipeEmbeddingDataFrame
 from keyboard._1a_generate import perfect_swipes, get_timesteps
 from keyboard._2_transform import Preprocessor
 from keyboard._3_scoring import Metrics, ValidationData
-from keyboard._4_model import ModelFactory
+from keyboard._4_model import ModelFactory, Params as CreateModelParams
 from keyboard._4a_word_input_model import WordStrategy, CappedWordStrategy
 from typing import List, Union, Any, Optional, Iterable, Callable
 from time import time
@@ -14,7 +14,7 @@ import pandas as pd
 from os import path
 from trainer.trainer import TrainingsPlanBase
 from trainer.types import TrainerExtension
-from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs
+from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs, Params as ContinuousEpochCountParams
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
 from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
 from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension
@@ -23,36 +23,32 @@ from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as 
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData
 from trainer.extensions.tensorboard import TensorBoardExtension
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
+from trainer.paramsbase import ParamsBase
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
 
-class Params:   
-    tag: Optional[str] = None 
-    # required by GenerateData:
+# initializing with `MISSING` means it's mandatory: it must be provided in __init__ upon constructing the instance
+@mydataclass    
+class DataGenenerationParams:
     n_words: int
     n_chars: int
     verify: Optional[bool] = False
-    # required by PreprocessorExtension:
+
+@mydataclass    
+class PreprocessorParams:
     n_epochs: int
     word_input_strategy: WordStrategy
-    #
-    fit_args = FitArgs()
-    compile_args = CompileArgs()
+
+@mydataclass
+# TODO: design mydataclass such that all base classes are considered to be dataclasses too
+class Params(DataGenenerationParams, 
+             PreprocessorParams, 
+             CreateModelParams,
+             ContinuousEpochCountParams,
+             ParamsBase):
+    tag: Optional[str] = None 
     log_dir: str = 'logs/'
     convolution_fraction: float = 1.0
-
-    def __init__(self, **kw):
-        mandatory = ['n_words', 'n_chars', 'word_input_strategy']
-        for m in mandatory:
-            assert m in kw, f"Missing mandatory argument '{m}'"
-
-        self.__dict__.update(kw)
-
-    def __getattribute__(self, name: str):
-        value = super().__getattribute__(name)
-        if not name.startswith('__') and isinstance(value, Callable):
-            return value()
-        return value
 
     @property
     def best_model_path(self) -> str:
@@ -64,7 +60,6 @@ class Params:
         """ The path from which to load the initial weights to be applied to the model after compilation. """
         return self.best_model_path
 
-# best_model_path ?
 
 
 params = Params(
@@ -78,7 +73,7 @@ params = Params(
     ),
     max_timesteps=108,  # HACK
     filebased_continued_epoch_counting=True,
-
+    swipe_feature_count=13,
 )
 
 
@@ -96,7 +91,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ApplyInitialEpochAndNumEpochToFitArgs(params)
         yield AddValidationDataScoresToTensorboard(params)
         yield SaveBestModel(params)
-        
+
         # data generation:
         yield GenerateData(params)
         yield SetMaxTimestep(params, prev_params)
@@ -110,7 +105,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ParameterizeModel(params)
         yield LoadInitialWeights(params)
 
-        
+
 
 
 TrainingsPlan().execute()
