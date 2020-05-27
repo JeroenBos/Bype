@@ -19,6 +19,7 @@ from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExten
 from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
 from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
+from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData
 from trainer.extensions.tensorboard import TensorBoardExtension
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
@@ -95,7 +96,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ApplyInitialEpochAndNumEpochToFitArgs(params)
         yield AddValidationDataScoresToTensorboard(params)
         yield SaveBestModel(params)
-
+        
         # data generation:
         yield GenerateData(params)
         yield SetMaxTimestep(params, prev_params)
@@ -103,6 +104,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield AllowDataSources()
         yield PreprocessorExtension(params)
         yield AllowDataSources()
+        yield BalanceWeights(params)
 
         # model generation:
         yield ModelFactory(params)
