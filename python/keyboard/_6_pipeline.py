@@ -24,6 +24,7 @@ from trainer.extensions.GenerateData import GenerateDataTrainerExtension as Gene
 from trainer.extensions.tensorboard import TensorBoardExtension
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
+from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
 
 class Params:   
     tag: Optional[str] = None 
@@ -32,11 +33,11 @@ class Params:
     n_chars: int
     verify: Optional[bool] = False
     # required by PreprocessorExtension:
-    word_input_strategy: WordStrategy
     n_epochs: int
+    word_input_strategy: WordStrategy
+    #
     fit_args = FitArgs()
     compile_args = CompileArgs()
-    #
     log_dir: str = 'logs/'
     convolution_fraction: float = 1.0
 
@@ -52,6 +53,11 @@ class Params:
         if not name.startswith('__') and isinstance(value, Callable):
             return value()
         return value
+
+    @property
+    def best_model_path(self) -> str:
+        """ The path at which the best model is saved. """
+        return self.log_dir + 'best_model.h5'
 
 # best_model_path ?
 
@@ -84,6 +90,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield EpochsKeepCounting(params, prev_params)
         yield ApplyInitialEpochAndNumEpochToFitArgs(params)
         yield AddValidationDataScoresToTensorboard(params)
+        yield SaveBestModel(params)
 
         # data generation:
         yield GenerateData(params)
@@ -97,6 +104,8 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ModelFactory(params)
         yield ParameterizeModel(params)
         yield LoadInitialWeights(params)
+
+        
 
 
 TrainingsPlan().execute()
