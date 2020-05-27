@@ -39,6 +39,10 @@ class ModelAdapter(IModelAdapter, ABC):
 
             def fit(self, x, y):
                 return adapter.fit(model, x, y)
+
+            def __getattr__(self, name):
+                return getattr(model, name) 
+
         return ConcreteModelAdapter()
 
 

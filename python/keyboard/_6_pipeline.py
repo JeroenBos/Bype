@@ -7,7 +7,6 @@ from keyboard._2_transform import Preprocessor
 from keyboard._3_scoring import Metrics, ValidationData
 from keyboard._4_model import ModelFactory
 from keyboard._4a_word_input_model import WordStrategy, CappedWordStrategy
-from keyboard._4b_initial_weights import ReloadWeights
 from typing import List, Union, Any, Optional, Iterable, Callable
 from time import time
 from tensorflow.keras.callbacks import LearningRateScheduler  # noqa
@@ -58,6 +57,11 @@ class Params:
     def best_model_path(self) -> str:
         """ The path at which the best model is saved. """
         return self.log_dir + 'best_model.h5'
+
+    @property
+    def initial_weights_path(self) -> str:
+        """ The path from which to load the initial weights to be applied to the model after compilation. """
+        return self.best_model_path
 
 # best_model_path ?
 
