@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 from trainer.trainer import TrainerExtension
 from keyboard._0_types import SwipeEmbeddingDataFrame, SwipeConvolutionDataFrame
 from keyboard._1a_generate import perfect_swipes
@@ -12,23 +12,22 @@ from utilities import memoize
 class Params:
     n_words: int
     n_chars: int
-    verify: Optional[bool] = None
+    verify: bool = False
+    convolution_fraction: Optional[Union[int, float]] = 1.0
+
+    @property
+    def validation_data(self):
+        return GenerateDataTrainerExtension_compute_validation_data(data=self.data(), preprocessor=self.preprocessor)
+
+    @property
+    def convolved_data(self):
+        return GenerateDataTrainerExtension_compute_convolved_data(data=self.data(), verify=self.verify, fraction=self.convolution_fraction)
+
 
 
 class GenerateDataTrainerExtension(TrainerExtension):
-    def __init__(self, params: Params):
-        self.params = params
-        self.params.data = lambda: GenerateDataTrainerExtension_compute_data(n_words=params.n_words, n_chars=params.n_chars, verify=self.verify)
-        self.params.validation_data = lambda: GenerateDataTrainerExtension_compute_validation_data(data=self.params.data, preprocessor=self.params.preprocessor)
-        self.params.convolved_data = lambda: GenerateDataTrainerExtension_compute_convolved_data(data=self.params.data, verify=self.verify, fraction=self.fraction)
-
-    @property
-    def verify(self) -> bool:
-        return hasattr(self.params, 'verify') and self.params.verify is True
-
-    @property
-    def fraction(self) -> float:
-        return self.params.convolution_fraction
+    def initialize(self):
+        self.params.data = lambda: GenerateDataTrainerExtension_compute_data(n_words=self.params.n_words, n_chars=self.params.n_chars, verify=self.params.verify)
 
     def before_fit(self, x, y):
         assert x is None and y is None, "Data was already created"

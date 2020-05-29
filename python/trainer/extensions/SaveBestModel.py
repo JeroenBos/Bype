@@ -13,13 +13,13 @@ class Params:
 
 
 class SaveBestModelTrainerExtension(TrainerExtension):
-    def __init__(self, params: Params):
-        assert isinstance(params.best_model_path, str) 
-        assert params.best_model_path.endswith('.h5')
+    def initialize(self):
+        assert isinstance(self.params.best_model_path, str) 
+        assert self.params.best_model_path.endswith('.h5')
 
-        params.fit_args.callbacks.append(
+        self.params.fit_args.callbacks.append(
             _SaveBestModelCallback(
-                file_path=params.best_model_path,
+                file_path=self.params.best_model_path,
                 #  monitor=self.params.monitor, 
                 #  save_best_only=self.params.save_best_only,
             )

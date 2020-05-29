@@ -12,10 +12,10 @@ class Params:
     preprocessor: Preprocessor
 
 class SavePreprocessorTrainerExtension(TrainerExtension):
-    def __init__(self, params: Params):
-        assert isinstance(params.log_dir, str)
-        assert isinstance(params.best_model_path, str)
-        assert isinstance(params.preprocessor, Preprocessor)
+    def initialize(self):
+        assert isinstance(self.params.log_dir, str)
+        assert isinstance(self.params.best_model_path, str)
+        assert isinstance(self.params.preprocessor, Preprocessor)
 
         preprocessor_path = get_processor_path(self.params.log_dir + self.params.best_model_path)
         self.params.fit_args.callbacks.append(

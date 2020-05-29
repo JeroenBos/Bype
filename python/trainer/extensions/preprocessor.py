@@ -16,10 +16,8 @@ class Params:
 
 
 class PreprocessorTrainerExtension(TrainerExtension):
-    def __init__(self, params: Params):
-        self.params = params
-
-        self.params.preprocessor = self.create_preprocessor
+    def initialize(self):
+        self.params.preprocessor = self.create_preprocessor()
 
     def create_preprocessor(self):
         return Preprocessor(max_timesteps=self.params.max_timesteps,

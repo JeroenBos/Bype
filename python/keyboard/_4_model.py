@@ -16,7 +16,7 @@ from tensorflow.python.keras import layers, models  # noqa
 from DataSource import DataSource
 # Input to an LSTM layer always has the (batch_size, timesteps, features) shape.
 # from python.keyboard.hp import Params, MLModel
-from trainer.ModelAdapter import Params as ParameterizeModelParams
+from trainer.ModelAdapter import ParamsBase
 from utilities import override
 from trainer.types import IModel
 from trainer.trainer import TrainerExtension
@@ -29,8 +29,9 @@ class Params:
 
 
 class ModelFactory(TrainerExtension):
-    def __init__(self, params):
-        self.params = params
+    @property
+    def params(self) -> Params:
+        return super().params
 
     @override
     def create_model(self, model: Optional[IModel]) -> IModel:

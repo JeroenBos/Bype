@@ -16,14 +16,17 @@ class Params:
     fit_args: FitArgs
     filebased_continued_epoch_counting: Optional[bool] = None
     log_dir: str
-
+    # set initial_epoch_count
 
 
 class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
+    @property
+    def params(self) -> Params:
+        return super().params
 
-    def __init__(self, params: Params, prev_params: Optional[Params]):
-        super().__init__(params, prev_params)
-        self.params.fit_args.callbacks.append(SetEpochIndexCallback(params))
+    def initialize(self):
+        super().initialize()
+        self.params.fit_args.callbacks.append(SetEpochIndexCallback(self.params))
 
         # totally optional:
         self.params.initial_epoch_count = self.prev_value or 0   # prev_value is prev_epoch_count
@@ -65,9 +68,6 @@ class SetEpochIndexCallback(Callback):
 
 
 class ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension(TrainerExtension):
-
-    def __init__(self, params):
-        self.params = params
 
     def before_fit(self, x, y):
         initial_epoch = getattr(self.params, 'epoch_count', 0)

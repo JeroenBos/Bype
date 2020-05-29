@@ -5,7 +5,7 @@ import numpy as np
 from tensorflow.keras import Model  # noqa
 from functools import reduce
 from utilities import memoize, override, virtual, sealed, abstract
-from trainer.types import IModel, X, Y, History, TrainerExtension
+from trainer.types import IModel, X, Y, TParams, History, TrainerExtension
 
 # Trainer and TrainerBase _could_ be used outside of this module, but probably shouldn't
 class TrainerBase(ABC):
@@ -14,9 +14,10 @@ class TrainerBase(ABC):
     def get_extensions(self) -> Iterable[TrainerExtension]:
         pass
 
-    def _initialize(self):
+    @sealed
+    def initialize(self):
         for extension in self.get_extensions():
-            extension.initialize(self)
+            extension.initialize()
 
     @sealed
     def create_model(self) -> IModel:
@@ -63,6 +64,7 @@ class TrainerBase(ABC):
             extension.after_fit(history, x, y)
 
     def train(self, x: X, y: Y) -> History:
+        self.initialize()
         model = self.create_model()
         self.compile(model)
         return self.fit(model, x, y)
@@ -89,17 +91,31 @@ class ParameterizedTrainer(TrainerBase):
         return self._extensions
 
 
-TParams = TypeVar('TParams')
-
-
 class TrainingsPlanBase(ABC):
     @abstractproperty
     def params(self) -> Iterable[TParams]:
         raise ABC
 
     @abstractmethod
-    def get_extensions(self, params: TParams, prev_params: Optional[TParams]) -> Iterable[TrainerExtension]:
+    def get_extensions(self, params: TParams, prev_params: Optional[TParams]) -> Iterable[Union[TrainerExtension, type(TrainerExtension)]]:
         raise ABC
+
+    def _get_extension(self, params: TParams, prev_params: Optional[TParams]) -> Iterable[TrainerExtension]:
+        """ Wrapper around get_extensions which calls __init__ if necessary, and sets the params and prev_params. """
+
+        for extension_or_extension_type in self.get_extensions(params, prev_params):
+
+            # instantiate the extension if it's a type:
+            if isinstance(extension_or_extension_type, type):
+                extension = extension_or_extension_type()
+            else:
+                extension = extension_or_extension_type
+            assert isinstance(extension, TrainerExtension), f"Expected only instances or types of type TrainerExtension, but got '{type(extension)}'"
+
+            # set the backing attributes:
+            setattr(extension, '_params', params)
+            setattr(extension, '_prev_params', prev_params)
+            yield extension
 
     def execute(self, data: Optional[Tuple[X, Y]] = None):
         """
@@ -110,7 +126,7 @@ class TrainingsPlanBase(ABC):
         data = data if data is not None else (None, None)
         prev_params = None
         for params in self.params:
-            extensions = list(self.get_extensions(params, prev_params))
+            extensions = list(self._get_extension(params, prev_params))
 
             trainer = Trainer(extensions)
             trainer.train(*data)

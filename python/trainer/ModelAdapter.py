@@ -54,7 +54,8 @@ class ArgsAdapter:
 
 
 
-class Params:
+@dataclass
+class ParamsBase:
     fit_args: ArgsAdapter
     compile_args: ArgsAdapter
 
@@ -65,7 +66,7 @@ class ParameterizedModelAdapter(ModelAdapter):
     This class is reponsible for extracting arguments from `TParams` and applying them to a model.
     """
 
-    def __init__(self, params: Params):
+    def __init__(self, params):
         self.params = params
 
     @sealed
@@ -82,9 +83,6 @@ class ParameterizedModelAdapter(ModelAdapter):
 
 class ParameterizeModelExtension(TrainerExtension):
     """ Ensures that `params.fit_args` and `params.compile_args` are passed to the `model.fit` and `model.compile` calls. """
-
-    def __init__(self, params: Params):
-        self.params = params
 
     @sealed
     def create_model(self, model: IModel) -> IModel:

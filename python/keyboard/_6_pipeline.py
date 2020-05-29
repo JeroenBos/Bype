@@ -14,25 +14,19 @@ import pandas as pd
 from os import path
 from trainer.trainer import TrainingsPlanBase
 from trainer.types import TrainerExtension
+from trainer.ModelAdapter import ParamsBase
 from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs, Params as ContinuousEpochCountParams
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
 from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
 from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
 from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
-from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData
+from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData, Params as DataGenenerationParams
 from trainer.extensions.tensorboard import TensorBoardExtension
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
-from trainer.paramsbase import ParamsBase
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
 
-# initializing with `MISSING` means it's mandatory: it must be provided in __init__ upon constructing the instance
-@mydataclass    
-class DataGenenerationParams:
-    n_words: int
-    n_chars: int
-    verify: Optional[bool] = False
 
 @mydataclass    
 class PreprocessorParams:
@@ -82,28 +76,28 @@ class TrainingsPlan(TrainingsPlanBase):
     def params(self) -> Iterable[Params]:
         yield params
 
-    def get_extensions(self, params: Params, prev_params: Optional[Params]) -> Iterable[TrainerExtension]:
+    def get_extensions(self, params: Params, prev_params: Optional[Params]) -> Iterable[Union[TrainerExtension, type(TrainerExtension)]]:
         # initialization and callback registration:
-        yield TagWithTimestamp(params)
-        yield LogDirPerData(params)
-        yield TensorBoardExtension(params)
-        yield EpochsKeepCounting(params, prev_params)
-        yield ApplyInitialEpochAndNumEpochToFitArgs(params)
-        yield AddValidationDataScoresToTensorboard(params)
-        yield SaveBestModel(params)
+        yield TagWithTimestamp
+        yield LogDirPerData
+        yield TensorBoardExtension
+        yield EpochsKeepCounting
+        yield ApplyInitialEpochAndNumEpochToFitArgs
+        yield AddValidationDataScoresToTensorboard
+        yield SaveBestModel
 
         # data generation:
-        yield GenerateData(params)
-        yield SetMaxTimestep(params, prev_params)
-        yield ComputeSwipeFeatureCount(params, prev_params)
+        yield GenerateData()
+        yield SetMaxTimestep()
+        yield ComputeSwipeFeatureCount()
         yield AllowDataSources()
-        yield PreprocessorExtension(params)
-        yield BalanceWeights(params)
+        yield PreprocessorExtension()
+        yield BalanceWeights()
 
         # model generation:
-        yield ModelFactory(params)
-        yield ParameterizeModel(params)
-        yield LoadInitialWeights(params)
+        yield ModelFactory
+        yield ParameterizeModel
+        yield LoadInitialWeights
 
 
 

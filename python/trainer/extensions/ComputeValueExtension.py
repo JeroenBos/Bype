@@ -6,12 +6,6 @@ from utilities import virtual, sealed
 
 
 class ComputeValueTrainerExtension(TrainerExtension, ABC):
-    def __init__(self, params: Any, prev_params: Any):
-        self.params = params
-        self.prev_params = prev_params
-
-        if self.compute_on_init:
-            self._invoke()
 
     def _invoke(self):
         _param_name = self.param_name
@@ -43,15 +37,21 @@ class ComputeValueTrainerExtension(TrainerExtension, ABC):
     def compute_on_before_compile(self) -> bool:
         return False
 
+
+    @sealed
+    def initialize(self) -> None:
+        if self.compute_on_init:
+            self._invoke()
+
     @sealed
     def before_compile(self, model: IModel) -> None:
         if self.compute_on_before_compile:
-            self._invoke(model)
+            self._invoke()
 
     @sealed
     def before_fit(self, x: X, y: Y) -> Tuple[X, Y]:
         if self.compute_on_before_fit:
-            self._invoke(x, y)
+            self._invoke()
         return x, y
 
     @property

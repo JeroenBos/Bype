@@ -10,9 +10,6 @@ from utilities import override
 
 
 class LoadInitialWeightsTrainerExtension(TrainerExtension):
-    def __init__(self, params):
-        self.params = params
-
     @property
     def _initial_weights_path(self):
         return getattr(self.params, "initial_weights_path", None)

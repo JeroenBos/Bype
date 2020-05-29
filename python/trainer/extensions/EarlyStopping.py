@@ -4,8 +4,7 @@ from utilities import override
 
 
 class EarlyStoppingTrainerExtension(TrainerExtension):
-    def __init__(self, params):
-        pass
+    pass
 
 class EarlyStoppingCallback(EarlyStopping):
     pass  # not implemented
