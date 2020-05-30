@@ -5,7 +5,7 @@ import pandas as pd
 from abc import ABC
 import numpy as np
 from DataSource import DataSource
-from utilities import create_empty_df, bind
+from utilities import create_empty_df, bind, groupby
 
 # keras.Layers.Marking doesn't support math.nan, nor the infinities for that matter, so I just use a different number then
 myNaN = 12345678.9
@@ -124,7 +124,7 @@ class MyDataFrame(pd.DataFrame):
             for column in self.columns:
                 value.__dict__[column] = self[column][i]
             yield value
-    
+
     def __hash__(self):
         return id(self)
 
@@ -262,6 +262,17 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
             result.correct[i] = True
         return result
 
+    @staticmethod
+    def create_from_rows(rows: List[Tuple[str, SwipeDataFrame, bool]], verify=False) -> "SwipeEmbeddingDataFrame":
+
+        result = SwipeEmbeddingDataFrame.create_empty(len(rows), verify=verify)
+        for i, row in enumerate(rows):
+            assert isinstance(row.words, str) and isinstance(row.correct, bool)
+            result.words[i] = row.words
+            result.swipes[i] = row.swipes
+            result.correct[i] = row.correct
+        return result
+
     def get_train(self):
         return self
 
@@ -315,6 +326,18 @@ class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
         bind(data, SwipeConvolutionDataFrame.convolve_data)
         return data
 
+    def groupby(self, keySelector: Callable[[pd.Series], Union[str, int]]) -> List["SwipeEmbeddingDataFrame"]:  # the pd.Series contains swipes, words and corrects
+        grouped: Dict[int, List[Tuple[str, SwipeDataFrame, bool]]] = groupby(self, keySelector)
+
+        result = [SwipeEmbeddingDataFrame.create_from_rows(rows) for rows in grouped.values()]
+        return result
+
+    def groupby_timesteps(self) -> List["SwipeEmbeddingDataFrame"]:
+        return self.groupby(get_timesteps)
+
+
+def get_timesteps(d):
+    return len(d.swipes)
 
 
 class SwipeConvolutionDataFrame(SwipeEmbeddingDataFrame):

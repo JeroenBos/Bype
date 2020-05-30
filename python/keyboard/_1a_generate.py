@@ -12,7 +12,6 @@ from time import time
 from utilities import interpolate, memoize, print_repr_on_call, windowed_2
 import string
 from trainer.types import TrainerExtension
-from keyboard._3_scoring import ValidationData
 
 
 def generate_taps_for(word: str, i=None) -> SwipeDataFrame:

@@ -14,24 +14,45 @@ from tensorflow.python.framework.ops import disable_eager_execution  # noqa
 from tensorflow.python.framework import ops  # noqa
 from tensorflow.python.ops import math_ops  # noqa
 from tensorflow.python.keras import backend as K  # noqa
+from utilities import override
 
 
 class ValidationData:
     def __init__(self, unconvolved_data: SwipeEmbeddingDataFrame, preprocessor: Preprocessor):
         assert isinstance(unconvolved_data, SwipeEmbeddingDataFrame)
-        self.original_length = len(unconvolved_data)
         self._inverse_indices = []
-        self._unencoded_convolved_data = unconvolved_data.convolve(preprocessor.convolution_fraction,
-                                                                   inverse_indices_out=self._inverse_indices)
-        self._encoded_convolved_data = preprocessor.preprocess(self._unencoded_convolved_data)
-        assert len(self._inverse_indices) == len(self._unencoded_convolved_data)
-        assert self._encoded_convolved_data.shape[0] == len(self._unencoded_convolved_data)
+        self._unencoded_convolved_data_words = []
+        self._encoded_convolved_data = None  # set in `self.add`
+
+        self.add(unconvolved_data, preprocessor)
+
+        assert len(self._inverse_indices) == len(self._unencoded_convolved_data_words)
+        assert self._encoded_convolved_data.shape[0] == len(self._unencoded_convolved_data_words)
+
+    def add(self, unconvolved_data: SwipeEmbeddingDataFrame, preprocessor: Preprocessor):
+        _inverse_indices = []
+        _unencoded_convolved_data = unconvolved_data.convolve(preprocessor.convolution_fraction,
+                                                              inverse_indices_out=_inverse_indices)
+
+        offset = (len(self._unencoded_convolved_data_words), len(self._unencoded_convolved_data_words), len(self._inverse_indices))
+        self._inverse_indices.extend((i[0] + offset[0], i[1] + offset[1], i[2] + offset[2]) for i in _inverse_indices)
+
+        _unencoded_convolved_data_words = list(_unencoded_convolved_data.words)
+        self._unencoded_convolved_data_words += _unencoded_convolved_data_words
+
+        _encoded_convolved_data = preprocessor.preprocess(_unencoded_convolved_data)
+        self._encoded_convolved_data = np.append(self._encoded_convolved_data, _encoded_convolved_data) if self._encoded_convolved_data else _encoded_convolved_data
+
+
+    @property
+    def original_length(self):
+        return len(self._unencoded_convolved_data_words)
 
     def __getitem__(self, i):
         return self._data[i]
 
     def get_decoded(self, i_in_convolved: int):
-        return self._unencoded_convolved_data.words[i_in_convolved]
+        return self._unencoded_convolved_data_words[i_in_convolved]
 
     def decode(self, t):
         raise ValueError('not implemented')
@@ -60,13 +81,16 @@ class Metrics(Callback):
             self.model = model
         self.losses: List[float] = []
 
+    @override
     def on_train_begin(self, logs={}):
         self._data = []
         self.losses.clear()
 
+    @override
     def on_train_end(self, logs={}):
         self.print_misinterpreted_words()
 
+    @override
     def on_epoch_end(self, batch, logs={}):
         if (batch % 10) == 0:
             places, occurrences, y_predict = self._get_places()

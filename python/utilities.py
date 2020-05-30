@@ -5,6 +5,8 @@ from functools import lru_cache
 import inspect 
 from pathlib import Path
 import os
+from tensorflow.keras import Model  # noqa
+
 
 def print_fully(df: pd.DataFrame) -> None:
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
@@ -247,3 +249,25 @@ def virtual(f):
 def abstract(f):
     """ Indicates that the function is abstract. A default implementation can be provided though. """
     return f
+
+
+
+
+def groupby(data: pd.DataFrame, 
+            keySelector: Callable[[Any], Union[str, int]],  # Any = the a row element in `data`
+            valueSelector: Callable[[int, Any], Any] = (lambda _, row: row)  # from index and row to anything (defaults to row)
+            ) -> Dict[Union[str, int], List[Any]]:  # Any here is TResult
+    """
+    I can't figure out how to do this in the fucking pandas library so I'll do it myself. 
+    TODO: remove all usage of pandas library.
+    """
+
+    result = dict()
+    for i, row in data.iterrows():
+        key = keySelector(row)
+        value = valueSelector(i, row)
+        if key in result:
+            result[key].append(value)
+        else:
+            result[key] = [value]
+    return result
