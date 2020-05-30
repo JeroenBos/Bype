@@ -4,13 +4,14 @@ from typing import Union
 import numpy as np
 
 
-def copy_weights(model_to_init: Model, model_to_copy_from: Union[str, Model]) -> None:
+def copy_weights(model_to_init: Model, model_to_copy_from: Union[str, Model]) -> bool:
+    """ Returns whether it was a success. """
     if isinstance(model_to_copy_from, str):
         try:
             model_to_copy_from = load_model(model_to_copy_from)
         except Exception as e:  # noqa
             print("ERROR: couldn't load weights file")
-            return
+            return False
 
 
     if len(model_to_copy_from.layers) != len(model_to_init.layers):
@@ -18,6 +19,8 @@ def copy_weights(model_to_init: Model, model_to_copy_from: Union[str, Model]) ->
 
     for _to, _from in zip(model_to_init.layers, model_to_copy_from.layers):
         _copy_weights(_from, _to)
+    
+    return True
 
 
 def _copy_weights(_from: Layer, _to: Layer) -> None:
