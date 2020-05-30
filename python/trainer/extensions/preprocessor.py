@@ -19,9 +19,7 @@ class PreprocessorParams:
 
     @property
     def swipe_feature_count(self):
-        base_feature_count = 3 
-        word_feature_count = self.word_input_strategy.get_feature_count
-        return base_feature_count + word_feature_count
+        return self.preprocessor.swipe_feature_count
 
 class PreprocessorTrainerExtension(TrainerExtension):
     def initialize(self):

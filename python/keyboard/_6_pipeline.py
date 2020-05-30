@@ -89,7 +89,6 @@ class TrainingsPlan(TrainingsPlanBase):
 
         # data generation:
         yield GenerateData()
-        yield ComputeSwipeFeatureCount()
         yield AllowDataSources()
         yield PreprocessorExtension()
         yield BalanceWeights()
