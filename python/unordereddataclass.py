@@ -36,14 +36,15 @@ def mydataclass(cls, *args, **kwargs):
     """
     _original_init_fn = dataclasses._init_fn
 
-    def cls_has_property_with_name(property_name) -> bool:
+    def cls_has_property_with_name(property_name: str) -> bool:
+        assert isinstance(property_name, str)
         properties = inspect.getmembers(cls, lambda o: isinstance(o, property))
 
-        # p[0] should be read as `property.name`
+        # p[0] is to be read as `property.name`
         return next((p for p in properties if p[0] == property_name), None) is not None
 
     def _init_fn_override(fields, *args):
-        fields = list(f for f in fields if not cls_has_property_with_name(f))
+        fields = list(f for f in fields if not cls_has_property_with_name(f.name))
         return _original_init_fn(fields, *args)
 
 
