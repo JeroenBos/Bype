@@ -10,6 +10,9 @@ from utilities import override
 
 
 class LoadInitialWeightsTrainerExtension(TrainerExtension):
+    def __init__(self, on_first_stage=True):
+        self._on_first_stage = on_first_stage
+
     @property
     def _initial_weights_path(self):
         return getattr(self.params, "initial_weights_path", None)
@@ -19,14 +22,15 @@ class LoadInitialWeightsTrainerExtension(TrainerExtension):
         assert model is not None, "A model must exist to load weights into it"
         assert self._initial_weights_path is not None, "No initial weights path provided"
 
-        path = self._initial_weights_path
-        try:
-            if not os.path.exists(path):
-                logging.error(f"File '{path}' does not exist")
-        except Exception as e:
-            logging.error(f"Error in loading file '{path}'")
-            logging.error(e)
+        if not self.is_first_stage or self._on_first_stage:
+            path = self._initial_weights_path
+            try:
+                if not os.path.exists(path):
+                    logging.error(f"File '{path}' does not exist")
+            except Exception as e:
+                logging.error(f"Error in loading file '{path}'")
+                logging.error(e)
 
-        # Load the h5 file into the specified model:
-        copy_weights(model, path)
+            # Load the h5 file into the specified model:
+            copy_weights(model, path)
         return model
