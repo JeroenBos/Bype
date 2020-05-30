@@ -153,11 +153,11 @@ class Preprocessor:
         # intermediate has shape ndarray[word, timestep]List[feature] which isn't much better than processed tbh
 
 
-        shape = [len(processed), max_timestep, self.swipe_feature_count]
+        shape = [len(processed), self.max_timesteps, self.swipe_feature_count]
         result = np.empty(shape, dtype=np.float)
         val = result[0, 0, 0]  # noqa
         for w in range(len(processed)):
-            for t in range(max_timestep):
+            for t in range(max_timestep):  # note that this is explicitly not self.max_timesteps; the excess is left masked
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
