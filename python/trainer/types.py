@@ -48,6 +48,11 @@ class TrainerExtension:
 
         return self._prev_params
 
+    @sealed
+    @property
+    def is_first_stage(self) -> bool:
+        return self.prev_params is None
+
     @virtual
     def initialize(self) -> None:
         pass
