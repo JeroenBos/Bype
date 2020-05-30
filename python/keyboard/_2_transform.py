@@ -29,7 +29,7 @@ class Preprocessor:
         """
         :param max_timesteps: The maximum number of allowed timesteps. None for infinity. 
         """
-        self.swipe_feature_count = 3 + word_input_strategy.get_feature_count
+        self.swipe_feature_count = 3 + word_input_strategy.feature_count
         self.max_timesteps = max_timesteps
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
@@ -155,7 +155,6 @@ class Preprocessor:
 
         shape = [len(processed), self.max_timesteps, self.swipe_feature_count]
         result = np.empty(shape, dtype=np.float)
-        val = result[0, 0, 0]  # noqa
         for w in range(len(processed)):
             for t in range(max_timestep):  # note that this is explicitly not self.max_timesteps; the excess is left masked
                 for f in range(self.swipe_feature_count):

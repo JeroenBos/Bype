@@ -17,7 +17,7 @@ from trainer.types import TrainerExtension
 from trainer.ModelAdapter import ParamsBase
 from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs, Params as ContinuousEpochCountParams
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
-from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
+from trainer.extensions.MetricExtension import TotalValidationDataScoringExtensions, ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
 from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension, PreprocessorParams
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
 from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
@@ -53,8 +53,9 @@ class Params(DataGenenerationParams,
 
     @property
     def max_timesteps(self):
-        result = set(len(entry) for entry in self.data().swipes)
-        return max(result)
+        return 48
+        # result = set(len(entry) for entry in self.data().swipes)
+        # return max(result)
 
     
 
@@ -62,16 +63,23 @@ class Params(DataGenenerationParams,
 params = Params(
     n_epochs=100,
     n_words=10,
-    n_chars=10,
+    n_chars=3,
     word_input_strategy=CappedWordStrategy(5),
     filebased_continued_epoch_counting=True,
 )
-
+params2 = Params(
+    n_epochs=100,
+    n_words=10,
+    n_chars=5,
+    word_input_strategy=CappedWordStrategy(5),
+    filebased_continued_epoch_counting=True,
+)
 
 class TrainingsPlan(TrainingsPlanBase):
     @property
     def params(self) -> Iterable[Params]:
         yield params
+        yield params2
 
     def get_extensions(self, params: Params, prev_params: Optional[Params]) -> Iterable[Union[TrainerExtension, type(TrainerExtension)]]:
         # initialization and callback registration:
@@ -98,6 +106,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ParameterizeModel
         yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
+        yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
 
 
 

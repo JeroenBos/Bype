@@ -71,4 +71,4 @@ class ComputeSwipeFeatureCountTrainerExtension(ComputeValueTrainerExtension):
         return 'swipe_feature_count'
 
     def compute(self):
-        return 3 + self.params.word_input_strategy.get_feature_count()
+        return 3 + self.params.word_input_strategy.feature_count()

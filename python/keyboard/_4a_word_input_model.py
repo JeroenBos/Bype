@@ -8,7 +8,7 @@ class WordStrategy(ABC):
     Specifies that the words Input layer is of the specified fixed length.
     """
     @abstractproperty
-    def get_feature_count(self) -> int:
+    def feature_count(self) -> int:
         raise ABC
 
 
@@ -20,7 +20,7 @@ class CappedWordStrategy(WordStrategy):
         self.n = n
 
     @property
-    def get_feature_count(self):
+    def feature_count(self):
         return 2 * self.n
 
     @json

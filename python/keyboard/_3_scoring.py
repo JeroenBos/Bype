@@ -41,7 +41,7 @@ class ValidationData:
         self._unencoded_convolved_data_words += _unencoded_convolved_data_words
 
         _encoded_convolved_data = preprocessor.preprocess(_unencoded_convolved_data)
-        self._encoded_convolved_data = np.append(self._encoded_convolved_data, _encoded_convolved_data) if self._encoded_convolved_data else _encoded_convolved_data
+        self._encoded_convolved_data = np.append(self._encoded_convolved_data, _encoded_convolved_data, axis=0) if self._encoded_convolved_data is not None else _encoded_convolved_data
 
 
     @property
@@ -72,11 +72,20 @@ class ValidationData:
 
 
 class Metrics(Callback):
-    def __init__(self, validation_data: ValidationData, log_dir: str, model=None):
+    def __init__(self, 
+                 validation_data: ValidationData, 
+                 log_dir: str,
+                 monitor_namespace: str = "",
+                 print_loss=False,
+                 print_misinterpretation_examples=False,
+                 model=None):
         assert isinstance(validation_data, ValidationData)
         super().__init__()
+        self.monitor_namespace = monitor_namespace
         self.metrics_writer = tf.summary.create_file_writer(log_dir + '/metrics')
         self.test_data = validation_data
+        self._print_loss = print_loss
+        self._print_misinterpretation_examples = print_misinterpretation_examples
         if model is not None or not hasattr(self, 'model'):
             self.model = model
         self.losses: List[float] = []
@@ -98,6 +107,9 @@ class Metrics(Callback):
             self._write_and_print_summaries(places, occurrences, y_predict, batch)
 
     def print_misinterpreted_words(self):
+        if not self._print_misinterpretation_examples:
+            return
+
         places, occurrences, y_predict = self._get_places()
 
         failed_indices = [i for place, occurrence, i in zip(places, occurrences, range(len(places))) 
@@ -161,22 +173,23 @@ class Metrics(Callback):
         s = ', '.join(islice((f"{len(place)}/{_count}" for place, _count in zip(places, occurrences)), 20))
         test_loss = sum(len(p) for p in places) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
-        print(f" - test_loss: {test_loss:.3g}")
-        print('\n - places: [' + s + ']')
+        if self._print_loss:
+            print(f" - test_loss: {test_loss:.3g}")
+            print('\n - places: [' + s + ']')
 
         pred_min, pred_max = float(y_predict.min()), float(y_predict.max())
 
-        logs['pred/min'] = pred_min
-        logs['pred/max'] = pred_max
-        logs['pred/test_loss'] = test_loss
+        logs[self.monitor_namespace + 'min'] = pred_min
+        logs[self.monitor_namespace + 'max'] = pred_max
+        logs[self.monitor_namespace + 'test_loss'] = test_loss
 
 
         self.losses.append(test_loss)
 
         with self.metrics_writer.as_default():
-            tf.summary.scalar('pred/min', data=pred_min, step=batch)
-            tf.summary.scalar('pred/max', data=pred_max, step=batch)
-            tf.summary.scalar('pred/test_loss', data=test_loss, step=batch)
+            tf.summary.scalar(self.monitor_namespace + 'min', data=pred_min, step=batch)
+            tf.summary.scalar(self.monitor_namespace + 'max', data=pred_max, step=batch)
+            tf.summary.scalar(self.monitor_namespace + 'test_loss', data=test_loss, step=batch)
             self.metrics_writer.flush()
         return test_loss
 
