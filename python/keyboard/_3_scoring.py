@@ -98,27 +98,39 @@ class Metrics(Callback):
         occurrences = np.zeros(self.test_data.original_length, int)
         places = [[] for _ in range(self.test_data.original_length)]
         for i in range(len(y_predict)):
+            # what pieces of data are currently here:                                  related variables:
+            # - a swipe                                                                swiped_id, swiped_index
+            # - the word that was swiped (ground truth)                                word_id, swiped_word
+            # - another swipe with which we're doing a convolution prediction          i
+            # - the ground truth word for the other swipe                              input_word
+
+            # we count the number word that predicted stronger than the ground truth prediction
+            # this is the complicated part (reversed from expectation):
+            # we associate that with the convolved swipe (not the ground truth swipe)
+
+            # The new complication is duplication: word can now occur multiple times
+            # so comparison by indices isn't sufficient, we have to compare by actual value
+
+
             # note that swiped_id and word_id are in the original data set
             # and swiped_index is in the convolved data set 
             # is is already the word_index, i.e. in the index in the convolved data set of the word that it was convolved with (i.e. the one it wants a prediction on, not the swiped word)
             swiped_id, word_id, swiped_index = self.test_data.get_original_data_indices(i)
             occurrences[swiped_id] += 1
 
-            # whether it's one of the correct indices:
-            is_correct = (swiped_id == word_id)
-
-            if not is_correct and y_predict[i] >= y_predict[swiped_index]:
-                places[swiped_id].append(i)
-
             # the word that was swiped is:
             swiped_word = self.test_data.get_decoded(swiped_index)
             # the word it was convolved with:
             input_word = self.test_data.get_decoded(i)
 
-            # they cannot be the same unless the i is one of the correct indices (indicated by correct_swipe_index == correct_word_index)
-            assert swiped_word != input_word or is_correct
+            is_correct = (swiped_word == input_word)
 
-        return places, occurrences, y_predict
+            if not is_correct and y_predict[i] >= y_predict[swiped_index]:
+                places[swiped_id].append(i)
+
+
+        # NOTE: since duplication is allowed, I think occurrences is not correct anymore
+        return places, occurrences, y_predict 
 
 
     def _write_and_print_summaries(self, places, occurrences, y_predict, batch, logs={}) -> float:
