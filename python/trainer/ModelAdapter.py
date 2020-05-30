@@ -1,3 +1,4 @@
+from unordereddataclass import mydataclass
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod, abstractproperty
 from typing import Any, Callable, TypeVar, Tuple, Dict, Iterable, List, Union, Optional
@@ -54,8 +55,9 @@ class ArgsAdapter:
 
 
 
-@dataclass
+@mydataclass
 class ParamsBase:
+    abort: bool = False
     fit_args: ArgsAdapter
     compile_args: ArgsAdapter
 

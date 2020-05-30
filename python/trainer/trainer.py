@@ -131,4 +131,7 @@ class TrainingsPlanBase(ABC):
             trainer = Trainer(extensions)
             trainer.train(*data)
 
+            if params.abort:
+                break
+
             prev_params = params
