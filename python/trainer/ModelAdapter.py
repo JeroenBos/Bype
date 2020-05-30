@@ -54,12 +54,24 @@ class ArgsAdapter:
         return result
 
 
+@dataclass
+class FitArgs(ArgsAdapter):
+    epochs: Optional[int] = None  # at some point this is mandatory though
+    callbacks: List = field(default_factory=list)
+
+
+@dataclass
+class CompileArgs(ArgsAdapter):
+    loss: str = 'mean_squared_error'
+    optimizer: str = 'adam'
+    metrics: List = field(default_factory=lambda: ['accuracy'])
+
 
 @mydataclass
 class ParamsBase:
     abort: bool = False
-    fit_args: ArgsAdapter
-    compile_args: ArgsAdapter
+    fit_args: FitArgs = FitArgs()
+    compile_args: CompileArgs = CompileArgs()
 
 
 
@@ -92,15 +104,3 @@ class ParameterizeModelExtension(TrainerExtension):
 
         adapter = ParameterizedModelAdapter(self.params)
         return adapter.concretify(model)
-
-
-@dataclass
-class FitArgs(ArgsAdapter):
-    epochs: Optional[int] = None  # at some point this is mandatory though
-    callbacks: List = field(default_factory=list)
-
-@dataclass
-class CompileArgs(ArgsAdapter):
-    loss: str = 'mean_squared_error'
-    optimizer: str = 'adam'
-    metrics: List = field(default_factory=lambda: ['accuracy'])

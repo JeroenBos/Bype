@@ -13,7 +13,7 @@ continued_epoch_file_name = 'epoch_count.txt'
 
 @mydataclass
 class Params:
-    fit_args: FitArgs
+    # fit_args: FitArgs // duplication doesn't merge but create additional fields :S
     filebased_continued_epoch_counting: Optional[bool] = None
     log_dir: str
     # set initial_epoch_count

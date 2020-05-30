@@ -67,10 +67,6 @@ params = Params(
     n_words=10,
     n_chars=10,
     word_input_strategy=CappedWordStrategy(5),
-    fit_args=FitArgs(
-    ),
-    compile_args=CompileArgs(
-    ),
     filebased_continued_epoch_counting=True,
     swipe_feature_count=13,
 )
