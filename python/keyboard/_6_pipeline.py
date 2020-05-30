@@ -26,7 +26,7 @@ from trainer.extensions.tensorboard import TensorBoardExtension
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
-
+from trainer.extensions.EarlyStopping import EarlyStoppingTrainerExtension as EarlyStopping, Params as EarlyStoppingParams
 
 @mydataclass    
 class PreprocessorParams:
@@ -39,6 +39,7 @@ class Params(DataGenenerationParams,
              PreprocessorParams, 
              CreateModelParams,
              ContinuousEpochCountParams,
+             EarlyStoppingParams,
              ParamsBase):
     tag: Optional[str] = None 
     log_dir: str = 'logs/'
@@ -85,6 +86,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ApplyInitialEpochAndNumEpochToFitArgs
         yield AddValidationDataScoresToTensorboard
         yield SaveBestModel
+        yield EarlyStopping(monitor="loss")
 
         # data generation:
         yield GenerateData()
