@@ -55,6 +55,11 @@ class Params(DataGenenerationParams,
         """ The path from which to load the initial weights to be applied to the model after compilation. """
         return self.best_model_path
 
+    @property
+    def max_timesteps(self):
+        result = set(len(entry) for entry in self.data().swipes)
+        assert len(result) == 1, "Multiple timestep lengths not implemented"
+        return next(iter(result))
 
 
 params = Params(
@@ -66,7 +71,6 @@ params = Params(
     ),
     compile_args=CompileArgs(
     ),
-    max_timesteps=108,  # HACK
     filebased_continued_epoch_counting=True,
     swipe_feature_count=13,
 )
@@ -90,7 +94,6 @@ class TrainingsPlan(TrainingsPlanBase):
 
         # data generation:
         yield GenerateData()
-        yield SetMaxTimestep()
         yield ComputeSwipeFeatureCount()
         yield AllowDataSources()
         yield PreprocessorExtension()
