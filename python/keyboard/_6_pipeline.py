@@ -54,8 +54,7 @@ class Params(DataGenenerationParams,
     @property
     def max_timesteps(self):
         result = set(len(entry) for entry in self.data().swipes)
-        assert len(result) == 1, "Multiple timestep lengths not implemented"
-        return next(iter(result))
+        return max(result)
 
     
 
