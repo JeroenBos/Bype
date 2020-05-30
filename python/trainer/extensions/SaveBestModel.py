@@ -33,7 +33,7 @@ class SaveBestModelTrainerExtension(TrainerExtension):
     def _find_previous_callback(self):
 
         return next((callback for callback in self.params.fit_args.callbacks 
-                     if isinstance(callback, _SaveBestModelCallback) and callback.filepath == self.filepath), None)
+                     if isinstance(callback, _SaveBestModelCallback) and callback.filepath == self._kw.get("filepath", "")), None)
 
     def initialize(self):
         callback = None

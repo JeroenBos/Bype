@@ -44,6 +44,9 @@ def GenerateDataTrainerExtension_compute_data(n_words: int, n_chars: int, verify
 
 @memoize
 def GenerateDataTrainerExtension_compute_validation_data(data: SwipeEmbeddingDataFrame, preprocessor: Preprocessor) -> ValidationData:
+    return _unmemoized_generateDataTrainerExtension_compute_validation_data(data, preprocessor)
+
+def _unmemoized_generateDataTrainerExtension_compute_validation_data(data: SwipeEmbeddingDataFrame, preprocessor: Preprocessor) -> ValidationData:
     return ValidationData(data, preprocessor)
 
 @memoize
