@@ -40,7 +40,6 @@ class Params(DataGenenerationParams,
              ParamsBase):
     tag: Optional[str] = None 
     log_dir: str = 'logs/'
-    convolution_fraction: float = 1.0
 
     @property
     def best_model_path(self) -> str:
