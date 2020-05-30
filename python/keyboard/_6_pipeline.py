@@ -96,7 +96,7 @@ class TrainingsPlan(TrainingsPlanBase):
         # model generation:
         yield ModelFactory
         yield ParameterizeModel
-        yield LoadInitialWeights
+        yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
 
 
