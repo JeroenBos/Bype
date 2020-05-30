@@ -17,7 +17,6 @@ class EarlyStoppingTrainerExtension(TrainerExtension):
                  min_delta=0,                   # passed to EarlyStopping.__init__
                  mode='auto',                   # passed to EarlyStopping.__init__ 
                  baseline=None,                 # passed to EarlyStopping.__init__
-                 continuous=True,
                  cancel_all_stages=False):
         self.cancel_all_stages = cancel_all_stages
         self._kw = {

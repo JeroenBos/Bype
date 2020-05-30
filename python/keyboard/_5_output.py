@@ -7,15 +7,13 @@ from keyboard._1a_generate import generated_convolved_data as convolved_data, ge
 from keyboard._2_transform import Preprocessor
 from keyboard._3_scoring import Metrics
 from keyboard._4_model import KeyboardEstimator
-from keyboard.MyModelCheckpoint import get_processor_path
+from trainer.extensions.SavePreprocessorJson import get_processor_path
 import json
 from myjson import json_decoders
 from utilities import memoize
 
-most_recent_modelpath = get_log_dir('logs/') + path.sep + 'model.h5'
 
-
-def load_model_with_preprocessor(model_path: str = most_recent_modelpath) -> "LoadedKeyboardModel":
+def load_model_with_preprocessor(model_path: str) -> "LoadedKeyboardModel":
     if not os.path.exists(model_path):
         raise ValueError(f"Path '{model_path}' doesn't exist")
 
@@ -48,15 +46,15 @@ class LoadedKeyboardModel:
         return self.predict(preprocessedX)
 
 
-@memoize
-def most_recent_model():
-    return load_model_with_preprocessor(most_recent_modelpath)
+# @memoize
+# def most_recent_model():
+#     return load_model_with_preprocessor(most_recent_modelpath)
 
 
-model = load_model_with_preprocessor(os.getcwd() + '/logs/2020_04_20/model.h5')
+# model = load_model_with_preprocessor(os.getcwd() + '/logs/2020_04_20/model.h5')
 
-preprocessor = Preprocessor(max_timesteps=2)
+# preprocessor = Preprocessor(max_timesteps=2)
 
-metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data), model=model)
+# metric = Metrics(preprocessor.preprocess(convolved_data), preprocessor.decode, convolved_data.get_i, len(data), model=model)
 
-metric.print_misinterpreted_words()
+# metric.print_misinterpreted_words()

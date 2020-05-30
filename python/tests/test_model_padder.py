@@ -1,6 +1,6 @@
 import unittest
 from myjson import json_decoders
-from tensorflow.keras.layers import Layer, Input, Dense, LSTM, concatenate, Masking  # noqa
+from tensorflow.keras.layers import Layer, Input, Dense, LSTM, concatenate  # noqa
 from tensorflow.keras import Model  # noqa
 from tensorflow.keras.models import load_model, Model  # noqa
 import numpy as np
