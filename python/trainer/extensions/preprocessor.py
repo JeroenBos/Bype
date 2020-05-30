@@ -1,3 +1,4 @@
+from unordereddataclass import mydataclass
 from dataclasses import dataclass
 from typing import Any, Tuple, Union
 
@@ -8,12 +9,19 @@ from keyboard._0_types import SwipeEmbeddingDataFrame
 from keyboard._2_transform import Preprocessor
 from keyboard._4a_word_input_model import WordStrategy
 
-@dataclass
-class Params:
+
+@mydataclass    
+class PreprocessorParams:
+    n_epochs: int
     word_input_strategy: WordStrategy
     max_timesteps: int
     convolution_fraction: Union[int, float] = 1.0
 
+    @property
+    def swipe_feature_count(self):
+        base_feature_count = 3 
+        word_feature_count = self.word_input_strategy.get_feature_count
+        return base_feature_count + word_feature_count
 
 class PreprocessorTrainerExtension(TrainerExtension):
     def initialize(self):

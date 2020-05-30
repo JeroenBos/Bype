@@ -18,7 +18,7 @@ from trainer.ModelAdapter import ParamsBase
 from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensions as EpochsKeepCounting, ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension as ApplyInitialEpochAndNumEpochToFitArgs, Params as ContinuousEpochCountParams
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
 from trainer.extensions.MetricExtension import ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
-from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension
+from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension, PreprocessorParams
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
 from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData, Params as DataGenenerationParams
@@ -28,10 +28,7 @@ from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
 from trainer.extensions.EarlyStopping import EarlyStoppingTrainerExtension as EarlyStopping, Params as EarlyStoppingParams
 
-@mydataclass    
-class PreprocessorParams:
-    n_epochs: int
-    word_input_strategy: WordStrategy
+
 
 @mydataclass
 # TODO: design mydataclass such that all base classes are considered to be dataclasses too
@@ -61,6 +58,8 @@ class Params(DataGenenerationParams,
         assert len(result) == 1, "Multiple timestep lengths not implemented"
         return next(iter(result))
 
+    
+
 
 params = Params(
     n_epochs=100,
@@ -68,7 +67,6 @@ params = Params(
     n_chars=10,
     word_input_strategy=CappedWordStrategy(5),
     filebased_continued_epoch_counting=True,
-    swipe_feature_count=13,
 )
 
 

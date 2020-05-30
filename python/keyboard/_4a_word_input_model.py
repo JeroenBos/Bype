@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractproperty
 from typing import Any
 from myjson import json
 
@@ -7,9 +7,9 @@ class WordStrategy(ABC):
     This specs a subpart of the model, namely the input of words.
     Specifies that the words Input layer is of the specified fixed length.
     """
-
+    @abstractproperty
     def get_feature_count(self) -> int:
-        raise ValueError('Not implemented')
+        raise ABC
 
 
 class CappedWordStrategy(WordStrategy):
@@ -19,6 +19,7 @@ class CappedWordStrategy(WordStrategy):
         assert n > 0
         self.n = n
 
+    @property
     def get_feature_count(self):
         return 2 * self.n
 

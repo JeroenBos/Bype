@@ -29,7 +29,7 @@ class Preprocessor:
         """
         :param max_timesteps: The maximum number of allowed timesteps. None for infinity. 
         """
-        self.swipe_feature_count = 3 + word_input_strategy.get_feature_count()
+        self.swipe_feature_count = 3 + word_input_strategy.get_feature_count
         self.max_timesteps = max_timesteps
         self.batch_count = 1
         self.word_input_strategy = word_input_strategy
