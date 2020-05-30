@@ -6,22 +6,34 @@ from utilities import override
 
 @mydataclass
 class Params:
-    patience: int = 5
+    pass
     # abort: bool = False  # super annoying that I have to repeat the default here (TODO) Actually, it's probably duplicating? :S So let's just uncomment
 
 
 class EarlyStoppingTrainerExtension(TrainerExtension):
     def __init__(self, 
-                 monitor="val_loss",
+                 patience=0,                    # passed to EarlyStopping.__init__
+                 monitor='val_loss',            # passed to EarlyStopping.__init__
+                 min_delta=0,                   # passed to EarlyStopping.__init__
+                 mode='auto',                   # passed to EarlyStopping.__init__ 
+                 baseline=None,                 # passed to EarlyStopping.__init__
+                 continuous=True,
                  cancel_all_stages=False):
         self.cancel_all_stages = cancel_all_stages
-        self.monitor = monitor
+        self._kw = {
+            "patience": patience,
+            "monitor": monitor,
+            "min_delta": min_delta,
+            "mode": mode,
+            "baseline": baseline,
+        }
+
+
 
     def initialize(self):
         callback = _EarlyStoppingCallback(
-            patience=self.params.patience,
-            monitor=self.monitor,
             on_early_stopped_callback=self._on_early_stopped,
+            **self._kw
         )
         self.params.fit_args.callbacks.append(callback)
 
