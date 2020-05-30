@@ -13,27 +13,43 @@ class Params:
 
 
 class SaveBestModelTrainerExtension(TrainerExtension):
+    def __init__(self, 
+                 filepath: str,         # passed to ModelCheckpoint.__init__
+                 monitor='val_loss',    # passed to ModelCheckpoint.__init__
+                 mode='auto',           # passed to ModelCheckpoint.__init__
+                 best_over_all_stages=True,
+                 ):
+        assert isinstance(filepath, str) 
+        assert filepath.endswith('.h5')
+
+        self._best_over_all_stages = best_over_all_stages
+        self._kw = {
+            "filepath": filepath,
+            "monitor": monitor,
+            "mode": mode,
+            "save_best_only": True,
+        }
+
+    def _find_previous_callback(self):
+
+        return next((callback for callback in self.params.fit_args.callbacks 
+                     if isinstance(callback, _SaveBestModelCallback) and callback.filepath == self.filepath), None)
+
     def initialize(self):
-        assert isinstance(self.params.best_model_path, str) 
-        assert self.params.best_model_path.endswith('.h5')
+        callback = None
+        if self._best_over_all_stages:
+            callback = self._find_previous_callback()
+            if callback is None and not self.is_first_stage:
+                print("Failed to find previous save_best_model_callback")
 
-        self.params.fit_args.callbacks.append(
-            _SaveBestModelCallback(
-                file_path=self.params.best_model_path,
-                #  monitor=self.params.monitor, 
-                #  save_best_only=self.params.save_best_only,
-            )
-        )
 
+        if callback is None:
+            callback = _SaveBestModelCallback(**self._kw)
+
+        self.params.fit_args.callbacks.append(callback)
 
 
 class _SaveBestModelCallback(ModelCheckpoint):
-    def __init__(self, file_path: str, monitor: str = "loss"):
-        super().__init__(filepath=file_path, 
-                         monitor=monitor,
-                         save_best_only=True,
-                         )
-        self._file_path = file_path
 
     @override
     def _save_model(self, epoch, logs):
