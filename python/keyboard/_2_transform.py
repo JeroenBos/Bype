@@ -160,7 +160,7 @@ class Preprocessor:
                 for f in range(self.swipe_feature_count):
                     result[w, t, f] = intermediate[w, t][f]
 
-        return np.ma.masked_invalid(result)
+        return np.ma.masked_invalid(result, copy=False)
 
     def _preprocess(self, X: SwipeEmbeddingDataFrame) -> ProcessedInputSeries:
         assert SwipeEmbeddingDataFrame.is_instance(X)
