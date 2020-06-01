@@ -53,9 +53,8 @@ class Params(DataGenenerationParams,
 
     @property
     def max_timesteps(self):
-        return 48
-        # result = set(len(entry) for entry in self.data().swipes)
-        # return max(result)
+        result = set(len(entry) for entry in self.data().swipes)
+        return max(result)
 
     
 
