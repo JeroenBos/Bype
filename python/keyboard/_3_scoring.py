@@ -2,6 +2,7 @@ import math
 from itertools import islice
 import pandas as pd
 import numpy as np
+from numpy.ma.core import MaskedArray
 from tensorflow.keras.callbacks import Callback  # noqa
 from keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame, SwipeConvolutionDataFrame
 from typing import List, Callable, Tuple
@@ -14,7 +15,7 @@ from tensorflow.python.framework.ops import disable_eager_execution  # noqa
 from tensorflow.python.framework import ops  # noqa
 from tensorflow.python.ops import math_ops  # noqa
 from tensorflow.python.keras import backend as K  # noqa
-from utilities import override
+from utilities import override, append_masked
 
 
 class ValidationData:
@@ -41,7 +42,10 @@ class ValidationData:
         self._unencoded_convolved_data_words += _unencoded_convolved_data_words
 
         _encoded_convolved_data = preprocessor.preprocess(_unencoded_convolved_data)
-        self._encoded_convolved_data = np.append(self._encoded_convolved_data, _encoded_convolved_data, axis=0) if self._encoded_convolved_data is not None else _encoded_convolved_data
+        assert isinstance(_encoded_convolved_data, MaskedArray)
+        assert isinstance(self._encoded_convolved_data, (MaskedArray, type(None)))
+        
+        self._encoded_convolved_data = append_masked(self._encoded_convolved_data, _encoded_convolved_data, axis=0) if self._encoded_convolved_data is not None else _encoded_convolved_data
 
 
     @property
