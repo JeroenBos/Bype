@@ -70,8 +70,8 @@ class CompileArgs(ArgsAdapter):
 @mydataclass
 class ParamsBase:
     abort: bool = False
-    fit_args: FitArgs = FitArgs()
-    compile_args: CompileArgs = CompileArgs()
+    fit_args: FitArgs = field(default_factory=FitArgs)
+    compile_args: CompileArgs = field(default_factory=CompileArgs)
 
 
 
