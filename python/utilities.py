@@ -200,6 +200,32 @@ def concat(list_of_lists: Iterable) -> list:
     from itertools import chain
     return list(chain.from_iterable(list_of_lists))
 
+def append_masked(a: np.ma.MaskedArray, b: np.ma.MaskedArray, axis=0) -> np.ma.MaskedArray:
+    assert isinstance(a, np.ma.MaskedArray)
+    assert isinstance(b, np.ma.MaskedArray)
+    assert len(a.shape) == len(b.shape)
+    assert a.dtype == b.dtype
+
+    # construct correct size
+    shape = [a_dim + b_dim if i == axis else max(a_dim, b_dim)
+             for a_dim, b_dim, i in zip(a.shape, b.shape, range(len(a.shape)))]
+    result = np.empty(shape, dtype=a.dtype)
+
+    # copy a into result
+    a_src_range = tuple(slice(0, dim) for dim in a.shape)
+    a_dst_range = tuple(slice(0, dim) for dim in a.shape)
+    result[a_dst_range] = a[a_src_range]
+
+    # copy b into result
+    offset = a.shape[axis]
+    b_src_range = tuple(slice(0, dim) for dim in b.shape)
+    b_dst_range = tuple(slice(0, dim) if i != axis else slice(offset, dim + offset)
+                        for i, dim in enumerate(b.shape))
+    result[b_dst_range] = b[b_src_range]
+
+    # return masked result
+    return np.ma.masked_invalid(result, copy=False)
+
 
 
 def get_resource(file_name):
