@@ -1,5 +1,5 @@
 from unordereddataclass import mydataclass
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar as PLACEHOLDER
 from abc import ABC, abstractmethod, abstractproperty
 from typing import Any, Callable, TypeVar, Tuple, Dict, Iterable, List, Union, Optional
 import numpy as np
@@ -69,6 +69,7 @@ class CompileArgs(ArgsAdapter):
 
 @mydataclass
 class ParamsBase:
+    # stage: int = PLACEHOLDER  # PLACEHOLDER enables IDE support but is ignored by dataclass (but later set by user-code). 
     abort: bool = False
     fit_args: FitArgs = field(default_factory=FitArgs)
     compile_args: CompileArgs = field(default_factory=CompileArgs)
