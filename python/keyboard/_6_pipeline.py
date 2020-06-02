@@ -22,7 +22,7 @@ from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as Se
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
 from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData, Params as DataGenenerationParams
-from trainer.extensions.tensorboard import TensorBoardExtension
+from trainer.extensions.tensorboard import TensorBoardExtension, TensorBoardScalar
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
@@ -106,6 +106,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
         yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
+        yield TensorBoardScalar(stage=lambda params: params.stage)
 
 
 
