@@ -145,6 +145,8 @@ def read_all(path: str) -> str:
 
 def overwrite_all(path: str, contents: str) -> str:
     """ Writes the specified contents to the specified file, overwriting if the file exists already. """
+    import pathlib
+    pathlib.Path(os.path.dirname(path)).mkdir(parents=True, exist_ok=True)
     with open(path, 'w') as file:
         return file.write(contents)
 
