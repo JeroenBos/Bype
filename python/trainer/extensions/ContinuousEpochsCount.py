@@ -1,5 +1,5 @@
 from unordereddataclass import mydataclass
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 from tensorflow.keras.models import Model  # noqa
 from tensorflow.keras.callbacks import Callback  # noqa
 from keyboard._3_scoring import Metrics, ValidationData
@@ -10,11 +10,13 @@ from trainer.extensions.ComputeValueExtension import ComputeValueTrainerExtensio
 from utilities import read_all, overwrite_all, override
 
 continued_epoch_file_name = 'epoch_count.txt'
+continued_stage_file_name = 'stage_count.txt'
 
 @mydataclass
 class Params:
     # fit_args: FitArgs // duplication doesn't merge but create additional fields :S
     filebased_continued_epoch_counting: Optional[bool] = None
+    filebased_continued_stage_counting: Optional[bool] = True
     log_dir: str
     # set initial_epoch_count
 
@@ -40,23 +42,23 @@ class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
     def param_name(self) -> str:
         return 'epoch_count'
 
-    def compute(self) -> Any:
+    def compute(self) -> int:
         # Does not get called when epoch_count is already set
         if self.prev_params is None:
+            epoch = 0
             if getattr(self.params, 'filebased_continued_epoch_counting', False):
                 try:
                     return int(read_all(self.path))
                 except:  # noqa
                     pass
-            return 0
+            return epoch
 
         return self.prev_value + 1
 
+    @override
     def after_fit(self, history, x, y):
         overwrite_all(self.path, str(self.current_value))
         return super().after_fit(history, x, y)
-
-
 
 
 class SetEpochIndexCallback(Callback):
@@ -78,3 +80,31 @@ class ApplyInitialEpochAndNumEpochToFitArgsTrainerExtension(TrainerExtension):
         self.params.fit_args.epochs = initial_epoch + n_epochs
 
         return x, y
+
+
+class ContinuousStageCountExtensions(ComputeValueTrainerExtension):
+    @override
+    def initialize(self):
+        super().initialize()
+        overwrite_all(self.path, str(self.current_value + 1))  # + 1 converts index to count
+
+    @override
+    def compute(self) -> int:
+        # Does not get called when epoch_count is already set
+        if self.prev_params is None:
+            if getattr(self.params, 'filebased_continued_stage_counting', False):
+                try:
+                    return int(read_all(self.path))
+                except:  # noqa
+                    pass
+            return 0
+        return self.prev_value + 1
+
+    @override
+    @property
+    def param_name(self) -> str:
+        return 'stage'
+
+    @property
+    def path(self) -> str:
+        return self.params.log_dir + continued_stage_file_name
