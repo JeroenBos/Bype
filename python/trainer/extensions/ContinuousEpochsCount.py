@@ -22,10 +22,12 @@ class Params:
 
 
 class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
+    @override
     @property
     def params(self) -> Params:
         return super().params
 
+    @override
     def initialize(self):
         super().initialize()
         self.params.fit_args.callbacks.append(SetEpochIndexCallback(self.params))
@@ -37,11 +39,12 @@ class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
     def path(self) -> str:
         return self.params.log_dir + continued_epoch_file_name
 
-
+    @override
     @property
     def param_name(self) -> str:
         return 'epoch_count'
 
+    @override
     def compute(self) -> int:
         # Does not get called when epoch_count is already set
         if self.prev_params is None:
