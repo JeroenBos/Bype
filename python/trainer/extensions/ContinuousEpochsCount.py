@@ -51,7 +51,7 @@ class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
             epoch = 0
             if getattr(self.params, 'filebased_continued_epoch_counting', False):
                 try:
-                    return int(read_all(self.path))
+                    epoch = int(read_all(self.path))
                 except:  # noqa
                     pass
             return epoch
