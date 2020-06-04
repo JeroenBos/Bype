@@ -76,3 +76,7 @@ class TrainerExtension:
     @virtual
     def after_fit(self, history: History, x: X, y: Y) -> None:
         pass
+
+    @virtual
+    def cleanUp(self) -> None:
+        pass

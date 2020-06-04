@@ -63,11 +63,19 @@ class TrainerBase(ABC):
         for extension in self.get_extensions():
             extension.after_fit(history, x, y)
 
+    @sealed
+    def _cleanUp(self) -> None:
+        for extension in self._extensions:
+            extension.cleanUp()
+
     def train(self, x: X, y: Y) -> History:
-        self.initialize()
-        model = self.create_model()
-        self.compile(model)
-        return self.fit(model, x, y)
+        try:
+            self.initialize()
+            model = self.create_model()
+            self.compile(model)
+            return self.fit(model, x, y)
+        finally:
+            self._cleanUp()
 
 
 
