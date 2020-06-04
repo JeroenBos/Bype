@@ -299,3 +299,16 @@ def groupby(data: pd.DataFrame,
         else:
             result[key] = [value]
     return result
+
+
+
+def print_in_red(s: str):
+    red = '\033[31m'
+    reset = '\033[0m'
+    print(red + str(s) + reset)
+
+
+def print_in_yellow(s: str):
+    yellow = '\033[33m'
+    reset = '\033[0m'
+    print(yellow + str(s) + reset)
