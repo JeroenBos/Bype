@@ -5,7 +5,7 @@ import numpy as np
 from numpy.ma.core import MaskedArray
 from tensorflow.keras.callbacks import Callback  # noqa
 from keyboard._0_types import SwipeEmbeddingDataFrame, Input, ProcessedInput, SwipeDataFrame, SwipeConvolutionDataFrame
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Union
 from collections import namedtuple
 from itertools import count, takewhile
 from tensorflow.keras.losses import Loss  # noqa
@@ -44,7 +44,7 @@ class ValidationData:
         _encoded_convolved_data = preprocessor.preprocess(_unencoded_convolved_data)
         assert isinstance(_encoded_convolved_data, MaskedArray)
         assert isinstance(self._encoded_convolved_data, (MaskedArray, type(None)))
-        
+
         self._encoded_convolved_data = append_masked(self._encoded_convolved_data, _encoded_convolved_data, axis=0) if self._encoded_convolved_data is not None else _encoded_convolved_data
 
 
@@ -78,15 +78,15 @@ class ValidationData:
 class Metrics(Callback):
     def __init__(self, 
                  validation_data: ValidationData, 
-                 log_dir: str,
-                 monitor_namespace: str = "",
+                 write_scalar: Callable[[str, int, Union[int, float]], None],  # this must be provided from outside because it must be the global writer (because multiple threads/summary writers isn't supported)
+                 monitor_namespace: str = "test/",
                  print_loss=False,
                  print_misinterpretation_examples=False,
                  model=None):
         assert isinstance(validation_data, ValidationData)
         super().__init__()
         self.monitor_namespace = monitor_namespace
-        self.metrics_writer = tf.summary.create_file_writer(log_dir + '/metrics')
+        self._write_scalar = write_scalar
         self.test_data = validation_data
         self._print_loss = print_loss
         self._print_misinterpretation_examples = print_misinterpretation_examples
@@ -190,11 +190,10 @@ class Metrics(Callback):
 
         self.losses.append(test_loss)
 
-        with self.metrics_writer.as_default():
-            tf.summary.scalar(self.monitor_namespace + 'min', data=pred_min, step=batch)
-            tf.summary.scalar(self.monitor_namespace + 'max', data=pred_max, step=batch)
-            tf.summary.scalar(self.monitor_namespace + 'test_loss', data=test_loss, step=batch)
-            self.metrics_writer.flush()
+        self._write_scalar("pred_min", batch, pred_min, "test")
+        self._write_scalar("pred_max", batch, pred_max, "test")
+        self._write_scalar("test_loss", batch, test_loss, "test")
+        
         return test_loss
 
 

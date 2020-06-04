@@ -22,7 +22,9 @@ from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as Se
 from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
 from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData, Params as DataGenenerationParams
-from trainer.extensions.tensorboard import TensorBoardExtension, TensorBoardScalar
+from trainer.extensions.tensorboard.tensorboard import TensorBoardExtension
+from trainer.extensions.tensorboard.scalar import TensorBoardScalar
+from trainer.extensions.tensorboard.ResourceWriterPool import Params as ResourceWriterPoolParams
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
@@ -37,6 +39,7 @@ class Params(DataGenenerationParams,
              CreateModelParams,
              ContinuousEpochCountParams,
              EarlyStoppingParams,
+             ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
     log_dir: str = 'logs/'

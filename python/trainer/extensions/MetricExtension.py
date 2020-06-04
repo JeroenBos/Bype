@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras.models import Model  # noqa
 from keyboard._3_scoring import Metrics, ValidationData
 from trainer.trainer import TrainerExtension
@@ -24,13 +25,14 @@ class ValidationDataScoringExtensions(TrainerExtension):
         self.params.fit_args.callbacks.append(
             Metrics(
                 validation_data=self._get_data(), 
-                log_dir=self.params.log_dir, 
+                write_scalar=self.params.write_scalar,
                 model=model,
                 **self._kw
             )
         )
 
-
+    def _tf_summary_writer(self, i) -> tf.summary.SummaryWriter:
+        return self.params.get_resource_writer(self.params.log_dir, i)
 
 class TotalValidationDataScoringExtensions(ValidationDataScoringExtensions): 
 
