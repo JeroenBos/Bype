@@ -4,7 +4,7 @@ from tensorflow.keras.callbacks import Callback, TensorBoard  # noqa
 from typing import Callable, Union
 
 from trainer.trainer import TrainerExtension, Trainer
-from utilities import override, virtual
+from utilities import override, print_in_red, virtual
 from trainer.ModelAdapter import ParamsBase
 
 
@@ -44,6 +44,11 @@ class Params:
         assert isinstance(name, str)
         assert isinstance(x, int)
         assert isinstance(y, (float, int))
+        import math
+        if math.isnan(y):
+            print_in_red("Summary value is NaN")
+            return False
+
         assert isinstance(graph_name, str)
 
         # don't get me started on `name` vs `graph_name`
