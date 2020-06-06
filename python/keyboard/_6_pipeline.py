@@ -46,6 +46,16 @@ class Params(DataGenenerationParams,
     continue_weights: bool = True
 
     @property
+    def filebased_continued_stage_counting(self) -> bool:
+        # defaults to whether the weights are continued in the training
+        return self.continue_weights
+
+    @property
+    def filebased_continued_epoch_counting(self) -> bool:
+        # defaults to whether the weights are continued in the training
+        return self.continue_weights
+
+    @property
     def best_model_path(self) -> str:
         """ The path at which the best model is saved. """
         return self.log_dir + 'best_model.h5'
