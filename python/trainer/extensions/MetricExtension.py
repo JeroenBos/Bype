@@ -21,7 +21,7 @@ class ValidationDataScoringExtensions(TrainerExtension):
 
     def initialize(self):
         # reserve a spot in the fit_args.callbacks (order is relevant)
-        # only later fill it with the actual callback, which needs more information than is available at this point (model)
+        # only later fill it with the actual callback, which needs more information than is available at this point (the data)
         self.placeholder = CallbackPlaceholder()
         self.params.fit_args.callbacks.append(self.placeholder)
 
@@ -32,7 +32,6 @@ class ValidationDataScoringExtensions(TrainerExtension):
         callback = Metrics(
             validation_data=self._get_data(), 
             write_scalar=self.params.write_scalar,
-            model=model,
             **self._kw
         )
         assert hasattr(self, "placeholder"), "You didn't call super().initialize()"

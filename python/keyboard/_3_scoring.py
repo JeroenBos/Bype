@@ -82,7 +82,7 @@ class Metrics(Callback):
                  monitor_namespace: str = "test/",
                  print_loss=False,
                  print_misinterpretation_examples=False,
-                 model=None):
+                 ):
         assert isinstance(validation_data, ValidationData)
         super().__init__()
         self.monitor_namespace = monitor_namespace
@@ -90,8 +90,6 @@ class Metrics(Callback):
         self.test_data = validation_data
         self._print_loss = print_loss
         self._print_misinterpretation_examples = print_misinterpretation_examples
-        if model is not None or not hasattr(self, 'model'):
-            self.model = model
         self.losses: List[float] = []
 
     @override
