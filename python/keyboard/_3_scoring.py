@@ -108,7 +108,7 @@ class Metrics(Callback):
         if (batch % 10) == 0:
             places, occurrences, y_predict = self._get_places()
 
-            self._write_and_print_summaries(places, occurrences, y_predict, batch)
+            self._write_and_print_summaries(places, occurrences, y_predict, batch, logs)
 
     def print_misinterpreted_words(self):
         if not self._print_misinterpretation_examples:
@@ -173,7 +173,7 @@ class Metrics(Callback):
         return places, occurrences, y_predict 
 
 
-    def _write_and_print_summaries(self, places, occurrences, y_predict, batch, logs={}) -> float:
+    def _write_and_print_summaries(self, places, occurrences, y_predict, batch, logs) -> float:
         s = ', '.join(islice((f"{len(place)}/{_count}" for place, _count in zip(places, occurrences)), 20))
         test_loss = sum(len(p) for p in places) / len(self.test_data)
         # score = sum(a / b for a, b in zip(place, occurrences))
@@ -186,7 +186,6 @@ class Metrics(Callback):
         logs[self.monitor_namespace + 'min'] = pred_min
         logs[self.monitor_namespace + 'max'] = pred_max
         logs[self.monitor_namespace + 'test_loss'] = test_loss
-
 
         self.losses.append(test_loss)
 
