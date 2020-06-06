@@ -92,7 +92,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield StagesKeepCounting
         yield ApplyInitialEpochAndNumEpochToFitArgs
         yield AddValidationDataScoresToTensorboard
-        yield SaveBestModel(filepath=params.best_model_path)
+        yield SaveBestModel(filepath=params.best_model_path, monitor='test_loss')  # must be after AddValidation
         yield EarlyStopping(patience=30, monitor="loss", baseline=0.0005)
 
         # data generation:
