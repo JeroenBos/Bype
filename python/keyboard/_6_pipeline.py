@@ -43,6 +43,7 @@ class Params(DataGenenerationParams,
              ParamsBase):
     tag: Optional[str] = None 
     log_dir: str = 'logs/'
+    continue_weights: bool = True
 
     @property
     def best_model_path(self) -> str:
@@ -104,7 +105,8 @@ class TrainingsPlan(TrainingsPlanBase):
         # model generation:
         yield ModelFactory
         yield ParameterizeModel
-        yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
+        if params.continue_weights:
+            yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
         yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
         yield TensorBoardScalar(stage=lambda params: params.stage)
