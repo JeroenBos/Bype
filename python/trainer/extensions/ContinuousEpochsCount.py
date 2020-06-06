@@ -29,11 +29,12 @@ class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
 
     @override
     def initialize(self):
-        super().initialize()
-        self.params.fit_args.callbacks.append(SetEpochIndexCallback(self.params))
+        if getattr(self.params, "filebased_continued_epoch_counting", False):
+            super().initialize()
+            self.params.fit_args.callbacks.append(SetEpochIndexCallback(self.params))
 
-        # totally optional:
-        self.params.initial_epoch_count = self.prev_value or 0   # prev_value is prev_epoch_count
+            # totally optional:
+            self.params.initial_epoch_count = self.prev_value or 0   # prev_value is prev_epoch_count
 
     @property
     def path(self) -> str:
