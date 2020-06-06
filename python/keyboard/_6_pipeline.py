@@ -109,7 +109,7 @@ class TrainingsPlan(TrainingsPlanBase):
             yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
         yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
-        yield TensorBoardScalar(stage=lambda params: params.stage)
+        yield TensorBoardScalar(stage=lambda params: params.stage, n_chars=lambda params: params.n_chars)
 
 
 
