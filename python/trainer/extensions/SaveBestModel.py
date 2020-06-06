@@ -53,4 +53,5 @@ class _SaveBestModelCallback(ModelCheckpoint):
 
     @override
     def _save_model(self, epoch, logs):
-        super(self.__class__, self)._save_model(epoch, logs)
+        if self.monitor in logs:  # prevents the warning that '<monitor>' can't be found
+            super(self.__class__, self)._save_model(epoch, logs)
