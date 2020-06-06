@@ -93,10 +93,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ApplyInitialEpochAndNumEpochToFitArgs
         yield AddValidationDataScoresToTensorboard
         yield SaveBestModel(filepath=params.best_model_path)
-        if params.n_chars == 1:
-            yield EarlyStopping(patience=30, monitor="loss", baseline=0.05)
-        else:
-            yield EarlyStopping(patience=30, monitor="loss", baseline=0.1)
+        yield EarlyStopping(patience=30, monitor="loss", baseline=0.0005)
 
         # data generation:
         yield GenerateData()
