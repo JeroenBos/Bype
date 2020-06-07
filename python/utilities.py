@@ -156,6 +156,10 @@ def write_all(path: str, contents: str) -> str:
     with open(path, 'a') as file:
         return file.write(contents)
 
+def append_line_to_file(path: str, line: str) -> None:
+    """ Just appends to a file or creates it if it doesn't exist. """
+    return write_all(path, str(line) + '\n')
+    
 
 def split_by(s: str, *separators: str) -> List[str]:
     """ Splits a string by many separators. """
