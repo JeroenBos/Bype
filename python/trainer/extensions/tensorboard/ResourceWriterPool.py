@@ -31,7 +31,7 @@ class Params:
             self._tf_resource_writers[key] = tf.summary.create_file_writer(dir)
         return self._tf_resource_writers[key]
 
-    def write_scalar(self, name: str, x: int, y: Union[float, int], graph_name: str = ""):
+    def write_scalar(self, name: str, x: int, y: Union[float, int], graph_name: str = "", quiet=False):
         """
         Because writing to a tensorflow summary is so complicated, I decided to make function out of it
 
@@ -56,7 +56,7 @@ class Params:
 
     def _write_scalar(self, name: str, x: int, y: Union[float, int], graph_name: str = ""):
         # don't get me started on `name` vs `graph_name`
-        with self.get_resource_writer(os.path.join(self.log_dir, name)).as_default():
+        with self.get_resource_writer(os.path.join(self.run_log_dir, name)).as_default():
             tf.summary.scalar(graph_name, y, x)
 
 

@@ -38,7 +38,7 @@ class ValidationDataScoringExtensions(TrainerExtension):
         self.placeholder.replace(self.params, callback)
 
     def _tf_summary_writer(self, i) -> tf.summary.SummaryWriter:
-        return self.params.get_resource_writer(self.params.log_dir, i)
+        return self.params.get_resource_writer(self.params.run_log_dir, i)
 
 
 

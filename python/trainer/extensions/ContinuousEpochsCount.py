@@ -8,6 +8,7 @@ from keyboard._0_types import SwipeEmbeddingDataFrame
 from trainer.ModelAdapter import FitArgs
 from trainer.extensions.ComputeValueExtension import ComputeValueTrainerExtension
 from utilities import read_all, overwrite_all, override
+import os
 
 continued_epoch_file_name = 'epoch_count.txt'
 continued_stage_file_name = 'stage_count.txt'
@@ -38,7 +39,7 @@ class ContinuousEpochCountExtensions(ComputeValueTrainerExtension):
 
     @property
     def path(self) -> str:
-        return self.params.log_dir + continued_epoch_file_name
+        return os.path.join(self.params.log_dir, continued_epoch_file_name)
 
     @override
     @property
@@ -111,4 +112,4 @@ class ContinuousStageCountExtensions(ComputeValueTrainerExtension):
 
     @property
     def path(self) -> str:
-        return self.params.log_dir + continued_stage_file_name
+        return os.path.join(self.params.log_dir, continued_stage_file_name)

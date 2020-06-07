@@ -9,29 +9,29 @@ from trainer.ModelAdapter import ParamsBase
 class TensorBoardScalar(TrainerExtension):
     def __init__(self, 
                  prefix="",
-                 log_dir_postfix='/metrics',
+                 run_log_dir_postfix='/metrics',
                  **named_scalars: Callable[[ParamsBase], Union[int, float]]):
-        self._log_dir_postfix = log_dir_postfix
+        self._dir_postfix = run_log_dir_postfix
         self._named_scalars = {prefix + key: value for key, value in named_scalars.items()}
 
 
     @override
     def initialize(self):
         self.params.fit_args.callbacks.append(
-            self._WriteTensorBoardScalarCallback(self.params, self._named_scalars, self._log_dir_postfix)
+            self._WriteTensorBoardScalarCallback(self.params, self._named_scalars, self._dir_postfix)
         )
 
     class _WriteTensorBoardScalarCallback(Callback):
-        def __init__(self, params, scalar_functions, log_dir_postfix):
+        def __init__(self, params, scalar_functions, run_log_dir_postfix):
             super().__init__()
-            self._log_dir_postfix = log_dir_postfix
+            self._dir_postfix = run_log_dir_postfix
             self._scalar_functions = scalar_functions
             self._params = params  # ref copy to params; can't be named params because Callback already declares that
 
 
         @property
         def _resource_writer_name(self) -> str:
-            return self._params.log_dir + self._log_dir_postfix
+            return self._params.run_log_dir + self._dir_postfix
 
         @property
         def _tf_summary_writer(self) -> tf.summary.SummaryWriter:

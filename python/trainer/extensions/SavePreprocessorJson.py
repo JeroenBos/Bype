@@ -7,17 +7,17 @@ from keyboard._2_transform import Preprocessor
 
 @dataclass
 class Params:
-    log_dir: str
+    run_log_dir: str
     best_model_path: str
     preprocessor: Preprocessor
 
 class SavePreprocessorTrainerExtension(TrainerExtension):
     def initialize(self):
-        assert isinstance(self.params.log_dir, str)
+        assert isinstance(self.params.run_log_dir, str)
         assert isinstance(self.params.best_model_path, str)
         assert isinstance(self.params.preprocessor, Preprocessor)
 
-        preprocessor_path = get_processor_path(self.params.log_dir + self.params.best_model_path)
+        preprocessor_path = get_processor_path(self.params.run_log_dir + self.params.best_model_path)
         self.params.fit_args.callbacks.append(
             _SavePreprocessorCallback(
                 file_path=preprocessor_path,

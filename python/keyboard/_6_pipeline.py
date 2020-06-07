@@ -19,13 +19,12 @@ from trainer.extensions.ContinuousEpochsCount import ContinuousEpochCountExtensi
 from trainer.extensions.LoadInitialWeights import LoadInitialWeightsTrainerExtension as LoadInitialWeights
 from trainer.extensions.MetricExtension import TotalValidationDataScoringExtensions, ValidationDataScoringExtensions as AddValidationDataScoresToTensorboard
 from trainer.extensions.preprocessor import SetMaxTimestepTrainerExtension as SetMaxTimestep, ComputeSwipeFeatureCountTrainerExtension as ComputeSwipeFeatureCount, PreprocessorTrainerExtension as PreprocessorExtension, PreprocessorParams
-from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData
+from trainer.extensions.TagWithTimestamp import TagWithTimestampTrainerExtension as TagWithTimestamp, LogDirPerDataTrainerExtension as LogDirPerData, RunLogDirTrainerExtension as RunLogDir
 from trainer.extensions.BalanceWeights import BalanceWeightsTrainerExtension as BalanceWeights
 from trainer.extensions.GenerateData import GenerateDataTrainerExtension as GenerateData, Params as DataGenenerationParams
 from trainer.extensions.tensorboard.tensorboard import TensorBoardExtension
 from trainer.extensions.tensorboard.scalar import TensorBoardScalar
 from trainer.extensions.tensorboard.ResourceWriterPool import Params as ResourceWriterPoolParams
-from trainer.extensions.tensorboard.CutSummaryOnNewRun import Params as CutSummaryOnNewRunParams, CutSummaryOnNewRun
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
@@ -40,11 +39,11 @@ class Params(DataGenenerationParams,
              CreateModelParams,
              ContinuousEpochCountParams,
              EarlyStoppingParams,
-             CutSummaryOnNewRunParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
     log_dir: str = 'logs/'
+    run_log_dir: str = 'logs/'
     continue_weights: bool = True
 
     @property
@@ -59,12 +58,13 @@ class Params(DataGenenerationParams,
 
     @property
     def best_model_path(self) -> str:
-        """ The path at which the best model is saved. """
-        return self.log_dir + 'best_model.h5'
+        """ Gets the path at which the best model is saved. """
+        log_dir = self.log_dir if getattr(self, "best_model_of_all_runs", False) is True else self.run_log_dir
+        return path.join(log_dir, 'best_model.h5')
 
     @property
     def initial_weights_path(self) -> str:
-        """ The path from which to load the initial weights to be applied to the model after compilation. """
+        """ Gets the path from which to load the initial weights to be applied to the model after compilation. """
         return self.best_model_path
 
     @property
@@ -90,9 +90,10 @@ class TrainingsPlan(TrainingsPlanBase):
         # initialization and callback registration:
         yield TagWithTimestamp
         yield LogDirPerData
-        yield TensorBoardExtension
-        yield EpochsKeepCounting
         yield StagesKeepCounting
+        yield EpochsKeepCounting
+        yield RunLogDir  # must be after StagesKeepCounting
+        yield TensorBoardExtension
         yield ApplyInitialEpochAndNumEpochToFitArgs
         yield AddValidationDataScoresToTensorboard
         yield SaveBestModel(lambda params: params.best_model_path, monitor='test_loss')  # must be after AddValidation
@@ -112,7 +113,6 @@ class TrainingsPlan(TrainingsPlanBase):
 
         yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
         yield TensorBoardScalar(stage=lambda params: params.stage, n_chars=lambda params: params.n_chars)
-        yield CutSummaryOnNewRun
 
 
 
