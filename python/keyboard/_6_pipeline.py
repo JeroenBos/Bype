@@ -42,8 +42,8 @@ class Params(DataGenenerationParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
-    log_dir: str = 'logs/'
-    run_log_dir: str = 'logs/'
+    log_dir: str = 'logs/nchar2/'
+    run_log_dir: str = 'logs/nchar2/'
     continue_weights: bool = True
 
     @property
@@ -76,11 +76,11 @@ class Params(DataGenenerationParams,
 class TrainingsPlan(TrainingsPlanBase):
     @property
     def params(self) -> Iterable[Params]:
-        for i in range(10):
+        for i in range(25):
             yield Params(
                 n_epochs=1000,
                 n_words=100,
-                n_chars=1,
+                n_chars=2,
                 word_input_strategy=CappedWordStrategy(5),
                 continue_weights=False,
             )
@@ -96,7 +96,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ApplyInitialEpochAndNumEpochToFitArgs
         yield AddValidationDataScoresToTensorboard
         yield SaveBestModel(lambda params: params.best_model_path, monitor='test_loss')  # must be after AddValidation
-        yield EarlyStopping(patience=30, monitor="loss", baseline=0.01)
+        yield EarlyStopping(patience=5, monitor="loss", baseline=0.001)
 
         # data generation:
         yield GenerateData()
@@ -110,7 +110,6 @@ class TrainingsPlan(TrainingsPlanBase):
         if params.continue_weights:
             yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
-        yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
         yield TensorBoardScalar(stage=lambda params: params.stage, n_chars=lambda params: params.n_chars)
 
 
