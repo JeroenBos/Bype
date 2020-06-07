@@ -43,7 +43,7 @@ class Params(DataGenenerationParams,
              ParamsBase):
     tag: Optional[str] = None 
     log_dir: str = 'logs/nchar10nwords1000/'
-    run_log_dir: str = 'logs/nchar10words1000/'
+    run_log_dir: str = 'logs/nchar10words1000uncapped/'
     continue_weights: bool = True
 
     @property
@@ -81,7 +81,7 @@ class TrainingsPlan(TrainingsPlanBase):
                 n_epochs=400,
                 n_words=1000,
                 n_chars=10,
-                word_input_strategy=CappedWordStrategy(5),
+                word_input_strategy=CappedWordStrategy(10),
                 continue_weights=False,
             )
 
