@@ -1,8 +1,9 @@
+import numpy as np
 from unordereddataclass import mydataclass
 from trainer.trainer import TrainerExtension, Trainer
-from tensorflow.keras.callbacks import EarlyStopping  # noqa
+from tensorflow.keras.callbacks import EarlyStopping, Callback  # noqa
 from typing import Callable
-from utilities import override
+from utilities import append_line_to_file, override
 
 @mydataclass
 class Params:
@@ -25,6 +26,7 @@ class EarlyStoppingTrainerExtension(TrainerExtension):
             "min_delta": min_delta,
             "mode": mode,
             "baseline": baseline,
+            "verbose": 1,
         }
 
 
@@ -40,7 +42,38 @@ class EarlyStoppingTrainerExtension(TrainerExtension):
         if self.cancel_all_stages:
             self.params.abort = True
 
-class _EarlyStoppingCallback(EarlyStopping):
+
+class MyEarlyStopping(EarlyStopping):
+    """
+    In keras.callbacks.EarlyStopping, baseline can be understood as:
+    'While the monitored value is worse than the baseline, keep training for max patience epochs longer. If it's better, elevate the baseline and repeat.'
+
+    In this callback, it's to be understood as:
+    'While the monitored value is worse than the baseline, keep training. If it is better, keep training until no progress is made for max patience epochs.'
+    """
+
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+        self.baseline_attained = False
+
+    @override
+    def on_epoch_end(self, epoch, logs=None):
+        if not self.baseline_attained:
+            current = self.get_monitor_value(logs)
+            if current is None:
+                return
+
+            if self.monitor_op(current, self.baseline):
+                if self.verbose > 0:
+                    print('Baseline attained.')
+                self.baseline_attained = True
+            else:
+                return
+
+        super(MyEarlyStopping, self).on_epoch_end(epoch, logs)
+
+
+class _EarlyStoppingCallback(MyEarlyStopping):
     def __init__(self, on_early_stopped_callback: Callable[[int], None], **kw):
         super().__init__(**kw)
         self._on_early_stopped = on_early_stopped_callback
