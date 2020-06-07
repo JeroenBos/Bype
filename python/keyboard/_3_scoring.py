@@ -187,9 +187,9 @@ class Metrics(Callback):
 
         self.losses.append(test_loss)
 
-        self._write_scalar("pred_min", batch, pred_min, "test")
-        self._write_scalar("pred_max", batch, pred_max, "test")
-        self._write_scalar("test_loss", batch, test_loss, "test")
+        self._write_scalar("pred_min", batch, pred_min, "test_extrema")
+        self._write_scalar("pred_max", batch, pred_max, "test_extrema")
+        self._write_scalar("test_loss", batch, test_loss, "test_loss")
         
         return test_loss
 
