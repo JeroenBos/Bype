@@ -42,8 +42,8 @@ class Params(DataGenenerationParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
-    log_dir: str = 'logs/nchar3nwords1000/'
-    run_log_dir: str = 'logs/nchar3words1000/'
+    log_dir: str = 'logs/nchar4nwords1000/'
+    run_log_dir: str = 'logs/nchar4words1000/'
     continue_weights: bool = True
 
     @property
@@ -80,7 +80,7 @@ class TrainingsPlan(TrainingsPlanBase):
             yield Params(
                 n_epochs=200,
                 n_words=1000,
-                n_chars=3,
+                n_chars=4,
                 word_input_strategy=CappedWordStrategy(5),
                 continue_weights=False,
             )
@@ -107,8 +107,8 @@ class TrainingsPlan(TrainingsPlanBase):
         # model generation:
         yield ModelFactory
         yield ParameterizeModel
-        if params.continue_weights:
-            yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
+        # if params.continue_weights:
+        #    yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
         yield TensorBoardScalar(stage=lambda params: params.stage, n_chars=lambda params: params.n_chars)
 
