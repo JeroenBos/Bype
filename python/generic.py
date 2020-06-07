@@ -1,5 +1,3 @@
-from typing import Any, Callable, List, Union
-import pandas as pd
 
 
 def generic(*params: str) -> type:
@@ -33,23 +31,3 @@ def generic(*params: str) -> type:
                 setattr(newcls, name, typeArg)
             return newcls
     return Metatype
-
-
-# I'm abusing this file here to mean 'utils' rather than generics
-
-def create_empty_df(length: int, columns: List[str], **defaults: Union[Any, Callable[[], Any]]) -> pd.DataFrame:
-    """ Creates an empty df of the correct format and shape, initialized with default values, which default to 0. """
-    for key, value in defaults.items():
-        if key not in set(columns):
-            raise ValueError(f"Unexpected default value specified for '{str(key)}'")
-
-    # get lazily evaluable defaults
-    defaults = {key: (value() if isinstance(value, Callable) else value) for key, value in defaults.items()}
-
-    # pad defaults with zeroes
-    for column in columns:
-        if column not in defaults:
-            defaults[column] = 0
-
-    result = pd.DataFrame([list(defaults[key] for key in columns) for _ in range(length)], columns=columns)
-    return result

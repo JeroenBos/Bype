@@ -1,16 +1,53 @@
 import unittest
-from python.keyboard.hp import do_hp_search, MyBaseEstimator, Models
 from typing import List, Union
-from python.keyboard.generic import generic
-from python.model_training import InMemoryDataSource, ResultOutputWriter
+from generic import generic
+from DataSource import InMemoryDataSource
 import pandas as pd
 import tensorflow as tf
-from python.keyboard._0_types import T, Key, Keyboard, SwipeDataFrame
-from python.keyboard._1_import import RawTouchEvent
-from python.keyboard._2_transform import Preprocessor
-from python.keyboard._3_model import KeyboardEstimator
-from python.utilities import print_fully
+from keyboard._0_types import Key, Keyboard, SwipeDataFrame, SwipeEmbeddingDataFrame, T
+from keyboard._1_import import RawTouchEvent
+from keyboard._2_transform import Preprocessor
+from keyboard._4_model import KeyboardEstimator
+from utilities import print_fully
 import math
+from keyboard._1a_generate import generate_taps_for
+import numpy as np
+
+
+class IntOrHalfInt:
+    def __init__(self, i: int):
+        self.i = i
+
+    def __eq__(self, value):
+        if isinstance(value, int) or isinstance(value, float):
+            return value == self.i \
+                or value == self.i + 0.5 \
+                or value == self.i - 0.5
+        elif isinstance(value, self.__class__):
+            return self.__eq__(self, value.i)
+        else:
+            return super().__eq__(value)
+
+class TestKey(Key):
+    def __init__(self, key: Key):
+        def to_key(key):
+            if key == 'edge_flags':
+                return 'edgeFlags'
+            return key
+        super().__init__(**{to_key(key): value for key, value in key.__dict__.items()})
+
+    @property
+    def norm_x(self) -> IntOrHalfInt:
+        """ Gets the horizontal middle of the button associated with the specified character """
+        return self.keyboard.normalize_x(self.x + self.width / 2)
+
+    @property
+    def norm_y(self) -> IntOrHalfInt:
+        """ Gets the vertical middle of the button associated with the specified character """
+        return self.keyboard.normalize_y(self.y + self.height / 2)
+
+
+
 
 
 class HpParamsTests(unittest.TestCase):
@@ -132,7 +169,7 @@ class HpParamsTests(unittest.TestCase):
         assert b == 'int'
 
     def test_get_id(self):
-        class UglyEstimator(MyBaseEstimator):
+        class UglyEstimator:  # (MyBaseEstimator):
             def __init__(self, num_epochs=5, activation='relu'):
                 super().__init__()
                 self.num_epochs = num_epochs
@@ -144,16 +181,15 @@ class HpParamsTests(unittest.TestCase):
 
 class Testkeyboard(unittest.TestCase):
     def test_can_create_model(self):
-        estimator = KeyboardEstimator.create(Preprocessor())
+        estimator = KeyboardEstimator[Preprocessor()].create_initialized()
         estimator._create_model()
 
     def test_load_keyboard_layout(self):
-        from python.keyboard._1_import import keyboard_layouts  # noqa
-        assert len(keyboard_layouts) > 0
+        from keyboard._1_import import _keyboard_layouts
+        assert len(_keyboard_layouts) > 0
 
     def test_interpreting_keyboard_layout(self):
-        from python.keyboard._1_import import KEYBOARD_LAYOUT_SPEC
-        from python.keyboard._2_transform import get_keyboard
+        from keyboard._1_import import KEY_SPEC, get_keyboard
 
         test_data = {
             "codes": [1, 3],
@@ -166,7 +202,10 @@ class Testkeyboard(unittest.TestCase):
             "toggleable": True,
         }
 
-        df = pd.DataFrame([[None for _ in test_data]], columns=list(KEYBOARD_LAYOUT_SPEC.keys()))
+        df = pd.DataFrame([[None for _ in test_data]], columns=list(KEY_SPEC.keys()))
+        for attr in ['keyboard_width', 'keyboard_height', 'keyboard_top', 'keyboard_left']:
+            setattr(df, attr, 'test')
+
         for key, value in test_data.items():
             df[key][0] = value
         assert len(df.columns) == len(test_data)
@@ -187,7 +226,7 @@ class Testkeyboard(unittest.TestCase):
         assert keyboard[3].y == 2
 
     def test_generate_single_letters(self):
-        from python.keyboard._1a_generate import generate_taps_for
+        from keyboard._1a_generate import generate_taps_for
         tap = generate_taps_for('a')
         assert isinstance(tap, pd.DataFrame)
         assert 'X' in tap.columns.values
@@ -196,82 +235,82 @@ class Testkeyboard(unittest.TestCase):
         assert tap.X[0] == 108
 
     def test_swipe_embedding(self):
-        from python.keyboard._1a_generate import create_empty_swipe_embedding_df
-        df = create_empty_swipe_embedding_df(1)
+        df = SwipeEmbeddingDataFrame.create_empty(1)
         assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, SwipeEmbeddingDataFrame)
         assert len(df) == 1
-        assert len(df.columns) == 1
-        assert df.columns.values[0] == 'swipes'
+        assert sorted(df.columns.values) == sorted(['swipes', 'words', 'correct'])
 
     def test_swipe_embedding_with_entries(self):
-        from python.keyboard._1a_generate import create_empty_swipe_embedding_df, create_empty_swipe_df
-        df = create_empty_swipe_embedding_df(1)
-        df['swipes'][0] = create_empty_swipe_df(5)
+        df = SwipeEmbeddingDataFrame.create_empty(1)
+        df.swipes[0] = SwipeDataFrame.create_empty(5)
 
         assert isinstance(df, pd.DataFrame)
-        assert len(df.columns) == 1
-        assert df.columns.values[0] == 'swipes'
         assert len(df) == 1
-        assert isinstance(df['swipes'][0], pd.DataFrame)
-        entry = df['swipes'][0]
+        assert isinstance(df.swipes[0], pd.DataFrame)
+        entry = df.swipes[0]
         assert len(entry) == 5
 
     def test_encode_single_letter(self):
-        from python.keyboard._1a_generate import generate_taps_for, keyboards
-        keyboard = keyboards[0]
-        norm_x, norm_y = keyboard.normalize_x, keyboard.normalize_y
+        from keyboard._1a_generate import generate_taps_for, keyboards
 
+        a = TestKey(keyboards[0].get_key('a'))
         swipe = generate_taps_for('a')
         features = Preprocessor().encode(swipe, 'a')
         expected_features = [  # an item per touch event
-                                [norm_x(108), norm_y(211),    # tap letter 'a'
-                                 0.2,                         # relative word length 
-                                 norm_x(108), norm_y(211.5),  # copy of the word
-                                 -1, -1,                      # padding of the word
-                                 -1, -1,                      # padding of the word
-                                 -1, -1,                      # padding of the word
-                                 -1, -1]                      # padding of the word
+                                [a.norm_x, a.norm_y,  # tap letter 'a'
+                                 0.2,                 # relative word length 
+                                 a.norm_x, a.norm_y,  # copy of the word
+                                 -1, -1,              # padding of the word
+                                 -1, -1,              # padding of the word
+                                 -1, -1,              # padding of the word
+                                 -1, -1]              # padding of the word
                             ]
         assert features == expected_features
 
+    def test_encode_double_letters(self):
+        from keyboard._1a_generate import generate_taps_for, keyboards
+        # arrange
+        a = TestKey(keyboards[0].get_key('a'))
+        b = TestKey(keyboards[0].get_key('b'))
+        expected_features = [
+            [  # touch event for 'a'
+                a.norm_x, a.norm_y,    # tap letter 'a'
+                0.4,                   # relative word length 
+                a.norm_x, a.norm_y,    # copy of the word
+                b.norm_x, b.norm_y,    # copy of the word
+                -1, -1,                # padding of the word
+                -1, -1,                # padding of the word
+                -1, -1],               # padding of the word
+            [  # touch event for 'b'
+                b.norm_x, b.norm_y,    # tap letter 'b'
+                0.4,                   # relative word length 
+                a.norm_x, a.norm_y,    # copy of the word
+                b.norm_x, b.norm_y,    # copy of the word
+                -1, -1,                # padding of the word
+                -1, -1,                # padding of the word
+                -1, -1,                # padding of the word
+            ]
+        ]
 
+        # act
+        swipe = generate_taps_for('ab')
+        assert len(swipe) == 2
+        features = Preprocessor(max_timesteps=2).encode(swipe, 'ab')
 
+        # assert
+        diffs = [f"({i}, {j}): {features[i][j]} whereas expected: {expected_features[i][j]}"  # noqa
+                 for i in range(len(expected_features)) 
+                 for j in range(len(expected_features[i]))
+                 if features[i][j] != expected_features[i][j]]
+        assert features == expected_features
 
-
-class TDD(unittest.TestCase):
-    def test_hp_search(self):
-
-        class UglyEstimator(MyBaseEstimator):
-            def __init__(self, num_epochs=5, activation='relu'):
-                super().__init__()
-                self.num_epochs = num_epochs
-                self.activation = activation
-
-            def _create_model(self) -> Models:
-                return tf.keras.Sequential([
-                    tf.keras.layers.Dense(14, activation=self.activation),
-                    tf.keras.layers.Dense(1, activation='sigmoid')
-                ])
-
-        ranges = UglyEstimator(num_epochs=[5, 6]).params
-
-        df = pd.DataFrame(data=[[1, 11], [2, 12], [3, 13], [4, 14], [5, 15]], columns=['X', 'y'])
-        do_hp_search(UglyEstimator,
-                     InMemoryDataSource(df, 'y'),
-                     ResultOutputWriter(),
-                     ranges)
-
-    def test_generating(self):
-        from python.keyboard._1a_generate import single_letters_data  # noqa
-        words, swipes = single_letters_data
-        assert isinstance(words, pd.DataFrame)
-        assert isinstance(swipes, pd.DataFrame)
-        assert len(words.columns) == 1
-        assert len(swipes.columns) > 10
-        assert len(words) == len(swipes)
-        assert swipes['X'][0] == 'a'
-        assert math.isnan(swipes['Y'][0])
+    def test_inverse(self):
+        word = 'word'
+        encoded = np.asarray(Preprocessor(max_timesteps=len(word)).encode(generate_taps_for(word), word))
+        decoded = Preprocessor().decode(encoded)
+        assert decoded == word
 
 
 if __name__ == '__main__':
-    Testkeyboard().test_can_create_model()
+    Testkeyboard().test_inverse()

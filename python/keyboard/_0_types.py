@@ -1,9 +1,24 @@
+import random 
+from math import floor
 from typing import Type, Dict, List, Callable, TypeVar, Any, Tuple, Optional, Union
 import pandas as pd
 from abc import ABC
 import numpy as np
-from python.model_training import DataSource
-from python.keyboard.generic import create_empty_df
+from DataSource import DataSource
+from utilities import create_empty_df, bind, groupby
+
+# keras.Layers.Marking doesn't support math.nan, nor the infinities for that matter, so I just use a different number then
+myNaN = 12345678.9
+# import sys
+#
+# class Test:
+#     def write(self, *args, **kwargs):
+#         if self is not None:
+#             if True:
+#                 pass
+# 
+# 
+# sys.stdout = Test() 
 
 T = TypeVar('T')
 ProcessedInputSeries = pd.Series  # where every element is a ProcessedInput
@@ -27,6 +42,23 @@ class Keyboard(Dict[int, "Key"]):
     def normalize_y(self, y: Union[int, float]) -> float:
         return (y - self.top) / self.height
 
+    def denormalize_x(self, normalized_x: float) -> int:
+        """ Returns the x in pixels that would have resulted in the specified normalized x. """
+        return floor(normalized_x * self.width + self.left)
+
+    def denormalize_y(self, normalized_y: float) -> int:
+        """ Returns the y in pixels that would have resulted in the specified normalized y. """
+        return floor(normalized_y * self.height + self.top)
+
+    def get_key(self, char: Union[str, int]) -> "Key":
+        assert isinstance(char, str) or isinstance(char, int)
+        assert len(char) == 1
+        code = ord(char) if isinstance(char, str) else char
+        return self.get(code)
+
+    def values(self) -> List["Key"]:
+        return super().values()
+
 
 
 
@@ -44,15 +76,60 @@ class Key:
         self.toggleable = toggleable
         self.keyboard = keyboard
 
+    @property
+    def char(self):
+        return chr(self.code)
+
+
+    @property
+    def abs_x(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.x + self.keyboard.left
+
+    @property
+    def abs_y(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.y + self.keyboard.top
+
+    @property
+    def abs_center_x(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.abs_x + self.width // 2
+
+    @property
+    def abs_center_y(self):
+        """ `abs` means including keyboard positioning (i.e. not relative to keyboard) """
+        return self.abs_y + self.height // 2
+
     NO_KEY: "Key"
+
 
 
 Key.NO_KEY = Key(code=0, code_index=0, x=0, y=0, width=0, height=0,
                  edgeFlags=0, repeatable=False, toggleable=False, keyboard=None)
 
 
+class MyDataFrame(pd.DataFrame):
+    columns: Any  # or this: @property def columns(self): return super().columns
 
-class SwipeDataFrame(pd.DataFrame):
+    def rows(self) -> object:
+        class Row:
+            def __getitem__(self, *args):
+                if len(args) != 1:
+                    raise ValueError('Expected one key')
+                return self.__dict__[args[0]]
+
+        value = Row()  # object doesn't implement __dict__
+        for i in range(len(self)):
+            for column in self.columns:
+                value.__dict__[column] = self[column][i]
+            yield value
+
+    def __hash__(self):
+        return id(self)
+
+
+class SwipeDataFrame(MyDataFrame):
     """
     Represents the data from one swipe.
 
@@ -75,12 +152,6 @@ class SwipeDataFrame(pd.DataFrame):
     YPrecision: pd.Series
     EdgeFlags: pd.Series
     KeyboardLayout: pd.Series
-    KeyboardWidth: pd.Series
-    KeyboardHeight: pd.Series
-
-    @property
-    def columns(self):
-        return super().columns
 
 
     # TODO: implement like https://stackoverflow.com/q/13135712/308451
@@ -94,11 +165,34 @@ class SwipeDataFrame(pd.DataFrame):
         Creates an empty df of the correct format and shape determined by SPEC,
         initialized with default values, which default to 0.
         """
-        return create_empty_df(length, columns=RawTouchEvent.get_keys(), **defaults)
+
+        result: pd.DataFrame = create_empty_df(length, columns=RawTouchEvent.SPEC, **defaults)
+        result.astype(dtype=RawTouchEvent.SPEC, copy=False)
+        bind(result, SwipeDataFrame.rows)
+        return result
 
 
+    @staticmethod
+    def create(inputs: List[T], selector: Callable[[T, int], "Partial[RawTouchEvent]"], verify=False) -> "SwipeDataFrame":
+        """
+        :param selector: A function creating a partial RawTouchEvent from the specified input and index
+        """
+        result = SwipeDataFrame.create_empty(len(inputs))
+        for i, word in enumerate(inputs):
+            partialEvents = selector(word, i)
+            partialEvents = partialEvents.__dict__ if not isinstance(partialEvents, Dict) else partialEvents
 
-class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
+            for key, value in partialEvents.items():
+                if key not in result.columns.values:
+                    raise ValueError(f"Unknown column '{str(key)}' for input {str(word)} at index '{str(i)}'")
+                result[key][i] = value
+
+        if verify and hasattr(result, 'validate'):
+            result.validate()
+
+        return result
+
+class SwipeEmbeddingDataFrame(MyDataFrame, DataSource):
     """
     Represents a collection of swipes and associated words.
 
@@ -109,14 +203,13 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     words: pd.Series    # series of strings
     correct: pd.Series  # series of booleans
 
-    columns: Any
-
-    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
+    def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False, verify=False):
         super().__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
-        assert SwipeEmbeddingDataFrame.is_instance(self)
-        assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
-        assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
-        assert all(len(word) == 0 or isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
+        if verify:
+            assert SwipeEmbeddingDataFrame.is_instance(self)
+            assert len(self.words) == len(self.swipes), f"Incommensurate lists of swipes and words given"
+            assert all(SwipeDataFrame.is_instance(swipe) for i, swipe in self.swipes.iteritems()), 'Not all specified swipes are SwipeDataFrames'
+            assert all(len(word) == 0 or isinstance(word, str) for i, word in self.words.iteritems()), 'Not all specified words are strings'
 
 
 
@@ -127,50 +220,57 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
 
 
     @staticmethod
-    def __as__(embedding_dataframe: pd.DataFrame) -> "SwipeEmbeddingDataFrame":
+    def __as__(embedding_dataframe: pd.DataFrame, verify=False) -> "SwipeEmbeddingDataFrame":
         if isinstance(embedding_dataframe, SwipeEmbeddingDataFrame):
             return embedding_dataframe
         else:
-            return SwipeEmbeddingDataFrame(embedding_dataframe)
+            return SwipeEmbeddingDataFrame(embedding_dataframe, verify=verify)
 
 
     @staticmethod
-    def convolve_data(trainings_data: "SwipeEmbeddingDataFrame") -> "SwipeConvolutionDataFrame":
-        # just creates a square matrix of all combinations
-        L = len(trainings_data.words)
-        words = [trainings_data.words[i % L] for i in range(L * L)]
-        return SwipeEmbeddingDataFrame.create(words, lambda word, i: trainings_data.swipes[i // L])
-
-
-    @staticmethod
-    def create_empty(length: int) -> "SwipeEmbeddingDataFrame":
+    def create_empty(length: int, verify=False) -> "SwipeEmbeddingDataFrame":
         defaults = {
             'swipes': SwipeDataFrame.create_empty(0), 
             'words': pd.Series([], dtype=np.str), 
             'correct': pd.Series([], dtype=np.bool)}
-        inner = create_empty_df(length, columns=list(defaults.keys()), **defaults)
-        return SwipeEmbeddingDataFrame(inner)
+        inner = create_empty_df(length, columns=list(defaults.keys()), verify=verify, **defaults)
+        return SwipeEmbeddingDataFrame(inner, verify=verify)
 
 
     @staticmethod
-    def create(words: List[str], swipe_selector: Callable[[str, int], SwipeDataFrame]) -> "SwipeEmbeddingDataFrame":
+    def create(words: List[str], swipe_selector: Callable[[str, int], SwipeDataFrame], verify=False) -> "SwipeEmbeddingDataFrame":
         """
         Creates a swipe embedding dataframe from the specified words and a mapping function creating the swipe
         :param words: The words to create swipes for.
         :param swipe_selector: A function creating the swipe data from the word and index in the param 'words'
         """
-        result = SwipeEmbeddingDataFrame.create_empty(len(words))
+        if not isinstance(words, List):
+            words = list(words)
+
+        result = SwipeEmbeddingDataFrame.create_empty(len(words), verify=verify)
         swipes = [swipe_selector(word, i) for i, word in enumerate(words)]
 
-        for swipe in swipes:
-            assert isinstance(swipe, pd.DataFrame)
-            assert len(swipe) != 0, 'empty swipe'
-        assert len(set(len(swipe.columns) for swipe in swipes)) == 1, 'not all swipes have same columns'
+        if verify:
+            for swipe in swipes:
+                assert isinstance(swipe, pd.DataFrame)
+                assert len(swipe) != 0, 'empty swipe'
+            assert len(set(len(swipe.columns) for swipe in swipes)) == 1, 'not all swipes have same columns'
 
         for i, swipe in enumerate(swipes):
             result.swipes[i] = swipe
             result.words[i] = words[i]
             result.correct[i] = True
+        return result
+
+    @staticmethod
+    def create_from_rows(rows: List[Tuple[str, SwipeDataFrame, bool]], verify=False) -> "SwipeEmbeddingDataFrame":
+
+        result = SwipeEmbeddingDataFrame.create_empty(len(rows), verify=verify)
+        for i, row in enumerate(rows):
+            assert isinstance(row.words, str) and isinstance(row.correct, bool)
+            result.words[i] = row.words
+            result.swipes[i] = row.swipes
+            result.correct[i] = row.correct
         return result
 
     def get_train(self):
@@ -182,21 +282,68 @@ class SwipeEmbeddingDataFrame(pd.DataFrame, DataSource):
     def get_row(self, i: int) -> "Input":
         return Input(self.swipes[i], self.words[i])
 
-    def convolve(self) -> "SwipeConvolutionDataFrame":
-        # just creates a square matrix of all combinations
-        L = len(self.words)
-        words = [self.words[i % L] for i in range(L * L)]
-        data = SwipeConvolutionDataFrame.create(words, lambda word, i: self.swipes[i // L])
-        data.correct = [i % L == i for i in range(L * L)]  # a diagonal of trues
-        return SwipeConvolutionDataFrame(data)
+    def convolve(self, fraction=1.0, inverse_indices_out: Optional[List[Tuple[int, int, int]]] = None, verify=False) -> "SwipeConvolutionDataFrame":
+        """
+        :param fraction: The fraction of negatives to create. 
+        :param inverse_indices_out: An out parameter. If specified, the 3-tuples inverse indices will be appended; see below. 
+        """
+        assert type(fraction) == float or type(fraction) == int
+        assert fraction >= 0.0
 
+
+        L = len(self.words)
+        N = floor(L * (1 + fraction))
+
+        def is_correct(i: int) -> bool:
+            return i * L // N != ((i - 1) * L) // N
+
+        assert sum((1 if is_correct(i) else 0) for i in range(N)) == L, 'is_correct has a bug'
+
+        def draw_non(i: int, max: int):
+            """ Draws a number from the range [0, max) / { i }. """
+            drawn = random.randint(0, max - 2)
+            if drawn == i:
+                return max - 1
+            return drawn
+
+        # index in convolution of the correct combination of 
+        indices_of_swipe_in_convolved = [i for i in range(N) if is_correct(i)]
+
+        # 3-tuples of all indices (incl inverse)
+        # index_of_swipe_in_non_convolved, index_of_word_in_non_convolved, index_of_swipe_in_convolved
+        indices = [(i * L // N, 
+                    ((i * L // N) if is_correct(i) else draw_non(i * L // N, L)), 
+                    indices_of_swipe_in_convolved[i * L // N])
+                   for i in range(N)]
+
+        if inverse_indices_out is not None:
+            inverse_indices_out.extend(indices)
+
+        words = [self.words[t[1]] for t in indices]
+
+        data = SwipeConvolutionDataFrame.create(words, lambda word, i: self.swipes[indices[i][0]])
+        data.correct = [is_correct(i) for i in range(N)]
+        bind(data, SwipeConvolutionDataFrame.convolve_data)
+        return data
+
+    def groupby(self, keySelector: Callable[[pd.Series], Union[str, int]]) -> List["SwipeEmbeddingDataFrame"]:  # the pd.Series contains swipes, words and corrects
+        grouped: Dict[int, List[Tuple[str, SwipeDataFrame, bool]]] = groupby(self, keySelector)
+
+        result = [SwipeEmbeddingDataFrame.create_from_rows(rows) for rows in grouped.values()]
+        return result
+
+    def groupby_timesteps(self) -> List["SwipeEmbeddingDataFrame"]:
+        return self.groupby(get_timesteps)
+
+
+def get_timesteps(d):
+    return len(d.swipes)
 
 
 class SwipeConvolutionDataFrame(SwipeEmbeddingDataFrame):
 
     def convolve_data(self) -> None:
         raise ValueError("Cannot convolve already convolved dataframe")
-
 
 
 class Input:
@@ -233,10 +380,8 @@ class RawTouchEvent(pd.Series):
     YPrecision: float
     EdgeFlags: float
     KeyboardLayout: int
-    KeyboardWidth: int
-    KeyboardHeight: int
 
-    SPEC: Dict[str, Type] = {
+    SPEC_np: Dict[str, Type] = {
                "PointerIndex": np.int32,
                "Action": np.int32,
                "Timestamp": np.int64,
@@ -253,9 +398,8 @@ class RawTouchEvent(pd.Series):
                "YPrecision": np.float32,
                "EdgeFlags": np.float32,
                "KeyboardLayout": np.int32,
-               "KeyboardWidth": np.int32,
-               "KeyboardHeight": np.int32,
             }
+    SPEC: Dict[str, Type]
 
     @staticmethod
     def get_type(field: str) -> Type:
@@ -265,3 +409,15 @@ class RawTouchEvent(pd.Series):
     @staticmethod
     def get_keys() -> List[str]:
         return list(RawTouchEvent.SPEC.keys())
+
+
+np_dtype_map = {np.int32: int, np.float32: float, np.int64: int, np.bool: bool}
+RawTouchEvent.SPEC = {key: np_dtype_map[value] for key, value in RawTouchEvent.SPEC_np.items()}
+
+
+class RawTouchEventActions:
+    # see https://developer.android.com/reference/android/view/MotionEvent
+    Down = 0
+    Up = 1
+    Move = 2
+    Cancel = 3

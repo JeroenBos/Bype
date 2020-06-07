@@ -1379,8 +1379,6 @@ public class KeyboardView extends View implements View.OnClickListener {
             x.add(String.valueOf(me.getYPrecision()));
             x.add(String.valueOf(me.getEdgeFlags())); // int
             x.add(String.valueOf(0)); //keyboard layout xml enum. For now there's only one. // int
-            x.add(String.valueOf(this.getWidth())); // int
-            x.add(String.valueOf(this.getHeight())); // int
             // the only other possibly interesting values are the axes, but I don't think so:
             // x.add(String.valueOf(me.getAxisValue(?)));
         }

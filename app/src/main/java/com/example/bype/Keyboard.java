@@ -1105,12 +1105,24 @@ public class Keyboard {
 
     private String summarizeKeyboardLayout() {
 
+        return new Gson().toJson(new KeyboardExtract(this));
+    }
 
-        KeyExtract[] keyExtracts = new KeyExtract[mKeys.size()];
-        for (int i = 0; i < keyExtracts.length; i++)
-            keyExtracts[i] = new KeyExtract(mKeys.get(i));
+    static class KeyboardExtract {
+        int width;
+        int height;
+        int left = 0; // TODO: find why this offset exists relative to MotionEvent.getX()
+        int top = 0;
+        KeyExtract[] keys;
 
-        return new Gson().toJson(keyExtracts);
+        public KeyboardExtract(Keyboard k) {
+            this.width = k.mTotalWidth;
+            this.height = k.mTotalHeight;
+            this.keys = new KeyExtract[k.mKeys.size()];
+            for (int i = 0; i < keys.length; i++)
+                keys[i] = new KeyExtract(k.mKeys.get(i));
+        }
+
     }
 
     // this isn't a nested class because gson can't deserialize them
