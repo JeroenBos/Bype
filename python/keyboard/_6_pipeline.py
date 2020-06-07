@@ -48,8 +48,7 @@ class Params(DataGenenerationParams,
 
     @property
     def filebased_continued_stage_counting(self) -> bool:
-        # defaults to whether the weights are continued in the training
-        return self.continue_weights
+        return True
 
     @property
     def filebased_continued_epoch_counting(self) -> bool:
