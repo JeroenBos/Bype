@@ -103,7 +103,7 @@ class Metrics(Callback):
 
     @override
     def on_epoch_end(self, batch, logs={}):
-        if (batch % 10) == 0:
+        if (batch % 3) == 0:
             places, occurrences, y_predict = self._get_places()
 
             self._write_and_print_summaries(places, occurrences, y_predict, batch, logs)

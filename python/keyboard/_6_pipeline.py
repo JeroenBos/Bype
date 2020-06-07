@@ -42,8 +42,8 @@ class Params(DataGenenerationParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
-    log_dir: str = 'logs/nchar2/'
-    run_log_dir: str = 'logs/nchar2/'
+    log_dir: str = 'logs/nchar2nwords1000/'
+    run_log_dir: str = 'logs/nchar2words1000/'
     continue_weights: bool = True
 
     @property
@@ -79,7 +79,7 @@ class TrainingsPlan(TrainingsPlanBase):
         for i in range(25):
             yield Params(
                 n_epochs=1000,
-                n_words=100,
+                n_words=1000,
                 n_chars=2,
                 word_input_strategy=CappedWordStrategy(5),
                 continue_weights=False,
@@ -96,7 +96,7 @@ class TrainingsPlan(TrainingsPlanBase):
         yield ApplyInitialEpochAndNumEpochToFitArgs
         yield AddValidationDataScoresToTensorboard
         yield SaveBestModel(lambda params: params.best_model_path, monitor='test_loss')  # must be after AddValidation
-        yield EarlyStopping(patience=5, monitor="loss", baseline=0.001)
+        yield EarlyStopping(patience=5, monitor="loss", baseline=0.005)
 
         # data generation:
         yield GenerateData()
