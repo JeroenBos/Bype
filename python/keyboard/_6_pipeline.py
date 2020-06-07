@@ -111,7 +111,7 @@ class TrainingsPlan(TrainingsPlanBase):
         #    yield LoadInitialWeights(on_first_stage="/home/jeroen/git/bype/python/logs/2020_05_30/best_model.h5")
 
         yield TensorBoardScalar(stage=lambda params: params.stage, n_chars=lambda params: params.n_chars)
-
+        yield PrintWeightsCount
 
 
 TrainingsPlan().execute()
