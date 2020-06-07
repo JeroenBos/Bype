@@ -42,8 +42,8 @@ class Params(DataGenenerationParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
-    log_dir: str = 'logs/nchar2nwords1000/'
-    run_log_dir: str = 'logs/nchar2words1000/'
+    log_dir: str = 'logs/nchar3nwords1000/'
+    run_log_dir: str = 'logs/nchar3words1000/'
     continue_weights: bool = True
 
     @property
@@ -76,11 +76,11 @@ class Params(DataGenenerationParams,
 class TrainingsPlan(TrainingsPlanBase):
     @property
     def params(self) -> Iterable[Params]:
-        for i in range(25):
+        for i in range(20):
             yield Params(
-                n_epochs=1000,
+                n_epochs=200,
                 n_words=1000,
-                n_chars=2,
+                n_chars=3,
                 word_input_strategy=CappedWordStrategy(5),
                 continue_weights=False,
             )
