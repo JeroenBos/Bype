@@ -1,3 +1,4 @@
+import math
 import os
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback, TensorBoard  # noqa
@@ -42,18 +43,22 @@ class Params:
                            If no value is provided, the data collection will be in a separate graph.
         """
         assert isinstance(name, str)
-        assert isinstance(x, int)
+        assert isinstance(x, int) or math.isnan(x)
         assert isinstance(y, (float, int))
-        import math
         if math.isnan(y):
-            print_in_red("Summary value is NaN")
+            if not quiet:
+                print_in_red("Summary value is NaN")
             return False
 
         assert isinstance(graph_name, str)
 
+        self._write_scalar(name, x, y, graph_name)
+
+    def _write_scalar(self, name: str, x: int, y: Union[float, int], graph_name: str = ""):
         # don't get me started on `name` vs `graph_name`
         with self.get_resource_writer(os.path.join(self.log_dir, name)).as_default():
             tf.summary.scalar(graph_name, y, x)
+
 
 
 

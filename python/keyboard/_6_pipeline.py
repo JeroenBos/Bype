@@ -25,6 +25,7 @@ from trainer.extensions.GenerateData import GenerateDataTrainerExtension as Gene
 from trainer.extensions.tensorboard.tensorboard import TensorBoardExtension
 from trainer.extensions.tensorboard.scalar import TensorBoardScalar
 from trainer.extensions.tensorboard.ResourceWriterPool import Params as ResourceWriterPoolParams
+from trainer.extensions.tensorboard.CutSummaryOnNewRun import Params as CutSummaryOnNewRunParams, CutSummaryOnNewRun
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
@@ -39,6 +40,7 @@ class Params(DataGenenerationParams,
              CreateModelParams,
              ContinuousEpochCountParams,
              EarlyStoppingParams,
+             CutSummaryOnNewRunParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
@@ -70,29 +72,19 @@ class Params(DataGenenerationParams,
         result = set(len(entry) for entry in self.data().swipes)
         return max(result)
 
-    
 
-
-params = Params(
-    n_epochs=100,
-    n_words=10,
-    n_chars=3,
-    word_input_strategy=CappedWordStrategy(5),
-    filebased_continued_epoch_counting=True,
-)
-params2 = Params(
-    n_epochs=100,
-    n_words=10,
-    n_chars=5,
-    word_input_strategy=CappedWordStrategy(5),
-    filebased_continued_epoch_counting=True,
-)
 
 class TrainingsPlan(TrainingsPlanBase):
     @property
     def params(self) -> Iterable[Params]:
-        yield params
-        yield params2
+        for i in range(10):
+            yield Params(
+                n_epochs=1000,
+                n_words=100,
+                n_chars=1,
+                word_input_strategy=CappedWordStrategy(5),
+                continue_weights=False,
+            )
 
     def get_extensions(self, params: Params, prev_params: Optional[Params]) -> Iterable[Union[TrainerExtension, type(TrainerExtension)]]:
         # initialization and callback registration:
@@ -120,6 +112,7 @@ class TrainingsPlan(TrainingsPlanBase):
 
         yield TotalValidationDataScoringExtensions(monitor_namespace="total/", print_misinterpretation_examples=True)  # must be after GenerateData()
         yield TensorBoardScalar(stage=lambda params: params.stage, n_chars=lambda params: params.n_chars)
+        yield CutSummaryOnNewRun
 
 
 
