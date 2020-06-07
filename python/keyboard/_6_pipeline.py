@@ -25,11 +25,11 @@ from trainer.extensions.GenerateData import GenerateDataTrainerExtension as Gene
 from trainer.extensions.tensorboard.tensorboard import TensorBoardExtension
 from trainer.extensions.tensorboard.scalar import TensorBoardScalar
 from trainer.extensions.tensorboard.ResourceWriterPool import Params as ResourceWriterPoolParams
+from trainer.extensions.CountWeights import count_params, PrintWeightsCount
 from trainer.ModelAdapter import CompileArgs, FitArgs, ParameterizeModelExtension as ParameterizeModel
 from trainer.extensions.fit_datasource import AllowDataSources
 from trainer.extensions.SaveBestModel import SaveBestModelTrainerExtension as SaveBestModel
 from trainer.extensions.EarlyStopping import EarlyStoppingTrainerExtension as EarlyStopping, Params as EarlyStoppingParams
-
 
 
 @mydataclass
@@ -42,8 +42,8 @@ class Params(DataGenenerationParams,
              ResourceWriterPoolParams,
              ParamsBase):
     tag: Optional[str] = None 
-    log_dir: str = 'logs/nchar4nwords1000/'
-    run_log_dir: str = 'logs/nchar4words1000/'
+    log_dir: str = 'logs/nchar10nwords1000/'
+    run_log_dir: str = 'logs/nchar10words1000/'
     continue_weights: bool = True
 
     @property
@@ -78,9 +78,9 @@ class TrainingsPlan(TrainingsPlanBase):
     def params(self) -> Iterable[Params]:
         for i in range(20):
             yield Params(
-                n_epochs=200,
+                n_epochs=400,
                 n_words=1000,
-                n_chars=4,
+                n_chars=10,
                 word_input_strategy=CappedWordStrategy(5),
                 continue_weights=False,
             )
